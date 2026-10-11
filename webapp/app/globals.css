@@ -619,6 +619,10 @@ table.data-table th {
 table.data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
 table.data-table tr:last-child td { border-bottom: none; }
 table.data-table .num { text-align: right; }
+.dash-rows { width: 100%; max-width: 560px; border-collapse: collapse; }
+.dash-rows td { padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+.dash-rows td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
+.dash-rows tr.sub td { color: var(--muted); font-size: 14px; padding-left: 16px; }
 .title-cell { max-width: 520px; }
 .title-cell a { color: var(--ink); font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .title-cell a:hover { color: var(--accent); }

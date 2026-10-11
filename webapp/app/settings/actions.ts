@@ -267,6 +267,9 @@ export async function adminSetPlan(userId: string, plan: string): Promise<Result
   if (!(await isPlatformAdmin())) return { error: t('Not allowed.') };
   if (!PLANS.some((p) => p.key === plan)) return { error: t('Unknown plan.') };
   await db().from('accounts').update({ plan, plan_status: plan === 'free' ? 'active' : 'comped' }).eq('kind', 'personal').eq('owner_id', userId);
+  if (plan !== 'free') {
+    await db().from('accounts').update({ subscribed_at: new Date().toISOString() }).eq('kind', 'personal').eq('owner_id', userId).is('subscribed_at', null);
+  }
   revalidatePath('/', 'layout');
   return {};
 }

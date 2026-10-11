@@ -1,0 +1,114 @@
+{
+  "Dashboard": {
+    "pt": "Painel",
+    "es": "Panel",
+    "fr": "Tableau de bord",
+    "de": "Übersicht",
+    "it": "Pannello"
+  },
+  "Timeframe": {
+    "pt": "Período",
+    "es": "Periodo",
+    "fr": "Période",
+    "de": "Zeitraum",
+    "it": "Periodo"
+  },
+  "24 hours": {
+    "pt": "24 horas",
+    "es": "24 horas",
+    "fr": "24 heures",
+    "de": "24 Stunden",
+    "it": "24 ore"
+  },
+  "7 days": {
+    "pt": "7 dias",
+    "es": "7 días",
+    "fr": "7 jours",
+    "de": "7 Tage",
+    "it": "7 giorni"
+  },
+  "30 days": {
+    "pt": "30 dias",
+    "es": "30 días",
+    "fr": "30 jours",
+    "de": "30 Tage",
+    "it": "30 giorni"
+  },
+  "90 days": {
+    "pt": "90 dias",
+    "es": "90 días",
+    "fr": "90 jours",
+    "de": "90 Tage",
+    "it": "90 giorni"
+  },
+  "All time": {
+    "pt": "Desde o início",
+    "es": "Desde el inicio",
+    "fr": "Depuis le début",
+    "de": "Gesamte Zeit",
+    "it": "Dall'inizio"
+  },
+  "Home visitors": {
+    "pt": "Visitantes da página inicial",
+    "es": "Visitantes de la página de inicio",
+    "fr": "Visiteurs de la page d'accueil",
+    "de": "Besucher der Startseite",
+    "it": "Visitatori della home"
+  },
+  "Accounts created": {
+    "pt": "Contas criadas",
+    "es": "Cuentas creadas",
+    "fr": "Comptes créés",
+    "de": "Erstellte Konten",
+    "it": "Account creati"
+  },
+  "Plans subscribed": {
+    "pt": "Planos subscritos",
+    "es": "Planes contratados",
+    "fr": "Formules souscrites",
+    "de": "Abonnierte Tarife",
+    "it": "Piani sottoscritti"
+  },
+  "Post pages": {
+    "pt": "Páginas de publicações",
+    "es": "Páginas de publicaciones",
+    "fr": "Pages de publications",
+    "de": "Beitragsseiten",
+    "it": "Pagine dei post"
+  },
+  "News pages": {
+    "pt": "Páginas de notícias",
+    "es": "Páginas de noticias",
+    "fr": "Pages d'actualités",
+    "de": "Nachrichtenseiten",
+    "it": "Pagine delle notizie"
+  },
+  "Tender pages": {
+    "pt": "Páginas de concursos",
+    "es": "Páginas de licitaciones",
+    "fr": "Pages d'appels d'offres",
+    "de": "Ausschreibungsseiten",
+    "it": "Pagine delle gare"
+  },
+  "Starter": {
+    "pt": "Starter",
+    "es": "Starter",
+    "fr": "Starter",
+    "de": "Starter",
+    "it": "Starter"
+  },
+  "Pro": {
+    "pt": "Pro",
+    "es": "Pro",
+    "fr": "Pro",
+    "de": "Pro",
+    "it": "Pro"
+  },
+  "Teams": {
+    "pt": "Teams",
+    "es": "Teams",
+    "fr": "Teams",
+    "de": "Teams",
+    "it": "Teams"
+  }
+}

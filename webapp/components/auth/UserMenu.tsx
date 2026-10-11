@@ -24,8 +24,8 @@ const ITEMS = [
 ];
 
 /** Navbar: the signed-in user's picture, opening their account menu. */
-export default function UserMenu({ user, workspaces = [], currentWorkspace }: {
-  user: { username: string; displayName: string; avatarUrl: string | null }; workspaces?: WorkspaceItem[]; currentWorkspace?: string | null;
+export default function UserMenu({ user, workspaces = [], currentWorkspace, dashboard = false }: {
+  user: { username: string; displayName: string; avatarUrl: string | null }; workspaces?: WorkspaceItem[]; currentWorkspace?: string | null; dashboard?: boolean;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -66,6 +66,11 @@ export default function UserMenu({ user, workspaces = [], currentWorkspace }: {
               ))}
               <Link href="/workspaces?new=1" className="user-menu-item ws-new">+ {t('New workspace')}</Link>
             </div>
+          )}
+          {dashboard && (
+            <Link role="menuitem" href="/dashboard" className="user-menu-item">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 9.5V13h3.5V9.5zM6.2 3v10H9.8V3zM10.5 6.2V13H14V6.2z" /></svg>{t('Dashboard')}
+            </Link>
           )}
           {ITEMS.map((i) => (
             <Link key={i.href} role="menuitem" href={i.href === 'profile' ? `/u/${user.username}` : i.href} className="user-menu-item">

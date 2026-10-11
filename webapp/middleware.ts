@@ -15,6 +15,43 @@ import {
 
 const SKIP_GUEST = /^\/(api|feed\.xml|sitemap\.xml|robots\.txt|llms\.txt|mcp\.md)/;
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+const VISITOR_COOKIE = 'tt_vid';
+
+/** Which public page this request is, for the dashboard. Compose screens are not content views. */
+function viewKind(pathname: string): 'home' | 'post' | 'news' | 'tender' | null {
+  if (pathname === '/') return 'home';
+  if (pathname === '/community' || (pathname.startsWith('/posts/') && pathname !== '/posts/new')) return 'post';
+  if (pathname === '/news' || pathname.startsWith('/news/')) return 'news';
+  if ((pathname === '/tenders' || pathname.startsWith('/tenders/')) && pathname !== '/tenders/new') return 'tender';
+  return null;
+}
+
+/** Count a real page load. The visitor id is a random cookie, not an address. */
+async function trackVisit(request: NextRequest, response: NextResponse) {
+  if (request.method !== 'GET') return response;
+  const purpose = request.headers.get('purpose') || request.headers.get('sec-purpose');
+  if (request.headers.get('next-router-prefetch') || request.headers.get('x-middleware-prefetch') || purpose === 'prefetch') return response;
+  if (isBot(request.headers.get('user-agent'))) return response;
+  const kind = viewKind(request.nextUrl.pathname);
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!kind || !url || !key) return response;
+  let visitor = request.cookies.get(VISITOR_COOKIE)?.value || '';
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(visitor)) {
+    visitor = crypto.randomUUID();
+    response.cookies.set(VISITOR_COOKIE, visitor, {
+      path: '/', maxAge: COOKIE_MAX_AGE, sameSite: 'lax', httpOnly: true, secure: process.env.NODE_ENV === 'production',
+    });
+  }
+  try {
+    await fetch(`${url.replace(/\/$/, '')}/rest/v1/page_views`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ kind, visitor }),
+    });
+  } catch { /* a missed count should not take the page down */ }
+  return response;
+}
 
 let catalogCache: { at: number; scopes: GuestScopeChoice[]; byItem: Map<string, string[]> } | null = null;
 
@@ -118,7 +155,7 @@ export async function middleware(request: NextRequest) {
   if (moved) return moved;
   // A leftover login verifier is not a session. Only the auth token means someone is signed in.
   const hasSession = request.cookies.getAll().some((c) => c.name.startsWith('sb-') && !c.name.includes('code-verifier'));
-  if (!hasSession) return personalizeGuest(request);
+  if (!hasSession) return trackVisit(request, await personalizeGuest(request));
   let response = NextResponse.next({ request });
   const supabase = createServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!, {
     cookies: {
@@ -131,7 +168,7 @@ export async function middleware(request: NextRequest) {
     },
   });
   await supabase.auth.getUser();
-  return response;
+  return trackVisit(request, response);
 }
 
 export const config = {

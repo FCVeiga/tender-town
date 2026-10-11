@@ -4,7 +4,7 @@ import { siteOrigin } from '@/lib/auth';
 const PRIVATE = [
   '/settings', '/api/', '/auth/', '/workspaces', '/chat', '/notifications',
   '/checkout', '/invite', '/posts/new', '/profile', '/history',
-  '/forgot-password', '/reset-password', '/login', '/signup',
+  '/forgot-password', '/reset-password', '/login', '/signup', '/dashboard',
 ];
 
 /** Search engines and AI crawlers may read the public site. Accounts stay private. */

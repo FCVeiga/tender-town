@@ -21,6 +21,7 @@ import NavActions from '@/components/social/NavActions';
 import UserAvatar from '@/components/UserAvatar';
 import { logOut } from '@/app/auth/actions';
 import { BottomNav, MenuBackdrop, MenuButton } from '@/components/MobileNav';
+import { isSuperAdmin } from '@/lib/admin';
 
 // Every page reads live from Supabase. Without this, Next prerenders pages
 // with no searchParams at build time and serves that frozen snapshot forever.
@@ -66,7 +67,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const uiLang = getLang();
   const theme = getTheme();
   const t = await getT();
-  const [mine, ctx] = user ? await Promise.all([getMyWorkspaces(), getContext()]) : [[], null];
+  const [mine, ctx, dashboard] = user
+    ? [...await Promise.all([getMyWorkspaces(), getContext()]), await isSuperAdmin()] as const
+    : [[], null, false] as const;
   const workspaces: WorkspaceItem[] = mine.map((m) => ({ id: m.workspace.id, name: m.workspace.name, sharedBy: m.workspace.ownerId === user?.id ? null : m.owner.username }));
   return (
     <html lang={uiLang} data-theme={theme} className={`${sans.variable} ${mono.variable}`}>
@@ -79,7 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Suspense fallback={<div className="search-box" />}><SearchBox /></Suspense>
           {user && <NavActions />}
           <div className={user ? 'auth-buttons' : 'auth-buttons guest'}>
-            {user ? <UserMenu user={{ username: user.username, displayName: user.displayName, avatarUrl: user.avatarUrl }} workspaces={workspaces} currentWorkspace={ctx?.workspace.id ?? null} /> : (
+            {user ? <UserMenu user={{ username: user.username, displayName: user.displayName, avatarUrl: user.avatarUrl }} workspaces={workspaces} currentWorkspace={ctx?.workspace.id ?? null} dashboard={dashboard} /> : (
               <>
                 <Link href="/login" className="btn">{t('Log in')}</Link>
                 <Link href="/signup" className="btn primary">{t('Sign up')}</Link>
@@ -116,6 +119,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <span><strong>{user.displayName}</strong><em>u/{user.username}</em></span>
                 </Link>
                 <nav className="sidebar-user-links">
+                  {dashboard && <Link href="/dashboard">{t('Dashboard')}</Link>}
                   <Link href="/posts/new">{t('New post')}</Link><Link href="/notifications">{t('Notifications')}</Link><Link href="/chat">{t('Chat')}</Link><Link href="/workspaces">{t('Workspaces')}</Link><Link href="/settings">{t('Settings')}</Link>
                   <Link href="/help">{t('Help')}</Link><Link href="/about">{t('About')}</Link><Link href="/blog">{t('Blog')}</Link><Link href="/pricing">{t('Pricing')}</Link><Link href="/terms">{t('Terms & Conditions')}</Link><Link href="/privacy">{t('Privacy policy')}</Link>
                 </nav>
