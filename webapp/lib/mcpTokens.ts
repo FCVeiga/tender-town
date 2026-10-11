@@ -49,7 +49,7 @@ export async function listMcpTokens(userId: string): Promise<McpTokenRow[]> {
 }
 
 /** A new token. The raw value is returned once; a sealed copy is kept so a link can include it later. */
-export async function createMcpToken(userId: string, name: string): Promise<{ token: string } | { error: string }> {
+export async function createMcpToken(userId: string, name: string): Promise<{ id: string; token: string } | { error: string }> {
   const label = name.trim().slice(0, 60);
   if (label.length < 2) return { error: 'Give the token a name.' };
   const db = getSupabaseServerClient();
@@ -58,9 +58,9 @@ export async function createMcpToken(userId: string, name: string): Promise<{ to
   const token = `tt_${randomBytes(32).toString('base64url')}`;
   let tokenSecret: string;
   try { tokenSecret = seal(token); } catch { return { error: 'Could not create the token.' }; }
-  const { error } = await db.from('mcp_tokens').insert({ user_id: userId, name: label, token_hash: hash(token), token_secret: tokenSecret });
-  if (error) return { error: 'Could not create the token.' };
-  return { token };
+  const { data, error } = await db.from('mcp_tokens').insert({ user_id: userId, name: label, token_hash: hash(token), token_secret: tokenSecret }).select('id').single();
+  if (error || !data) return { error: 'Could not create the token.' };
+  return { id: data.id, token };
 }
 
 export async function revokeMcpToken(userId: string, id: string) {
@@ -74,8 +74,9 @@ export const mcpLinksForUser = cache(async (userId: string): Promise<{ id: strin
   if (ready.length) return ready;
   const created = await createMcpToken(userId, LINK_NAME);
   if ('error' in created) return created;
-  const again = await revealable(userId);
-  return again.length ? again : { error: 'Could not create the token.' };
+  // Don't read the row back. Next memoizes identical GETs for the whole render,
+  // so a second lookup returns the empty result from the call above.
+  return [{ id: created.id, name: LINK_NAME, token: created.token }];
 });
 
 async function revealable(userId: string) {
