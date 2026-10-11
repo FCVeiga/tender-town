@@ -19,17 +19,20 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 const VISITOR_COOKIE = 'tt_vid';
 const STAFF_COOKIE = 'tt_staff';
 
-/** Which public page this request is, for the dashboard. Compose screens are not content views. */
-function viewKind(pathname: string): 'home' | 'post' | 'news' | 'tender' | null {
+/** Which page this request is. Compose screens stay out of the content charts, but still count as a visit. */
+function viewKind(pathname: string): string | null {
+  if (pathname.startsWith('/api') || pathname.startsWith('/dashboard')) return null;
   if (pathname === '/') return 'home';
   if (pathname === '/community' || (pathname.startsWith('/posts/') && pathname !== '/posts/new')) return 'post';
   if (pathname === '/news' || pathname.startsWith('/news/')) return 'news';
   if ((pathname === '/tenders' || pathname.startsWith('/tenders/')) && pathname !== '/tenders/new') return 'tender';
-  return null;
+  return 'other';
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const PLAN_KEYS = new Set(['free', 'starter', 'pro', 'teams']);
 const viewerCache = new Map<string, { at: number; ids: string[] }>();
+const planCache = new Map<string, { at: number; plan: string | null }>();
 const countryKnown = new Set<string>();
 let generalCache: { at: number; id: string | null } | null = null;
 let ignoredIpCache: { at: number; ips: Set<string> } | null = null;
@@ -70,6 +73,23 @@ async function signedInScopeIds(url: string, key: string, userId: string): Promi
     return ids;
   } catch {
     return [];
+  }
+}
+
+/** The visitor's own plan, so a later visit can be grouped after they change it. */
+async function personalPlan(url: string, key: string, userId: string): Promise<string | null> {
+  const hit = planCache.get(userId);
+  if (hit && Date.now() - hit.at < 10 * 60 * 1000) return hit.plan;
+  try {
+    const res = await fetch(`${url}/rest/v1/accounts?select=plan&kind=eq.personal&owner_id=eq.${userId}&limit=1`, { headers: serviceHeaders(key) });
+    const rows = res.ok ? await res.json() : [];
+    const raw = rows?.[0]?.plan;
+    const plan = typeof raw === 'string' && PLAN_KEYS.has(raw) ? raw : null;
+    if (!res.ok) return plan;
+    planCache.set(userId, { at: Date.now(), plan });
+    return plan;
+  } catch {
+    return null;
   }
 }
 
@@ -130,8 +150,10 @@ async function trackVisit(request: NextRequest, response: NextResponse, who: { s
   try { timeZone = tzRaw ? decodeURIComponent(tzRaw) : null; } catch { timeZone = null; }
   const country = countryFrom(request.headers.get('x-vercel-ip-country'), request.headers.get('accept-language'), timeZone);
   let scopeIds: string[] = [];
-  if (who.signedIn && who.userId) scopeIds = await signedInScopeIds(url, key, who.userId);
-  else if (who.scopeId && UUID.test(who.scopeId)) scopeIds = [who.scopeId];
+  let plan: string | null = null;
+  if (who.signedIn && who.userId) {
+    [scopeIds, plan] = await Promise.all([signedInScopeIds(url, key, who.userId), personalPlan(url, key, who.userId)]);
+  } else if (who.scopeId && UUID.test(who.scopeId)) scopeIds = [who.scopeId];
   else if (who.scopeId === 'general') {
     const id = await generalScopeId(url, key);
     if (id) scopeIds = [id];
@@ -145,6 +167,7 @@ async function trackVisit(request: NextRequest, response: NextResponse, who: { s
         body: JSON.stringify({
           kind, visitor, path: request.nextUrl.pathname.slice(0, 180),
           country, signed_in: who.signedIn, scope_ids: scopeIds,
+          user_id: who.signedIn ? who.userId : null, plan,
         }),
       }),
       rememberCountry

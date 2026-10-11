@@ -3,14 +3,16 @@
 import { useRef, useState } from 'react';
 import { WORLD, WORLD_VIEW } from '@/components/dashboard/worldMap';
 
-export type MapCountry = { code: string; visits: number; visitsLabel: string; accounts: string; revenue: string; scopes: string };
+export type MapCountry = {
+  code: string; visits: number; visitsLabel: string; active: string; accounts: string; revenue: string; requests: string; scopes: string;
+};
 
-/** A world map. Hovering a country shows its visits, accounts, revenue and scopes. */
+/** A world map. Hovering a country shows visits, accounts, revenue, scopes and MCP requests. */
 export default function DashMap({ countries, labels, locale, zero }: {
   countries: MapCountry[];
-  labels: { visits: string; accounts: string; revenue: string; scopes: string };
+  labels: { visits: string; active: string; accounts: string; revenue: string; requests: string; scopes: string };
   locale: string;
-  zero: { visits: string; accounts: string; revenue: string; scopes: string };
+  zero: { visits: string; active: string; accounts: string; revenue: string; requests: string; scopes: string };
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ code: string; x: number; y: number } | null>(null);
@@ -53,8 +55,10 @@ export default function DashMap({ countries, labels, locale, zero }: {
         }}>
           <strong>{names.of(hover.code) || hover.code}</strong>
           <span>{labels.visits} {row?.visitsLabel || zero.visits}</span>
+          <span>{labels.active} {row?.active || zero.active}</span>
           <span>{labels.accounts} {row?.accounts || zero.accounts}</span>
           <span>{labels.revenue} {row?.revenue || zero.revenue}</span>
+          <span>{labels.requests} {row?.requests || zero.requests}</span>
           <span>{labels.scopes} {row?.scopes || zero.scopes}</span>
         </div>
       )}

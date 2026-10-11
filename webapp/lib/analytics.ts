@@ -11,13 +11,17 @@ export const RANGES = [
 ] as const;
 
 export type RangeKey = (typeof RANGES)[number]['key'];
-export type VisitSection = 'home' | 'community' | 'news' | 'tenders';
+export type VisitSection = 'home' | 'community' | 'news' | 'tenders' | 'other';
 export type PlanKey = 'free' | 'starter' | 'pro' | 'teams';
+export const REGIONS = ['Europe', 'Americas', 'Asia', 'Africa', 'Oceania', 'Other regions'] as const;
+export type RegionKey = (typeof REGIONS)[number];
 
 const PAYING = new Set(['active', 'trialing', 'past_due']);
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
-const SECTIONS: { path: string; key: string }[] = [
+const SECTIONS: VisitSection[] = ['home', 'community', 'news', 'tenders', 'other'];
+const PLANS: PlanKey[] = ['free', 'starter', 'pro', 'teams'];
+const KNOWN: { path: string; key: string }[] = [
   { path: '/news/regulation', key: 'Regulation' },
   { path: '/news/industry', key: 'Industry' },
   { path: '/news/market', key: 'Market' },
@@ -31,16 +35,31 @@ const SECTIONS: { path: string; key: string }[] = [
   { path: '/', key: 'Home' },
 ];
 
+const EUROPE = new Set('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA XK'.split(' '));
+const AMERICAS = new Set('AG AR BB BO BR BS BZ CA CL CO CR CU DM DO EC GD GT GY HN HT JM KN LC MX NI PA PE PY SR SV TT US UY VC VE'.split(' '));
+const ASIA = new Set('AE AF AM AZ BD BH BN BT CN GE HK ID IL IN IQ IR JO JP KG KH KR KW KZ LA LB LK MM MN MO MY NP OM PH PK PS QA SA SG SY TH TJ TL TM TR TW UZ VN YE'.split(' '));
+const AFRICA = new Set('AO BF BI BJ BW CD CF CG CI CM CV DJ DZ EG EH ER ET GA GH GM GN GQ GW KE KM LR LS LY MA MG ML MR MU MW MZ NA NE NG RW SC SD SL SN SO SS ST SZ TD TG TN TZ UG ZA ZM ZW'.split(' '));
+const OCEANIA = new Set('AU FJ FM KI MH NC NR NZ PG PW SB TO TV VU WS'.split(' '));
+
+export function regionOf(code: string | null | undefined): RegionKey {
+  const c = (code || '').toUpperCase();
+  if (c === 'UK' || EUROPE.has(c)) return 'Europe';
+  if (AMERICAS.has(c)) return 'Americas';
+  if (ASIA.has(c)) return 'Asia';
+  if (AFRICA.has(c)) return 'Africa';
+  if (OCEANIA.has(c)) return 'Oceania';
+  return 'Other regions';
+}
+
 export function rangeOf(value: string | undefined): RangeKey {
   return RANGES.some((range) => range.key === value) ? value as RangeKey : '7d';
 }
 
 export function sectionOf(value: string | undefined, fallback: VisitSection): VisitSection {
-  return value === 'home' || value === 'community' || value === 'news' || value === 'tenders' ? value : fallback;
+  return SECTIONS.includes(value as VisitSection) ? value as VisitSection : fallback;
 }
 
-export type DashPoint = { t: number; home: number; community: number; news: number; tenders: number };
-export type DashAccount = { email: string; username: string; createdAt: string; plan: PlanKey };
+export type DashPoint = { t: number; active: number; accounts: number; visitors: number };
 export type DashPage = {
   href: string | null;
   title: string | null;
@@ -49,28 +68,51 @@ export type DashPage = {
   likes: number | null;
   comments: number | null;
 };
-
-export type DashScopeUse = { visits: number; scopes: { id: string; name: string; visits: number }[] };
+export type PageBundle = Record<VisitSection, DashPage[]>;
+export type ScopeCount = { id: string; name: string; visits: number };
+export type ActiveRow = { email: string; username: string; plan: PlanKey; country: string | null; scopes: string[] };
+export type McpRow = { email: string; username: string; plan: PlanKey; country: string | null; scopes: string[]; requests: number };
 export type DashCountry = {
   code: string;
   visits: number;
+  active: number;
   accounts: number;
   revenue: number;
+  mcp: number;
   scopes: { name: string; visits: number }[];
 };
 
 export type DashboardReport = {
   points: DashPoint[];
-  visits: Record<VisitSection, number>;
-  accounts: DashAccount[];
-  plans: Record<PlanKey, number>;
+  cards: { active: number; accounts: number; revenue: number; visitors: number };
+  active: { plans: Record<PlanKey, number>; scopes: { id: string; name: string; users: number }[]; rows: ActiveRow[] };
   revenue: Record<'starter' | 'pro' | 'teams', number>;
-  pages: Record<VisitSection, DashPage[]>;
-  audiences: { guest: DashScopeUse; user: DashScopeUse };
+  scopes: { guest: ScopeCount[]; plans: Record<PlanKey, ScopeCount[]>; regions: Record<RegionKey, ScopeCount[]> };
+  pages: {
+    guest: PageBundle;
+    plans: Record<PlanKey, PageBundle>;
+    scopes: { id: string; name: string; pages: PageBundle }[];
+    regions: Record<RegionKey, PageBundle>;
+  };
   countries: DashCountry[];
+  mcp: {
+    agents: number;
+    requests: number;
+    tools: { tool: string; requests: number }[];
+    plans: Record<PlanKey, number>;
+    regions: Record<RegionKey, number>;
+    scopes: { id: string; name: string; requests: number }[];
+    rows: McpRow[];
+  };
 };
 
-const emptyPoint = (t: number): DashPoint => ({ t, home: 0, community: 0, news: 0, tenders: 0 });
+const emptyPoint = (t: number): DashPoint => ({ t, active: 0, accounts: 0, visitors: 0 });
+const emptyPlans = (): Record<PlanKey, number> => ({ free: 0, starter: 0, pro: 0, teams: 0 });
+const emptyRegions = (): Record<RegionKey, number> => ({ Europe: 0, Americas: 0, Asia: 0, Africa: 0, Oceania: 0, 'Other regions': 0 });
+
+function asPlan(value: string | null | undefined): PlanKey {
+  return value === 'free' || value === 'starter' || value === 'pro' || value === 'teams' ? value : 'free';
+}
 
 function bucketStart(ms: number, hour: boolean) {
   const d = new Date(ms);
@@ -93,18 +135,44 @@ function sectionFor(kind: string): VisitSection | null {
   if (kind === 'post') return 'community';
   if (kind === 'news') return 'news';
   if (kind === 'tender') return 'tenders';
+  if (kind === 'other') return 'other';
   return null;
+}
+
+type RawPage = { href: string; labelKey: string | null; id: string | null; item: 'news' | 'tender' | 'post' | null; views: number };
+type RawBundle = Record<VisitSection, RawPage[]>;
+
+function emptyRaw(): RawBundle {
+  return { home: [], community: [], news: [], tenders: [], other: [] };
 }
 
 /** A list page keeps a translated label. An item page keeps its id so the title can be filled in. */
 function describe(section: VisitSection, path: string): { href: string; labelKey: string | null; id: string | null; item: 'news' | 'tender' | 'post' | null } {
-  const known = SECTIONS.find((item) => item.path === path);
+  if (section === 'other') return { href: path || '/', labelKey: null, id: null, item: null };
+  const known = KNOWN.find((item) => item.path === path);
   if (known) return { href: path, labelKey: known.key, id: null, item: null };
   const parts = path.split('/').filter(Boolean);
   if (section === 'news' && parts[0] === 'news' && parts[1]) return { href: path, labelKey: null, id: decodeURIComponent(parts[1]), item: 'news' };
   if (section === 'tenders' && parts[0] === 'tenders' && parts[1]) return { href: path, labelKey: null, id: decodeURIComponent(parts[1]), item: 'tender' };
   if (section === 'community' && parts[0] === 'posts' && parts[1]) return { href: path, labelKey: null, id: decodeURIComponent(parts[1]), item: 'post' };
   return { href: path || '/', labelKey: section === 'home' ? 'Home' : null, id: null, item: null };
+}
+
+function absorb(bundle: RawBundle, kind: string, path: string, views: number) {
+  const section = sectionFor(kind);
+  if (!section || views <= 0) return;
+  const described = describe(section, path);
+  const existing = bundle[section].find((page) => page.href === described.href);
+  if (existing) existing.views += views;
+  else bundle[section].push({ ...described, views });
+}
+
+type PageDim = { kind: string; path: string; signed_in: boolean | null; plan: string | null; country: string | null; views: number };
+
+function bundleOf<T extends PageDim>(rows: T[], pred: (row: T) => boolean) {
+  const bundle = emptyRaw();
+  for (const row of rows) if (pred(row)) absorb(bundle, row.kind, row.path || '', Number(row.views) || 0);
+  return bundle;
 }
 
 async function emailsById() {
@@ -120,49 +188,58 @@ async function emailsById() {
   return map;
 }
 
-/** Visits over time, accounts by plan, revenue, and each page with its likes and comments. */
+function scopeTotals<T extends { scope_id: string; views: number }>(rows: T[], names: Map<string, string>, pred: (row: T) => boolean): ScopeCount[] {
+  const totals = new Map<string, number>();
+  for (const row of rows) {
+    if (!pred(row)) continue;
+    totals.set(row.scope_id, (totals.get(row.scope_id) || 0) + (Number(row.views) || 0));
+  }
+  return Array.from(totals, ([id, visits]) => ({ id, name: names.get(id) || '', visits }))
+    .filter((row) => row.name && row.visits > 0)
+    .sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name));
+}
+
+/** Active users, accounts, revenue, visitors, and the breakdowns under each. */
 export async function dashboardReport(range: RangeKey): Promise<DashboardReport> {
   const spec = RANGES.find((item) => item.key === range)!;
   const sinceIso = spec.ms == null ? null : new Date(Date.now() - spec.ms).toISOString();
   const hour = range === '24h';
   const db = getSupabaseServerClient();
-  const [seriesRes, profileRes, planRes, pathRes, engageRes, emails, audienceRes, scopeRes, countryRes, countryScopeRes, scopeNameRes, ignoredRes] = await Promise.all([
-    db.rpc('analytics_series', { since: sinceIso, unit: hour ? 'hour' : 'day' }),
+  const [totalRes, peopleRes, profileRes, planRes, pageRes, scopePageRes, engageRes, emails, scopeNameRes, ignoredRes, activeRes, activeScopeRes, mcpRes, mcpScopeRes] = await Promise.all([
+    db.rpc('analytics_totals', { since: sinceIso }),
+    db.rpc('analytics_people', { since: sinceIso, unit: hour ? 'hour' : 'day' }),
     db.from('profiles').select('id, username, created_at, country').order('created_at', { ascending: false }).limit(500),
     db.from('accounts').select('owner_id, plan, plan_status, subscribed_at').eq('kind', 'personal'),
-    db.rpc('analytics_paths', { since: sinceIso }),
+    db.rpc('analytics_pages', { since: sinceIso }),
+    db.rpc('analytics_page_scopes', { since: sinceIso }),
     db.rpc('analytics_engagement', { since: sinceIso }),
     emailsById(),
-    db.rpc('analytics_audiences', { since: sinceIso }),
-    db.rpc('analytics_scopes', { since: sinceIso }),
-    db.rpc('analytics_countries', { since: sinceIso }),
-    db.rpc('analytics_country_scopes', { since: sinceIso }),
     db.from('scopes').select('id, name'),
     db.from('analytics_ignored_users').select('user_id'),
+    db.rpc('analytics_active_users', { since: sinceIso }),
+    db.rpc('analytics_active_scopes', { since: sinceIso }),
+    db.rpc('analytics_mcp', { since: sinceIso }),
+    db.rpc('analytics_mcp_scopes', { since: sinceIso }),
   ]);
 
   const ignored = new Set(((ignoredRes.data || []) as { user_id: string }[]).map((row) => row.user_id));
   const profiles = ((profileRes.data || []) as { id: string; username: string | null; created_at: string; country: string | null }[])
     .filter((profile) => !ignored.has(profile.id));
+  const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const inWindow = (iso: string | null) => !!iso && (!sinceIso || iso >= sinceIso);
   const planByOwner = new Map((planRes.data || []).map((row) => [row.owner_id as string, row]));
-  const plans: Record<PlanKey, number> = { free: 0, starter: 0, pro: 0, teams: 0 };
-  const accounts: DashAccount[] = profiles.filter((profile) => inWindow(profile.created_at)).map((profile) => {
-    const plan = (planByOwner.get(profile.id)?.plan || 'free') as PlanKey;
-    if (plan in plans) plans[plan] += 1;
-    return { email: emails.get(profile.id) || '', username: profile.username || '', createdAt: profile.created_at, plan: plan in plans ? plan : 'free' };
-  });
+  const names = new Map((scopeNameRes.data || []).map((row) => [row.id as string, (row.name as string) || '']));
 
+  const createdAccounts = profiles.filter((profile) => inWindow(profile.created_at));
   const revenue = { starter: 0, pro: 0, teams: 0 };
   const revenueByCountry = new Map<string, number>();
-  const countryOf = new Map(profiles.map((profile) => [profile.id, profile.country]));
   for (const row of planRes.data || []) {
     if (ignored.has(row.owner_id as string)) continue;
     const plan = row.plan as 'starter' | 'pro' | 'teams';
     if (!(plan in revenue) || !PAYING.has(row.plan_status) || !inWindow(row.subscribed_at)) continue;
     const amount = planOf(plan).priceEur;
     revenue[plan] += amount;
-    const code = countryOf.get(row.owner_id as string);
+    const code = profileById.get(row.owner_id as string)?.country;
     if (code) revenueByCountry.set(code, (revenueByCountry.get(code) || 0) + amount);
   }
 
@@ -170,34 +247,44 @@ export async function dashboardReport(range: RangeKey): Promise<DashboardReport>
   const earliest = sinceIso ? new Date(sinceIso).getTime() : (created.length ? Math.min(...created) : Date.now());
   const points = slots(earliest, hour);
   const at = new Map(points.map((point) => [point.t, point]));
-  for (const row of (seriesRes.data || []) as { bucket: string; kind: string; views: number }[]) {
-    const section = sectionFor(row.kind);
+  for (const row of (Array.isArray(peopleRes.data) ? peopleRes.data : []) as { bucket: string; visitors: number; active: number }[]) {
     const point = at.get(bucketStart(new Date(row.bucket).getTime(), hour));
-    if (section && point) point[section] += Number(row.views) || 0;
+    if (!point) continue;
+    point.visitors += Number(row.visitors) || 0;
+    point.active += Number(row.active) || 0;
   }
+  for (const profile of createdAccounts) {
+    const point = at.get(bucketStart(new Date(profile.created_at).getTime(), hour));
+    if (point) point.accounts += 1;
+  }
+
+  const totalRow = (Array.isArray(totalRes.data) ? totalRes.data[0] : totalRes.data) as { visitors?: number; active?: number } | null;
+  const pageRows = (pageRes.data || []) as PageDim[];
+  const scopeRows = (scopePageRes.data || []) as (PageDim & { scope_id: string })[];
 
   const engage = new Map<string, { likes: number; comments: number }>();
   for (const row of (engageRes.data || []) as { item_type: string; item_id: string; likes: number; comments: number }[]) {
     engage.set(`${row.item_type}:${row.item_id}`, { likes: Number(row.likes) || 0, comments: Number(row.comments) || 0 });
   }
 
-  const grouped: Record<VisitSection, { href: string; labelKey: string | null; id: string | null; item: 'news' | 'tender' | 'post' | null; views: number }[]> = {
-    home: [], community: [], news: [], tenders: [],
-  };
-  for (const row of (pathRes.data || []) as { kind: string; path: string; views: number }[]) {
-    const section = sectionFor(row.kind);
-    if (!section) continue;
-    const path = row.path || (section === 'home' ? '/' : section === 'community' ? '/community' : section === 'news' ? '/news' : '/tenders');
-    const described = describe(section, path);
-    const views = Number(row.views) || 0;
-    const existing = grouped[section].find((page) => page.href === described.href);
-    if (existing) existing.views += views;
-    else grouped[section].push({ ...described, views });
-  }
+  const guestRaw = bundleOf(pageRows, (row) => row.signed_in !== true);
+  const planRaw = Object.fromEntries(PLANS.map((plan) => [plan, bundleOf(pageRows, (row) => row.plan === plan)])) as Record<PlanKey, RawBundle>;
+  const regionRaw = Object.fromEntries(REGIONS.map((region) => [region, bundleOf(pageRows, (row) => !!row.country && regionOf(row.country) === region)])) as Record<RegionKey, RawBundle>;
+  const scopeIds = Array.from(new Set(scopeRows.map((row) => row.scope_id)));
+  const scopeRaw = new Map<string, RawBundle>();
+  for (const id of scopeIds) scopeRaw.set(id, bundleOf(scopeRows, (row) => row.scope_id === id));
 
-  const ids = (item: 'news' | 'tender' | 'post') => Array.from(new Set(
-    (['home', 'community', 'news', 'tenders'] as VisitSection[]).flatMap((section) => grouped[section].filter((page) => page.item === item && page.id).map((page) => page.id as string)),
-  ));
+  const ids = (item: 'news' | 'tender' | 'post') => {
+    const found = new Set<string>();
+    const walk = (bundle: RawBundle) => {
+      for (const section of SECTIONS) for (const page of bundle[section]) if (page.item === item && page.id) found.add(page.id);
+    };
+    walk(guestRaw);
+    for (const plan of PLANS) walk(planRaw[plan]);
+    for (const region of REGIONS) walk(regionRaw[region]);
+    Array.from(scopeRaw.values()).forEach(walk);
+    return Array.from(found);
+  };
   const [newsRes, tenderRes, postRes] = await Promise.all([
     ids('news').length ? db.from('news_items').select('news_id, title_en, title').in('news_id', ids('news')) : Promise.resolve({ data: [] }),
     ids('tender').length ? db.from('opportunities').select('opportunity_id, title_en, title').in('opportunity_id', ids('tender')) : Promise.resolve({ data: [] }),
@@ -208,62 +295,182 @@ export async function dashboardReport(range: RangeKey): Promise<DashboardReport>
   for (const row of tenderRes.data || []) titles.set(`tender:${row.opportunity_id}`, row.title_en || row.title || '');
   for (const row of postRes.data || []) titles.set(`post:${row.id}`, row.title || '');
 
-  const pages = {} as Record<VisitSection, DashPage[]>;
-  for (const section of ['home', 'community', 'news', 'tenders'] as VisitSection[]) {
-    pages[section] = grouped[section]
-      .map((page) => {
-        const hit = page.item && page.id ? engage.get(`${page.item}:${page.id}`) : null;
-        return {
-          href: page.href, labelKey: page.labelKey, title: page.item && page.id ? titles.get(`${page.item}:${page.id}`) || null : null,
-          views: page.views, likes: hit ? hit.likes : page.item ? 0 : null, comments: hit ? hit.comments : page.item ? 0 : null,
-        };
-      })
-      .sort((a, b) => b.views - a.views || (a.title || '').localeCompare(b.title || ''))
-      .slice(0, 100);
+  const seal = (bundle: RawBundle): PageBundle => {
+    const out = {} as PageBundle;
+    for (const section of SECTIONS) {
+      out[section] = bundle[section]
+        .map((page) => {
+          const hit = page.item && page.id ? engage.get(`${page.item}:${page.id}`) : null;
+          return {
+            href: page.href, labelKey: page.labelKey, title: page.item && page.id ? titles.get(`${page.item}:${page.id}`) || null : null,
+            views: page.views, likes: hit ? hit.likes : page.item ? 0 : null, comments: hit ? hit.comments : page.item ? 0 : null,
+          };
+        })
+        .sort((a, b) => b.views - a.views || (a.title || a.href || '').localeCompare(b.title || b.href || ''))
+        .slice(0, 100);
+    }
+    return out;
+  };
+
+  const scopeDims = scopeRows.map((row) => ({ scope_id: row.scope_id, views: Number(row.views) || 0, signed_in: row.signed_in, plan: row.plan, country: row.country }));
+  const scopes = {
+    guest: scopeTotals(scopeDims, names, (row) => row.signed_in !== true),
+    plans: Object.fromEntries(PLANS.map((plan) => [plan, scopeTotals(scopeDims, names, (row) => row.plan === plan)])) as Record<PlanKey, ScopeCount[]>,
+    regions: Object.fromEntries(REGIONS.map((region) => [region, scopeTotals(scopeDims, names, (row) => !!row.country && regionOf(row.country) === region)])) as Record<RegionKey, ScopeCount[]>,
+  };
+
+  const activeIds = ((activeRes.data || []) as { user_id: string; views: number }[])
+    .filter((row) => row.user_id && !ignored.has(row.user_id))
+    .sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0));
+  const scopesByUser = new Map<string, string[]>();
+  for (const row of (activeScopeRes.data || []) as { user_id: string; scope_id: string }[]) {
+    if (!names.get(row.scope_id)) continue;
+    const list = scopesByUser.get(row.user_id) || [];
+    list.push(row.scope_id);
+    scopesByUser.set(row.user_id, list);
   }
+  const activePlans = emptyPlans();
+  const activeScopeUsers = new Map<string, number>();
+  const activeRows: ActiveRow[] = [];
+  for (const row of activeIds) {
+    const profile = profileById.get(row.user_id);
+    if (!profile) continue;
+    const plan = asPlan(planByOwner.get(row.user_id)?.plan as string | undefined);
+    activePlans[plan] += 1;
+    const scopeIdsForUser = scopesByUser.get(row.user_id) || [];
+    for (const id of scopeIdsForUser) activeScopeUsers.set(id, (activeScopeUsers.get(id) || 0) + 1);
+    const scopeNames = scopeIdsForUser.map((id) => names.get(id) || '').filter(Boolean).sort((a, b) => a.localeCompare(b));
+    activeRows.push({
+      email: emails.get(row.user_id) || '',
+      username: profile.username || '',
+      plan,
+      country: profile.country,
+      scopes: scopeNames,
+    });
+  }
+  const activeScopes = Array.from(activeScopeUsers, ([id, users]) => ({ id, name: names.get(id) || '', users }))
+    .filter((row) => row.name)
+    .sort((a, b) => b.users - a.users || a.name.localeCompare(b.name));
 
-  const visits = {
-    home: pages.home.reduce((sum, page) => sum + page.views, 0),
-    community: pages.community.reduce((sum, page) => sum + page.views, 0),
-    news: pages.news.reduce((sum, page) => sum + page.views, 0),
-    tenders: pages.tenders.reduce((sum, page) => sum + page.views, 0),
-  };
-
-  const scopeName = new Map((scopeNameRes.data || []).map((row) => [row.id as string, (row.name as string) || '']));
-  const audienceOf = (signedIn: boolean): DashScopeUse => {
-    const views = ((audienceRes.data || []) as { signed_in: boolean; views: number }[])
-      .find((row) => row.signed_in === signedIn)?.views;
-    const scopes = ((scopeRes.data || []) as { signed_in: boolean; scope_id: string; views: number }[])
-      .filter((row) => row.signed_in === signedIn)
-      .map((row) => ({ id: row.scope_id, name: scopeName.get(row.scope_id) || '', visits: Number(row.views) || 0 }))
-      .filter((row) => row.name)
-      .sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name));
-    return { visits: Number(views) || 0, scopes };
-  };
+  const mcpRowsRaw = (mcpRes.data || []) as { user_id: string; tool: string; plan: string | null; country: string | null; requests: number }[];
+  const mcpScopeRows = (mcpScopeRes.data || []) as { user_id: string; scope_id: string; requests: number }[];
+  const toolTotals = new Map<string, number>();
+  const mcpPlans = emptyPlans();
+  const mcpRegions = emptyRegions();
+  const perUser = new Map<string, { requests: number; plan: PlanKey; country: string | null; countryVotes: Map<string, number>; planVotes: Map<string, number> }>();
+  let mcpRequests = 0;
+  for (const row of mcpRowsRaw) {
+    if (!row.user_id || ignored.has(row.user_id)) continue;
+    const requests = Number(row.requests) || 0;
+    mcpRequests += requests;
+    toolTotals.set(row.tool, (toolTotals.get(row.tool) || 0) + requests);
+    const plan = asPlan(row.plan);
+    mcpPlans[plan] += requests;
+    if (row.country) mcpRegions[regionOf(row.country)] += requests;
+    const user = perUser.get(row.user_id) || { requests: 0, plan: 'free' as PlanKey, country: null, countryVotes: new Map(), planVotes: new Map() };
+    user.requests += requests;
+    user.planVotes.set(plan, (user.planVotes.get(plan) || 0) + requests);
+    if (row.country) user.countryVotes.set(row.country, (user.countryVotes.get(row.country) || 0) + requests);
+    perUser.set(row.user_id, user);
+  }
+  const topVote = (votes: Map<string, number>) => Array.from(votes.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const mcpScopeNames = new Map<string, string[]>();
+  const mcpScopeTotals = new Map<string, number>();
+  for (const row of mcpScopeRows) {
+    const name = names.get(row.scope_id);
+    if (!name || ignored.has(row.user_id)) continue;
+    const requests = Number(row.requests) || 0;
+    mcpScopeTotals.set(row.scope_id, (mcpScopeTotals.get(row.scope_id) || 0) + requests);
+    const list = mcpScopeNames.get(row.user_id) || [];
+    if (!list.includes(name)) list.push(name);
+    mcpScopeNames.set(row.user_id, list);
+  }
+  const mcpUserRows: McpRow[] = Array.from(perUser.entries()).map(([id, user]) => {
+    const profile = profileById.get(id);
+    const country = topVote(user.countryVotes) || profile?.country || null;
+    return {
+      email: emails.get(id) || '',
+      username: profile?.username || '',
+      plan: asPlan(topVote(user.planVotes) || planByOwner.get(id)?.plan as string | undefined),
+      country,
+      scopes: (mcpScopeNames.get(id) || []).sort((a, b) => a.localeCompare(b)),
+      requests: user.requests,
+    };
+  }).sort((a, b) => b.requests - a.requests || a.username.localeCompare(b.username));
 
   const accountsByCountry = new Map<string, number>();
-  for (const profile of profiles) {
-    if (!profile.country || !inWindow(profile.created_at)) continue;
+  for (const profile of createdAccounts) {
+    if (!profile.country) continue;
     accountsByCountry.set(profile.country, (accountsByCountry.get(profile.country) || 0) + 1);
   }
-  const scopesByCountry = new Map<string, { name: string; visits: number }[]>();
-  for (const row of (countryScopeRes.data || []) as { country: string; scope_id: string; views: number }[]) {
-    const name = scopeName.get(row.scope_id);
-    if (!name) continue;
-    const list = scopesByCountry.get(row.country) || [];
-    list.push({ name, visits: Number(row.views) || 0 });
-    scopesByCountry.set(row.country, list);
+  const activeByCountry = new Map<string, number>();
+  for (const row of activeRows) {
+    if (!row.country) continue;
+    activeByCountry.set(row.country, (activeByCountry.get(row.country) || 0) + 1);
   }
-  const visitsByCountry = new Map(((countryRes.data || []) as { country: string; views: number }[])
-    .map((row) => [row.country, Number(row.views) || 0]));
-  const codes = new Set<string>([...visitsByCountry.keys(), ...accountsByCountry.keys(), ...revenueByCountry.keys()]);
+  const visitsByCountry = new Map<string, number>();
+  const scopesByCountry = new Map<string, Map<string, number>>();
+  for (const row of pageRows) {
+    if (!row.country) continue;
+    visitsByCountry.set(row.country, (visitsByCountry.get(row.country) || 0) + (Number(row.views) || 0));
+  }
+  for (const row of scopeRows) {
+    if (!row.country) continue;
+    const name = names.get(row.scope_id);
+    if (!name) continue;
+    const map = scopesByCountry.get(row.country) || new Map();
+    map.set(name, (map.get(name) || 0) + (Number(row.views) || 0));
+    scopesByCountry.set(row.country, map);
+  }
+  const mcpByCountry = new Map<string, number>();
+  for (const row of mcpRowsRaw) {
+    if (!row.country || ignored.has(row.user_id)) continue;
+    mcpByCountry.set(row.country, (mcpByCountry.get(row.country) || 0) + (Number(row.requests) || 0));
+  }
+  const codes = new Set<string>([...visitsByCountry.keys(), ...accountsByCountry.keys(), ...revenueByCountry.keys(), ...activeByCountry.keys(), ...mcpByCountry.keys()]);
   const countries: DashCountry[] = Array.from(codes).map((code) => ({
     code,
     visits: visitsByCountry.get(code) || 0,
+    active: activeByCountry.get(code) || 0,
     accounts: accountsByCountry.get(code) || 0,
     revenue: revenueByCountry.get(code) || 0,
-    scopes: (scopesByCountry.get(code) || []).sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name)).slice(0, 3),
-  })).sort((a, b) => b.visits - a.visits || b.accounts - a.accounts || b.revenue - a.revenue || a.code.localeCompare(b.code));
+    mcp: mcpByCountry.get(code) || 0,
+    scopes: Array.from(scopesByCountry.get(code) || []).map(([name, visits]) => ({ name, visits }))
+      .sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name)).slice(0, 3),
+  })).sort((a, b) => b.visits - a.visits || b.active - a.active || b.accounts - a.accounts || b.revenue - a.revenue || a.code.localeCompare(b.code));
 
-  return { points, visits, accounts, plans, revenue, pages, audiences: { guest: audienceOf(false), user: audienceOf(true) }, countries };
+  const revenueTotal = revenue.starter + revenue.pro + revenue.teams;
+  return {
+    points,
+    cards: {
+      active: Number(totalRow?.active) || activeRows.length,
+      accounts: createdAccounts.length,
+      revenue: revenueTotal,
+      visitors: Number(totalRow?.visitors) || 0,
+    },
+    active: { plans: activePlans, scopes: activeScopes, rows: activeRows },
+    revenue,
+    scopes,
+    pages: {
+      guest: seal(guestRaw),
+      plans: Object.fromEntries(PLANS.map((plan) => [plan, seal(planRaw[plan])])) as Record<PlanKey, PageBundle>,
+      scopes: scopeIds
+        .map((id) => ({ id, name: names.get(id) || '', pages: seal(scopeRaw.get(id) || emptyRaw()) }))
+        .filter((row) => row.name)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      regions: Object.fromEntries(REGIONS.map((region) => [region, seal(regionRaw[region])])) as Record<RegionKey, PageBundle>,
+    },
+    countries,
+    mcp: {
+      agents: perUser.size,
+      requests: mcpRequests,
+      tools: Array.from(toolTotals, ([tool, requests]) => ({ tool, requests })).sort((a, b) => b.requests - a.requests || a.tool.localeCompare(b.tool)),
+      plans: mcpPlans,
+      regions: mcpRegions,
+      scopes: Array.from(mcpScopeTotals, ([id, requests]) => ({ id, name: names.get(id) || '', requests }))
+        .filter((row) => row.name)
+        .sort((a, b) => b.requests - a.requests || a.name.localeCompare(b.name)),
+      rows: mcpUserRows,
+    },
+  };
 }

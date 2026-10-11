@@ -2,15 +2,8 @@
 
 import { useState } from 'react';
 
-export type ChartPoint = { t: number; home: number; community: number; news: number; tenders: number };
-type Key = 'home' | 'community' | 'news' | 'tenders';
-
-const SERIES: { key: Key; color: string }[] = [
-  { key: 'home', color: 'var(--accent)' },
-  { key: 'community', color: 'var(--rfi)' },
-  { key: 'news', color: 'var(--grant)' },
-  { key: 'tenders', color: 'var(--warn)' },
-];
+export type ChartPoint = { t: number; [key: string]: number };
+export type ChartSeries = { key: string; color: string };
 
 const W = 720;
 const H = 220;
@@ -25,26 +18,27 @@ function niceMax(n: number) {
 }
 
 /** Lines for the selected timeframe. The legend toggles a series; hovering a point shows its values. */
-export default function DashChart({ points, labels, totals, locale, hourly }: {
+export default function DashChart({ points, series, labels, totals, locale, hourly }: {
   points: ChartPoint[];
-  labels: Record<Key, string>;
-  totals: Record<Key, string>;
+  series: ChartSeries[];
+  labels: Record<string, string>;
+  totals: Record<string, string>;
   locale: string;
   hourly: boolean;
 }) {
-  const [hidden, setHidden] = useState<Key[]>([]);
+  const [hidden, setHidden] = useState<string[]>([]);
   const [index, setIndex] = useState<number | null>(null);
-  const shown = SERIES.filter((series) => !hidden.includes(series.key));
+  const shown = series.filter((item) => !hidden.includes(item.key));
   if (!points.length) {
     return (
       <div className="dash-legend">
-        {SERIES.map((series) => (
-          <span key={series.key}><i className="dash-swatch" style={{ background: series.color }} />{labels[series.key]} <strong>{totals[series.key]}</strong></span>
+        {series.map((item) => (
+          <span key={item.key}><i className="dash-swatch" style={{ background: item.color }} />{labels[item.key]} <strong>{totals[item.key]}</strong></span>
         ))}
       </div>
     );
   }
-  const max = niceMax(Math.max(1, ...points.flatMap((point) => shown.map((series) => point[series.key]))));
+  const max = niceMax(Math.max(1, ...points.flatMap((point) => shown.map((item) => point[item.key]))));
   const innerW = W - PAD.l - PAD.r;
   const innerH = H - PAD.t - PAD.b;
   const x = (i: number) => PAD.l + (points.length <= 1 ? innerW / 2 : (i / (points.length - 1)) * innerW);
@@ -59,12 +53,12 @@ export default function DashChart({ points, labels, totals, locale, hourly }: {
   return (
     <div className="dash-chart">
       <div className="dash-legend">
-        {SERIES.map((series) => (
-          <button key={series.key} type="button" aria-pressed={!hidden.includes(series.key)} className={hidden.includes(series.key) ? 'off' : undefined} onClick={() => {
-            setHidden((cur) => cur.includes(series.key) ? cur.filter((key) => key !== series.key) : cur.length === SERIES.length - 1 ? cur : [...cur, series.key]);
+        {series.map((item) => (
+          <button key={item.key} type="button" aria-pressed={!hidden.includes(item.key)} className={hidden.includes(item.key) ? 'off' : undefined} onClick={() => {
+            setHidden((cur) => cur.includes(item.key) ? cur.filter((key) => key !== item.key) : cur.length === series.length - 1 ? cur : [...cur, item.key]);
           }}>
-            <i className="dash-swatch" style={{ background: series.color }} />
-            {labels[series.key]} <strong>{totals[series.key]}</strong>
+            <i className="dash-swatch" style={{ background: item.color }} />
+            {labels[item.key]} <strong>{totals[item.key]}</strong>
           </button>
         ))}
       </div>
@@ -86,13 +80,13 @@ export default function DashChart({ points, labels, totals, locale, hourly }: {
             <text x={PAD.l - 6} y={y(tick) + 3} textAnchor="end" fill="var(--subtle)" fontSize="10">{tick}</text>
           </g>
         ))}
-        {shown.map((series) => {
-          const d = points.map((point, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(point[series.key]).toFixed(1)}`).join(' ');
-          return <path key={series.key} d={d} fill="none" stroke={series.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />;
+        {shown.map((item) => {
+          const d = points.map((point, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(point[item.key]).toFixed(1)}`).join(' ');
+          return <path key={item.key} d={d} fill="none" stroke={item.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />;
         })}
         {index != null && <line x1={x(index)} x2={x(index)} y1={PAD.t} y2={PAD.t + innerH} stroke="var(--border-strong)" strokeDasharray="3 3" />}
-        {index != null && shown.map((series) => (
-          <circle key={series.key} cx={x(index)} cy={y(points[index][series.key])} r="3.5" fill={series.color} />
+        {index != null && shown.map((item) => (
+          <circle key={item.key} cx={x(index)} cy={y(points[index][item.key])} r="3.5" fill={item.color} />
         ))}
         {axisAt.map((i) => (
           <text key={i} x={x(i)} y={H - 8} textAnchor={i === 0 ? 'start' : i === points.length - 1 ? 'end' : 'middle'} fill="var(--subtle)" fontSize="10">
@@ -103,7 +97,7 @@ export default function DashChart({ points, labels, totals, locale, hourly }: {
       {active && index != null && (
         <div className="dash-tip" style={{ left: `${(x(index) / W) * 100}%`, top: 8, transform: `translate(${x(index) / W < 0.2 ? '0' : x(index) / W > 0.8 ? '-100%' : '-50%'}, 0)` }}>
           <strong>{labelAt(index)}</strong>
-          {shown.map((series) => <div key={series.key}><em>{labels[series.key]}</em> {active[series.key]}</div>)}
+          {shown.map((item) => <div key={item.key}><em>{labels[item.key]}</em> {active[item.key]}</div>)}
         </div>
       )}
       </div>

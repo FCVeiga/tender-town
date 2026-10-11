@@ -215,5 +215,96 @@
     "fr": "Périmètres les plus utilisés",
     "de": "Meistgenutzte Bereiche",
     "it": "Ambiti più usati"
+  },
+  "Active users": {
+    "pt": "Utilizadores ativos",
+    "es": "Usuarios activos",
+    "fr": "Utilisateurs actifs",
+    "de": "Aktive Nutzer",
+    "it": "Utenti attivi"
+  },
+  "Website visitors": {
+    "pt": "Visitantes do site",
+    "es": "Visitantes del sitio",
+    "fr": "Visiteurs du site",
+    "de": "Website-Besucher",
+    "it": "Visitatori del sito"
+  },
+  "Page visits": {
+    "pt": "Visitas a páginas",
+    "es": "Visitas a páginas",
+    "fr": "Visites de pages",
+    "de": "Seitenbesuche",
+    "it": "Visite alle pagine"
+  },
+  "By country": {
+    "pt": "Por país",
+    "es": "Por país",
+    "fr": "Par pays",
+    "de": "Nach Land",
+    "it": "Per paese"
+  },
+  "MCP calls": {
+    "pt": "Chamadas MCP",
+    "es": "Llamadas MCP",
+    "fr": "Appels MCP",
+    "de": "MCP-Aufrufe",
+    "it": "Chiamate MCP"
+  },
+  "Region": {
+    "pt": "Região",
+    "es": "Región",
+    "fr": "Région",
+    "de": "Region",
+    "it": "Regione"
+  },
+  "Europe": {
+    "pt": "Europa",
+    "es": "Europa",
+    "fr": "Europe",
+    "de": "Europa",
+    "it": "Europa"
+  },
+  "Americas": {
+    "pt": "Américas",
+    "es": "Américas",
+    "fr": "Amériques",
+    "de": "Amerika",
+    "it": "Americhe"
+  },
+  "Asia": {
+    "pt": "Ásia",
+    "es": "Asia",
+    "fr": "Asie",
+    "de": "Asien",
+    "it": "Asia"
+  },
+  "Africa": {
+    "pt": "África",
+    "es": "África",
+    "fr": "Afrique",
+    "de": "Afrika",
+    "it": "Africa"
+  },
+  "Oceania": {
+    "pt": "Oceania",
+    "es": "Oceanía",
+    "fr": "Océanie",
+    "de": "Ozeanien",
+    "it": "Oceania"
+  },
+  "Other regions": {
+    "pt": "Outras regiões",
+    "es": "Otras regiones",
+    "fr": "Autres régions",
+    "de": "Andere Regionen",
+    "it": "Altre regioni"
+  },
+  "Other pages": {
+    "pt": "Outras páginas",
+    "es": "Otras páginas",
+    "fr": "Autres pages",
+    "de": "Andere Seiten",
+    "it": "Altre pagine"
   }
 }
