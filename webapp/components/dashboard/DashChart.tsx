@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 
-export type ChartPoint = { t: number; home: number; accounts: number; posts: number; news: number; tenders: number };
-type Key = 'home' | 'accounts' | 'posts' | 'news' | 'tenders';
+export type ChartPoint = { t: number; home: number; community: number; news: number; tenders: number };
+type Key = 'home' | 'community' | 'news' | 'tenders';
 
 const SERIES: { key: Key; color: string }[] = [
   { key: 'home', color: 'var(--accent)' },
-  { key: 'accounts', color: 'var(--ok)' },
-  { key: 'posts', color: 'var(--rfi)' },
+  { key: 'community', color: 'var(--rfi)' },
   { key: 'news', color: 'var(--grant)' },
   { key: 'tenders', color: 'var(--warn)' },
 ];

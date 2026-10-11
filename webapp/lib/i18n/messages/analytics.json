@@ -159,5 +159,33 @@
     "fr": "Souscrit",
     "de": "Abonniert",
     "it": "Sottoscritto"
+  },
+  "Visits": {
+    "pt": "Visitas",
+    "es": "Visitas",
+    "fr": "Visites",
+    "de": "Besuche",
+    "it": "Visite"
+  },
+  "Revenue": {
+    "pt": "Receita",
+    "es": "Ingresos",
+    "fr": "Revenu",
+    "de": "Umsatz",
+    "it": "Ricavi"
+  },
+  "Views": {
+    "pt": "Visualizações",
+    "es": "Visitas",
+    "fr": "Vues",
+    "de": "Aufrufe",
+    "it": "Visite"
+  },
+  "By page": {
+    "pt": "Por página",
+    "es": "Por página",
+    "fr": "Par page",
+    "de": "Nach Seite",
+    "it": "Per pagina"
   }
 }
