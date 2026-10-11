@@ -13,7 +13,7 @@ export default function TermsPage() {
   return (
     <LegalPage title={t('Terms & Conditions')} updated="2026-10-02" draft englishOnly>
       <h2>1. Who we are</h2>
-      <p>Tender Town is operated by [Operator legal entity name], [registered address], [company registration number] (“the operator”, “we”). Contact: [contact email].</p>
+      <p>Tender Town is operated by Neonancestry, Unipessoal, Lda, NIPC 519172825, Rua Latino Coelho 39, 4.º Dto., 1050-132 Lisboa, Portugal (“the operator”, “we”). Contact: privacy@tendertown.io.</p>
       <h2>2. Your account</h2>
       <p>You need an account to follow items, keep a profile and use the platform’s agents. Give accurate details, keep your password safe, and tell us if you suspect misuse. You’re responsible for activity on your account. You can delete it at any time from Edit profile.</p>
       <h2>3. What the platform provides</h2>

@@ -30,7 +30,8 @@ from database.models import (  # noqa: E402
 from agents.digest import render_daily_digest, CoverageStats  # noqa: E402
 from agents.discovery import run_discovery, build_query_combinations  # noqa: E402
 from agents.triage import heuristic_prefilter, run_triage_llm, apply_triage_result  # noqa: E402
-from services.deduplicator import fingerprint  # noqa: E402
+from services.deduplicator import fingerprint, headline_key, procurement_score, same_story
+from services.facts import correct_known_facts  # noqa: E402
 from services import agent_settings as S  # noqa: E402
 from sqlalchemy import text as sql_text  # noqa: E402
 from agents.source_monitor import SITE_QUERY  # noqa: E402
@@ -210,13 +211,81 @@ def _written_lang(fields: dict) -> dict:
     return {k: code for k, v in fields.items() if v}
 
 
+def _add_source(session, item_type: str, item_id: str, url: str, title: str, published):
+    """Remember another outlet that covered a record we already keep."""
+    if not url or not item_id:
+        return
+    session.execute(sql_text("""
+        insert into item_sources (item_type, item_id, url, title, source_name, published_at)
+        values (:t, :i, :u, :title, :name, :pub)
+        on conflict (item_type, item_id, url) do nothing
+    """), {
+        "t": item_type, "i": item_id, "u": url[:1024],
+        "title": ((title or "")[:500] or None),
+        "name": (urlparse(url).netloc.replace("www.", "")[:200] or None),
+        "pub": published,
+    })
+
+
+def _best_procurement(session, country, title, reference):
+    """The purchase this title is about, when one candidate is clearly closer than the rest."""
+    if not country or not title:
+        return None
+    best, best_score, second = None, 0.0, 0.0
+    rows = session.query(Opportunity).filter(
+        Opportunity.country == country, Opportunity.status != "REJECTED").all()
+    for opp in rows:
+        score = max(
+            procurement_score(title, opp.title_en or "", reference, opp.reference),
+            procurement_score(title, opp.title or "", reference, opp.reference),
+        )
+        if score > best_score:
+            second, best, best_score = best_score, opp, score
+        elif score > second:
+            second = score
+    if best and best_score - second >= 0.08:
+        return best
+    return None
+
+
+def _best_story(session, title, published):
+    """An article from the last 60 days that is the same event, not a new one."""
+    if not title:
+        return None
+    since = (published or datetime.utcnow()) - timedelta(days=60)
+    rows = session.query(NewsItem).filter(
+        (NewsItem.published_date >= since) | (NewsItem.created_at >= since)).all()
+    best, best_score = None, 0.0
+    want = headline_key(title)
+    for item in rows:
+        other = item.title_en or item.title or ""
+        if not same_story(title, other):
+            continue
+        score = 1.0 if headline_key(other) == want else 0.7
+        if "january 2026" in (item.title or "").lower() or "january 2026" in (item.title_en or "").lower():
+            score -= 0.2
+        if score > best_score:
+            best, best_score = item, score
+    return best
+
+
+def _correct_item(item, *attrs):
+    for attr in attrs:
+        current = getattr(item, attr, None)
+        if not current:
+            continue
+        fixed = correct_known_facts(current)
+        if fixed != current:
+            setattr(item, attr, fixed)
+
+
 def promote(session, candidate: Candidate, t: dict, country_names: dict):
     """Turn a triaged candidate into an Opportunity or NewsItem row.
     Returns ("opportunity"|"news", row), ("updated", opp, [change, ...]) or None."""
     ctype = (t.get("type") or "").upper()
     relevance = int(t.get("relevance") or 0)
     country = (t.get("country") or "").upper()[:2] or None
-    summary = t.get("summary") or t.get("reason") or ""
+    summary = correct_known_facts(t.get("summary") or t.get("reason") or "")
 
     category, awarded = classify_opportunity(candidate, t)
     if category and relevance >= PROMOTE_THRESHOLD:
@@ -235,7 +304,7 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
         reference = f"TED:{ted['procedure']}" if ted.get("procedure") else None
         fields = dict(
             title=candidate.title or "(untitled)", country=country,
-            title_en=(t.get("title_en") or None), language=(t.get("language") or None),
+            title_en=(correct_known_facts(t.get("title_en") or "") or None), language=(t.get("language") or None),
             authority=(t.get("authority") or None), opportunity_type=category,
             authority_en=(t.get("authority") or None),  # triage already adds the English rendering
             status=status, summary=summary, deadline=deadline,
@@ -260,6 +329,20 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
                                 Opportunity.official_url.like("%ted.europa.eu%")).first()
         opp_id = fingerprint(country or "", t.get("authority") or "", None, candidate.title or "")
         existing = existing or session.get(Opportunity, opp_id)
+        if not existing:
+            # A press article and the TED notice of one purchase, or two write-ups
+            # of it. Different purchases in the same country stay separate.
+            clustered = _best_procurement(session, country, t.get("title_en") or candidate.title, reference)
+            if clustered and clustered.official_url != candidate.source_url:
+                _add_source(session, "tender", clustered.opportunity_id, candidate.source_url,
+                            t.get("title_en") or candidate.title, candidate.publication_date)
+                incoming_ted = "ted.europa.eu" in (candidate.source_url or "")
+                have_ted = "ted.europa.eu" in (clustered.official_url or "")
+                if incoming_ted and not have_ted:
+                    existing = clustered
+                else:
+                    _correct_item(clustered, "summary", "title_en")
+                    return "unchanged", clustered
 
         if existing:
             held, incoming = ted_notice_order(existing.official_url), ted_notice_order(candidate.source_url)
@@ -309,7 +392,7 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
         category = t.get("news_category") if t.get("news_category") in NEWS_CATEGORIES else "market"
         fields = dict(
             title=candidate.title or "(untitled)", category=category,
-            title_en=(t.get("title_en") or None), language=(t.get("language") or None),
+            title_en=(correct_known_facts(t.get("title_en") or "") or None), language=(t.get("language") or None),
             region=country_names.get(country, "EU / International") if country else "EU / International",
             country=country, published_date=_parse_date(candidate.publication_date) or candidate.discovered_at,
             source_name=urlparse(candidate.source_url or "").netloc,
@@ -320,6 +403,13 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
             lang=_written_lang({"title_en": t.get("title_en"), "summary": summary}),
         )
         existing = session.get(NewsItem, candidate.candidate_id)
+        if not existing:
+            match = _best_story(session, t.get("title_en") or candidate.title, fields["published_date"])
+            if match and match.source_url != candidate.source_url:
+                _add_source(session, "news", match.news_id, candidate.source_url,
+                            t.get("title_en") or candidate.title, fields["published_date"])
+                _correct_item(match, "summary", "title_en", "title")
+                return "unchanged_news", match
         if existing:  # re-triage (or another scope): refresh in place
             for k, v in fields.items():
                 setattr(existing, k, v)

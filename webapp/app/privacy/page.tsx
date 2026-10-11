@@ -10,9 +10,9 @@ export async function generateMetadata() {
 export default function PrivacyPage() {
   const t = getTSync();
   return (
-    <LegalPage title={t('Privacy Policy')} updated="2026-10-08" draft englishOnly>
+    <LegalPage title={t('Privacy Policy')} updated="2026-10-11" englishOnly>
       <h2>Who is responsible</h2>
-      <p>[Operator legal entity name], [registered address], is the controller of the personal data described here. Contact: [privacy contact email]{' '}[and Data Protection Officer, if appointed].</p>
+      <p>Neonancestry, Unipessoal, Lda, NIPC 519172825, Rua Latino Coelho 39, 4.º Dto., 1050-132 Lisboa, Portugal, is the controller of the personal data described here. Contact: privacy@tendertown.io. No data protection officer is appointed.</p>
       <h2>What we collect</h2>
       <ul>
         <li><strong>Account:</strong> your email address, and either a password (stored only as a secure hash by our authentication provider) or a sign-in with Google, which shares that email with us. Also your username and sign-up date.</li>
@@ -33,11 +33,11 @@ export default function PrivacyPage() {
         <li><strong>Stripe</strong> — subscription payments, when you choose a paid plan.</li>
         <li><strong>Google</strong> — only if you choose to sign in with Google. It authenticates you and shares your email address.</li>
       </ul>
-      <p>[To be completed: transfers outside the EEA and the safeguards used, e.g. Standard Contractual Clauses.]</p>
+      <p>Supabase stores and processes data in the EU (Ireland). Vercel, Anthropic, and Stripe may process personal data outside the European Economic Area, and Google does too when you sign in with Google. Those transfers rely on the European Commission’s standard contractual clauses.</p>
       <h2>How long we keep it</h2>
-      <p>For as long as your account exists. Deleting your account (Edit profile → Delete account) removes your profile, picture, follows, posts, comments and chat. [Backup retention period to be completed.]</p>
+      <p>For as long as your account exists. Deleting your account (Edit profile → Delete account) removes your profile, picture, follows, posts, comments and chat from the live database. Backups exist only so the service can be restored, and they expire on the provider’s backup cycle.</p>
       <h2>Your rights</h2>
-      <p>You can access, correct or delete your data, object to or restrict its use, and ask for a copy (portability) — most of it directly in Edit profile, or by writing to [privacy contact email]. You can also complain to your data protection authority.</p>
+      <p>You can access, correct or delete your data, object to or restrict its use, and ask for a copy (portability) — most of it directly in Edit profile, or by writing to privacy@tendertown.io. You can also complain to your data protection authority.</p>
     </LegalPage>
   );
 }

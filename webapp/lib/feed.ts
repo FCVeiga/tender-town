@@ -53,6 +53,8 @@ export type FeedItem = {
   movement: 'up' | 'down' | 'same';
   deadline: string | null;
   isNew: boolean;
+  opportunityId?: string | null;
+  newsId?: string | null;
   statusLabel?: string | null;   // e.g. "Closed" / "Awarded" in search results
   image?: string | null;         // news: the publisher's share image
 };
@@ -108,13 +110,40 @@ export async function getFeed(view: FeedView, now = new Date()) {
         country: p.country, at, score, combined: Math.round(score * decay(at, now)),
         movement, deadline: p.event === 'awarded' ? null : opp?.deadline ?? null,
         isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
+        opportunityId: p.opportunity_id,
+        newsId: p.news_id,
       };
     });
 
+  // One card per purchase, and one card per story. A deadline update replaces
+  // the "new tender" card; syndicated headlines collapse onto the strongest post.
+  const keptOpp = new Map<string, FeedItem>();
+  const newsById = new Map<string, FeedItem>();
+  const rest: FeedItem[] = [];
+  for (const item of items) {
+    if (item.kind === 'opportunity' && item.opportunityId) {
+      const prev = keptOpp.get(item.opportunityId);
+      if (!prev || item.at > prev.at) keptOpp.set(item.opportunityId, item);
+    } else if (item.kind === 'news') {
+      const id = item.newsId || item.key;
+      const prev = newsById.get(id);
+      if (!prev || item.score > prev.score) newsById.set(id, item);
+    } else {
+      rest.push(item);
+    }
+  }
+  const newsByHeadline = new Map<string, FeedItem>();
+  for (const item of newsById.values()) {
+    const key = item.headline.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const prev = newsByHeadline.get(key);
+    if (!prev || item.score > prev.score) newsByHeadline.set(key, item);
+  }
+  const unique = [...rest, ...keptOpp.values(), ...newsByHeadline.values()];
+
   const sorted =
-    view === 'new' ? items.sort((a, b) => b.at.getTime() - a.at.getTime())
-      : view === 'relevance' ? items.sort((a, b) => b.score - a.score || b.at.getTime() - a.at.getTime())
-        : items.sort((a, b) => b.score * decay(b.at, now) - a.score * decay(a.at, now));
+    view === 'new' ? unique.sort((a, b) => b.at.getTime() - a.at.getTime())
+      : view === 'relevance' ? unique.sort((a, b) => b.score - a.score || b.at.getTime() - a.at.getTime())
+        : unique.sort((a, b) => b.score * decay(b.at, now) - a.score * decay(a.at, now));
   return { items: sorted, error };
 }
 

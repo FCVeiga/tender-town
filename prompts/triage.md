@@ -106,3 +106,11 @@ with opportunities, so use the same bar for both:
 - 30-59: useful context — surveys, analysis, smaller pilots, regional news.
 - 0-29: marginal — generic explainers, opinion, tangential identity news.
 <!-- /importance -->
+
+## Dates that sources get wrong
+If the input mentions a member state offering or providing a European Digital
+Identity Wallet by the end of 2026, the date is 24 Dec 2026 (Article 5a(1) of
+Regulation (EU) 2024/1183: 24 months after the implementing acts entered into
+force on 24 Dec 2024). Do not write 31 Dec 2026. Germany's d-you wallet
+launches in January 2027, not January 2026. If you cannot tell which date a
+sentence means, leave the day out.

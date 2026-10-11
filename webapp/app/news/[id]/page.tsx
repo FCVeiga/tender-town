@@ -18,6 +18,7 @@ import { siteOrigin } from '@/lib/auth';
 import { UpgradeReport } from '@/components/UpgradeReport';
 import { clip, pageMeta } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
+import ItemSources from '@/components/ItemSources';
 
 // The News Report Agent runs inside this page's server action: give it time.
 export const maxDuration = 300;
@@ -133,6 +134,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
           <ul className="key-facts">{facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
         )}
         {n.unverified && <p className="muted">{t('Social post — unconfirmed.')}</p>}
+        <ItemSources type="news" id={n.news_id} skip={n.source_url} />
       </section>
 
       {viewScopes.map((scope) => {

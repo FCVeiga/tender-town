@@ -21,6 +21,7 @@ import { allowRequirements } from '@/lib/tenderViews';
 import { PLANS } from '@/lib/plans';
 import { clip, pageMeta } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
+import ItemSources from '@/components/ItemSources';
 
 // The Tender Evaluation Agent runs inside this page's server action: give it time.
 export const maxDuration = 300;
@@ -257,6 +258,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
             {o.official_url
               ? <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>
               : <p className="mono">{t('Not recorded')}</p>}
+            <ItemSources type="tender" id={o.opportunity_id} skip={o.official_url} />
           </div>
 
           {(award || []).length > 0 && (

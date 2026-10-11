@@ -310,7 +310,8 @@ def score_news(results: list, now: datetime, followed_domains=()) -> list:
             routine = 25 if ROUTINE.search(clean_title(r.title)) else 0
             sc = round(max(0, min(100, _source_pts(domain, followed_domains) + coverage + fresh + substance - routine)))
             if not best or sc > best[0]:
-                best = (sc, cat, r, published, len(outlets))
+                others = [(cat2, r2) for cat2, r2, _, _ in g if r2.url != r.url]
+                best = (sc, cat, r, published, len(outlets), others)
         scored.append(best)
     return sorted(scored, key=lambda x: -x[0])
 
@@ -438,7 +439,7 @@ def run(session, scope, promote, country_names: dict, errors: list, tavily_cls=N
     if results:
         from types import SimpleNamespace
         seen, per_outlet = set(), {}
-        for score, cat, r, published, outlets in score_news(results, now, followed_domains):
+        for score, cat, r, published, outlets, others in score_news(results, now, followed_domains):
             if score < int(cfg["min_news_score"]) or len(out["news"]) >= int(cfg["max_news"]):
                 break
             domain = _domain(r.url)
@@ -465,5 +466,10 @@ def run(session, scope, promote, country_names: dict, errors: list, tavily_cls=N
                 record(promoted[0], promoted[1], score, "NEWS_ONLY", reason)
                 if promoted[0] == "news":
                     out["news"].append(promoted[1])
+                if promoted[0] in ("news", "unchanged_news") and others:
+                    from run_daily import _add_source
+                    for _, other in others:
+                        _add_source(session, "news", promoted[1].news_id, other.url,
+                                    clean_title(other.title), _published(other.published_date))
             session.commit()
     return out

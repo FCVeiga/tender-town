@@ -68,6 +68,11 @@ covers voice-of-customer feedback and analytics services."
 
 ## Rules
 - Only use facts in the input. If something isn't stated, leave it out.
+- When sources disagree on a date, do not pick one. For the member-state
+  duty to offer a European Digital Identity Wallet, the date is 24 Dec 2026:
+  Article 5a(1) of Regulation (EU) 2024/1183, 24 months after the implementing
+  acts entered into force on 24 Dec 2024. Do not write 31 Dec 2026.
+- Germany's d-you wallet launches in January 2027, not January 2026.
 - Source material may be in any language; always write in {language}.
 - Sentence case, no emojis, no hype. Dates as "5 Oct 2026"; money as "€15.7M".
 

@@ -121,7 +121,8 @@ def write(event: str, facts: dict) -> dict:
     headline, body = (out.get("headline") or "").strip(), (out.get("body") or "").strip()
     if not headline:
         raise ValueError(f"empty headline: {out}")
-    return {"headline": headline[:140], "body": body[:400]}
+    from services.facts import correct_known_facts
+    return {"headline": correct_known_facts(headline)[:140], "body": correct_known_facts(body)[:400]}
 
 
 def plain_copy(event: str, facts: dict) -> dict:
@@ -221,9 +222,13 @@ def publish_new_posts(session, errors: list, now=None, rewrite: bool = False) ->
     published = 0
     with ThreadPoolExecutor(max_workers=6) as pool:
         for fields, copy, backfill, err in pool.map(run, plans):
-            if err:
-                errors.append(f"feed post {fields['post_id']}: {err}")
+            if err or not copy:
+                if err:
+                    errors.append(f"feed post {fields['post_id']}: {err}")
                 continue
+            from services.facts import correct_known_facts
+            copy["headline"] = correct_known_facts(copy.get("headline") or "")[:140]
+            copy["body"] = correct_known_facts(copy.get("body") or "")[:400]
             if backfill and fields.get("opportunity_id"):
                 o = session.get(Opportunity, fields["opportunity_id"])
                 for k, v in backfill.items():
