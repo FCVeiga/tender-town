@@ -1,10 +1,10 @@
 import 'server-only';
 import { cache } from 'react';
 import { getCurrentUser } from '@/lib/auth';
+import { SUPER_ADMIN_EMAIL } from '@/lib/internal';
 import { getSupabaseServerClient } from '@/lib/supabase';
 
 /** The only account that may open the dashboard. Google sign-in, not a password with the same address. */
-const SUPER_ADMIN_EMAIL = 's3mztube@gmail.com';
 
 export const isSuperAdmin = cache(async () => {
   const user = await getCurrentUser();

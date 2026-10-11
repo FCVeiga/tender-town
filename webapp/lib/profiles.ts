@@ -1,5 +1,6 @@
 /** Profile rows for accounts (server-only helpers, not server actions). */
 import 'server-only';
+import { SUPER_ADMIN_EMAIL } from '@/lib/internal';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { USERNAME } from '@/lib/auth';
 
@@ -18,15 +19,25 @@ async function freeUsername(seed: string) {
   return `user${Date.now().toString(36)}`;
 }
 
-/** Profile row for a new account (email sign-up or Google). */
-export async function ensureProfile(userId: string, email: string, meta: Record<string, any> = {}) {
+/** Profile row for a new account (email sign-up or Google). Country is kept from the first request that has one. */
+export async function ensureProfile(userId: string, email: string, meta: Record<string, any> = {}, country: string | null = null, ip: string | null = null) {
   const db = getSupabaseServerClient();
+  const admin = email.toLowerCase() === SUPER_ADMIN_EMAIL;
+  if (admin && ip) await db.from('analytics_ignored_ips').upsert({ ip }, { onConflict: 'ip' });
+  const fromIgnoredIp = ip ? !!(await db.from('analytics_ignored_ips').select('ip').eq('ip', ip).maybeSingle()).data : false;
+  const ignore = admin || fromIgnoredIp;
+  if (ignore) await db.from('analytics_ignored_users').upsert({ user_id: userId }, { onConflict: 'user_id' });
+  const code = !ignore && country && /^[A-Z]{2}$/.test(country) ? country : null;
   const { data } = await db.from('profiles').select('id').eq('id', userId).maybeSingle();
-  if (data) return;
+  if (data) {
+    if (code) await db.from('profiles').update({ country: code }).eq('id', userId).is('country', null);
+    return;
+  }
   const username = meta.username && USERNAME.test(meta.username) && !(await usernameTaken(meta.username))
     ? meta.username : await freeUsername(meta.username || meta.full_name || email.split('@')[0]);
   await db.from('profiles').insert({
     id: userId, username, display_name: meta.full_name || meta.name || username, avatar_url: meta.avatar_url || meta.picture || null,
+    country: code,
   });
   await ensurePersonalAccount(userId, username);
 }

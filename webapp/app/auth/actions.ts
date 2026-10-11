@@ -1,15 +1,26 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { USERNAME, authClient, getCurrentUser, safeNext, siteOrigin } from '@/lib/auth';
+import { countryFrom } from '@/lib/guestScope';
+import { clientIp } from '@/lib/internal';
 import { ensureProfile, usernameTaken } from '@/lib/profiles';
 import { notify } from '@/lib/social';
 import { applyProfilePrefs, getT } from '@/lib/i18n/server';
 
 export type AuthState = { ok: boolean; message: string } | null;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function requestPlace() {
+  const h = headers();
+  return {
+    country: countryFrom(h.get('x-vercel-ip-country'), h.get('accept-language'), null),
+    ip: clientIp((name) => h.get(name)),
+  };
+}
 
 export async function signUp(_prev: AuthState, form: FormData): Promise<AuthState> {
   const t = await getT();
@@ -29,7 +40,8 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
   if (error || !data.user) {
     return { ok: false, message: /already|registered|exists/i.test(error?.message || '') ? t('An account with this email already exists — log in instead.') : error?.message || t('Could not create the account.') };
   }
-  await ensureProfile(data.user.id, email, { username });
+  const place = requestPlace();
+  await ensureProfile(data.user.id, email, { username }, place.country, place.ip);
   const { error: loginError } = await authClient().auth.signInWithPassword({ email, password });
   if (loginError) return { ok: false, message: t('Account created — please log in.') };
   redirect(safeNext(form.get('next'), `/u/${username}`));
@@ -42,7 +54,8 @@ export async function logIn(_prev: AuthState, form: FormData): Promise<AuthState
   if (!email || !password) return { ok: false, message: t('Enter your email and password.') };
   const { data, error } = await authClient().auth.signInWithPassword({ email, password });
   if (error || !data.user) return { ok: false, message: t('Wrong email or password.') };
-  await ensureProfile(data.user.id, email, data.user.user_metadata);
+  const place = requestPlace();
+  await ensureProfile(data.user.id, email, data.user.user_metadata, place.country, place.ip);
   await applyProfilePrefs(data.user.id);
   redirect(safeNext(form.get('next')));
 }

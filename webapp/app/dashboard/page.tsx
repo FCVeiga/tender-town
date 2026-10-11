@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import DashChart from '@/components/dashboard/DashChart';
 import DashDonut from '@/components/dashboard/DashDonut';
+import DashMap from '@/components/dashboard/DashMap';
 import { isSuperAdmin } from '@/lib/admin';
 import { dashboardReport, rangeOf, RANGES, sectionOf, type PlanKey, type RangeKey, type VisitSection } from '@/lib/analytics';
 import { getLocale, getT } from '@/lib/i18n/server';
@@ -14,6 +15,7 @@ const SECTION_COLOR: Record<VisitSection, string> = { home: 'var(--accent)', com
 const SECTIONS: VisitSection[] = ['home', 'community', 'news', 'tenders'];
 const PLANS: PlanKey[] = ['free', 'starter', 'pro', 'teams'];
 const PAID: ('starter' | 'pro' | 'teams')[] = ['starter', 'pro', 'teams'];
+const SCOPE_COLORS = ['var(--accent)', 'var(--rfi)', 'var(--grant)', 'var(--warn)', 'var(--ok)', 'var(--subtle)'];
 
 function dashHref(range: RangeKey, section: VisitSection) {
   const query = new URLSearchParams();
@@ -48,6 +50,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   };
   const revenueTotal = PAID.reduce((sum, plan) => sum + report.revenue[plan], 0);
   const pages = report.pages[section];
+  const scopeColor = new Map<string, string>();
+  Array.from(new Map([...report.audiences.guest.scopes, ...report.audiences.user.scopes].map((scope) => [scope.id, scope.name])).entries())
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .forEach(([id], index) => scopeColor.set(id, SCOPE_COLORS[index % SCOPE_COLORS.length]));
 
   return (
     <div className="settings">
@@ -64,6 +70,25 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
       <section className="dash-section">
         <h2>{t('Visits')}</h2>
         <DashChart points={report.points} labels={labels} totals={totals} locale={locale} hourly={range === '24h'} />
+      </section>
+
+      <section className="dash-section">
+        <h2>{t('Scopes')}</h2>
+        <div className="dash-pair">
+          {(['guest', 'user'] as const).map((key) => {
+            const audience = report.audiences[key];
+            return (
+              <div key={key}>
+                <h3>{t(key === 'guest' ? 'Signed out' : 'Signed in')} <span className="uc-count">{format.format(audience.visits)}</span></h3>
+                {audience.scopes.length ? (
+                  <DashDonut center={format.format(audience.visits)} slices={audience.scopes.map((scope) => ({
+                    key: scope.id, label: t(scope.name), display: format.format(scope.visits), value: scope.visits, color: scopeColor.get(scope.id) || SCOPE_COLORS[0],
+                  }))} />
+                ) : <p className="dash-empty">{t('None in this timeframe.')}</p>}
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       <section className="dash-section">
@@ -97,6 +122,41 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
         <DashDonut center={money.format(revenueTotal)} slices={PAID.map((plan) => ({
           key: plan, label: t(PLAN_LABEL[plan]), display: money.format(report.revenue[plan]), value: report.revenue[plan], color: PLAN_COLOR[plan],
         }))} />
+      </section>
+
+      <section className="dash-section">
+        <h2>{t('Countries')}</h2>
+        <DashMap
+          locale={locale}
+          labels={{ visits: t('Visits'), accounts: t('Accounts created'), revenue: t('Revenue'), scopes: t('Most used scopes') }}
+          zero={{ visits: format.format(0), accounts: format.format(0), revenue: money.format(0), scopes: '—' }}
+          countries={report.countries.map((country) => ({
+            code: country.code,
+            visits: country.visits,
+            visitsLabel: format.format(country.visits),
+            accounts: format.format(country.accounts),
+            revenue: money.format(country.revenue),
+            scopes: country.scopes.length ? country.scopes.map((scope) => `${t(scope.name)} ${format.format(scope.visits)}`).join(', ') : '—',
+          }))}
+        />
+        {report.countries.length ? (
+          <div className="dash-scroll">
+            <table className="dash-table">
+              <thead><tr><th>{t('Country')}</th><th className="num">{t('Visits')}</th><th className="num">{t('Accounts created')}</th><th className="num">{t('Revenue')}</th><th>{t('Most used scopes')}</th></tr></thead>
+              <tbody>
+                {report.countries.map((country) => (
+                  <tr key={country.code}>
+                    <td>{new Intl.DisplayNames([locale], { type: 'region' }).of(country.code) || country.code}</td>
+                    <td className="num">{format.format(country.visits)}</td>
+                    <td className="num">{format.format(country.accounts)}</td>
+                    <td className="num">{money.format(country.revenue)}</td>
+                    <td>{country.scopes.length ? country.scopes.map((scope) => `${t(scope.name)} ${format.format(scope.visits)}`).join(', ') : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="dash-empty">{t('None in this timeframe.')}</p>}
       </section>
 
       <section className="dash-section">

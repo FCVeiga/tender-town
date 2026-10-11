@@ -187,5 +187,33 @@
     "fr": "Par page",
     "de": "Nach Seite",
     "it": "Per pagina"
+  },
+  "Signed out": {
+    "pt": "Sem sessão",
+    "es": "Sin sesión",
+    "fr": "Sans session",
+    "de": "Abgemeldet",
+    "it": "Senza accesso"
+  },
+  "Signed in": {
+    "pt": "Com sessão",
+    "es": "Con sesión",
+    "fr": "Avec session",
+    "de": "Angemeldet",
+    "it": "Con accesso"
+  },
+  "Countries": {
+    "pt": "Países",
+    "es": "Países",
+    "fr": "Pays",
+    "de": "Länder",
+    "it": "Paesi"
+  },
+  "Most used scopes": {
+    "pt": "Âmbitos mais usados",
+    "es": "Ámbitos más usados",
+    "fr": "Périmètres les plus utilisés",
+    "de": "Meistgenutzte Bereiche",
+    "it": "Ambiti più usati"
   }
 }
