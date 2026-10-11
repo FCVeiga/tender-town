@@ -17,7 +17,6 @@ import WorkspaceSwitcher from '@/components/WorkspaceSwitcher';
 import UserMenu, { type WorkspaceItem } from '@/components/auth/UserMenu';
 import GuestMenu from '@/components/auth/GuestMenu';
 import { getContext, getMyWorkspaces } from '@/lib/accounts';
-import { getViewScopes } from '@/lib/scopes';
 import NavActions from '@/components/social/NavActions';
 import UserAvatar from '@/components/UserAvatar';
 import { logOut } from '@/app/auth/actions';
@@ -67,10 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const uiLang = getLang();
   const theme = getTheme();
   const t = await getT();
-  const [mine, ctx, guestView] = user
-    ? [...await Promise.all([getMyWorkspaces(), getContext()]), null] as const
-    : [[], null, await getViewScopes()] as const;
-  const guestScope = guestView?.scopes.find((scope) => scope.catalog) ?? null;
+  const [mine, ctx] = user ? await Promise.all([getMyWorkspaces(), getContext()]) : [[], null];
   const workspaces: WorkspaceItem[] = mine.map((m) => ({ id: m.workspace.id, name: m.workspace.name, sharedBy: m.workspace.ownerId === user?.id ? null : m.owner.username }));
   return (
     <html lang={uiLang} data-theme={theme} className={`${sans.variable} ${mono.variable}`}>
@@ -100,7 +96,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               id: m.workspace.id, name: m.workspace.name, role: m.role, sharedBy: m.workspace.ownerId === user?.id ? null : m.owner.username,
             }))} />}
             <SideNav guest={!user} />
-            {guestScope && <p className="sidebar-guest-scope">{t(guestScope.name)}</p>}
             {!user && <GuestScopeHint />}
             {!user && (
               <nav className="sidebar-site-links" aria-label={t('More')}>

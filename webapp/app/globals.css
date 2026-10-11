@@ -122,7 +122,6 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .guest-banner.dark { display: none; }
 :root[data-theme="dark"] .guest-banner.light { display: none; }
 :root[data-theme="dark"] .guest-banner.dark { display: block; }
-.sidebar-guest-scope { margin: 8px 12px 0; font-size: 13px; font-weight: 650; color: var(--muted); }
 .sidebar-site-links { display: none; }
 .guest-promo::before { content: ''; position: absolute; z-index: 1; top: 0; left: 0; right: 0; height: 120px; background: linear-gradient(to bottom, rgba(2, 18, 40, 0.72), transparent); pointer-events: none; }
 .guest-overlay { position: relative; z-index: 2; display: flex; flex-direction: column; flex: 1; padding: 20px 14px 16px; }
