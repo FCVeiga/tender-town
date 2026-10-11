@@ -47,7 +47,7 @@ async function trackVisit(request: NextRequest, response: NextResponse) {
     await fetch(`${url.replace(/\/$/, '')}/rest/v1/page_views`, {
       method: 'POST',
       headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ kind, visitor }),
+      body: JSON.stringify({ kind, visitor, path: request.nextUrl.pathname.slice(0, 180) }),
     });
   } catch { /* a missed count should not take the page down */ }
   return response;

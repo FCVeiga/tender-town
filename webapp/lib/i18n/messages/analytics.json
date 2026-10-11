@@ -110,5 +110,54 @@
     "fr": "Teams",
     "de": "Teams",
     "it": "Teams"
+  },
+  "Free": {
+    "pt": "Gratuito",
+    "es": "Gratis",
+    "fr": "Gratuit",
+    "de": "Kostenlos",
+    "it": "Gratis"
+  },
+  "Created": {
+    "pt": "Criada",
+    "es": "Creada",
+    "fr": "Créé",
+    "de": "Erstellt",
+    "it": "Creato"
+  },
+  "Page": {
+    "pt": "Página",
+    "es": "Página",
+    "fr": "Page",
+    "de": "Seite",
+    "it": "Pagina"
+  },
+  "When": {
+    "pt": "Quando",
+    "es": "Cuándo",
+    "fr": "Quand",
+    "de": "Wann",
+    "it": "Quando"
+  },
+  "Page accesses": {
+    "pt": "Acessos a páginas",
+    "es": "Accesos a páginas",
+    "fr": "Accès aux pages",
+    "de": "Seitenaufrufe",
+    "it": "Accessi alle pagine"
+  },
+  "None in this timeframe.": {
+    "pt": "Nenhum neste período.",
+    "es": "Ninguno en este periodo.",
+    "fr": "Aucun sur cette période.",
+    "de": "Keine in diesem Zeitraum.",
+    "it": "Nessuno in questo periodo."
+  },
+  "Subscribed": {
+    "pt": "Subscrito",
+    "es": "Contratado",
+    "fr": "Souscrit",
+    "de": "Abonniert",
+    "it": "Sottoscritto"
   }
 }

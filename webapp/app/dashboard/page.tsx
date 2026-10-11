@@ -1,34 +1,40 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import DashChart from '@/components/dashboard/DashChart';
 import { isSuperAdmin } from '@/lib/admin';
-import { dashboardCounts, rangeOf, RANGES } from '@/lib/analytics';
+import { dashboardReport, rangeOf, RANGES, type DashAccess } from '@/lib/analytics';
 import { getLocale, getT } from '@/lib/i18n/server';
 import { NOINDEX } from '@/lib/seo';
+
+const KIND: Record<DashAccess['kind'], string> = {
+  home: 'Home visitors', post: 'Post pages', news: 'News pages', tender: 'Tender pages',
+};
+const PLAN: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro', teams: 'Teams' };
 
 export async function generateMetadata() {
   const t = await getT();
   return { title: `${t('Dashboard')} — Tender Town`, ...NOINDEX };
 }
 
-/** Counts for the platform. Only the Google super-admin account can open this. */
+/** Counts, the chart, and the accounts behind them. Only the Google super-admin account can open this. */
 export default async function DashboardPage({ searchParams }: { searchParams: { range?: string } }) {
   if (!(await isSuperAdmin())) notFound();
   const t = await getT();
   const range = rangeOf(searchParams.range);
-  const counts = await dashboardCounts(range);
-  const format = new Intl.NumberFormat(getLocale());
-  const n = (value: number) => format.format(value);
-  const rows: { label: string; value: number; sub?: boolean }[] = [
-    { label: 'Home visitors', value: counts.homeVisitors },
-    { label: 'Accounts created', value: counts.accounts },
-    { label: 'Plans subscribed', value: counts.plans },
-    { label: 'Starter', value: counts.byPlan.starter, sub: true },
-    { label: 'Pro', value: counts.byPlan.pro, sub: true },
-    { label: 'Teams', value: counts.byPlan.teams, sub: true },
-    { label: 'Post pages', value: counts.posts },
-    { label: 'News pages', value: counts.news },
-    { label: 'Tender pages', value: counts.tenders },
-  ];
+  const report = await dashboardReport(range);
+  const locale = getLocale();
+  const format = new Intl.NumberFormat(locale);
+  const when = (iso: string) => new Date(iso).toLocaleString(locale, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const labels = {
+    home: t('Home visitors'), accounts: t('Accounts created'), posts: t('Post pages'), news: t('News pages'), tenders: t('Tender pages'),
+  };
+  const totals = {
+    home: format.format(report.homeVisitors),
+    accounts: format.format(report.accounts),
+    posts: format.format(report.posts),
+    news: format.format(report.news),
+    tenders: format.format(report.tenders),
+  };
 
   return (
     <div className="settings">
@@ -41,16 +47,68 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
           </Link>
         ))}
       </nav>
-      <table className="dash-rows">
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.label} className={row.sub ? 'sub' : undefined}>
-              <td>{t(row.label)}</td>
-              <td className="num">{n(row.value)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <DashChart points={report.points} labels={labels} totals={totals} locale={locale} hourly={range === '24h'} />
+
+      <section className="dash-section">
+        <h2>{t('Accounts created')} <span className="uc-count">{format.format(report.accounts)}</span></h2>
+        {report.accountRows.length ? (
+          <div className="dash-scroll">
+            <table className="dash-table">
+              <thead><tr><th>{t('Email')}</th><th>{t('Username')}</th><th>{t('Plan')}</th><th>{t('Created')}</th></tr></thead>
+              <tbody>
+                {report.accountRows.map((row) => (
+                  <tr key={`${row.email}-${row.createdAt}`}>
+                    <td>{row.email ? <a href={`mailto:${row.email}`}>{row.email}</a> : '—'}</td>
+                    <td>{row.username ? <Link href={`/u/${row.username}`}>u/{row.username}</Link> : '—'}</td>
+                    <td>{t(PLAN[row.plan] || row.plan)}</td>
+                    <td>{when(row.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="dash-empty">{t('None in this timeframe.')}</p>}
+      </section>
+
+      <section className="dash-section">
+        <h2>{t('Plans subscribed')} <span className="uc-count">{format.format(report.plans)}</span></h2>
+        {report.planRows.length ? (
+          <div className="dash-scroll">
+            <table className="dash-table">
+              <thead><tr><th>{t('Email')}</th><th>{t('Username')}</th><th>{t('Plan')}</th><th>{t('Subscribed')}</th></tr></thead>
+              <tbody>
+                {report.planRows.map((row) => (
+                  <tr key={`${row.email}-${row.subscribedAt}`}>
+                    <td>{row.email ? <a href={`mailto:${row.email}`}>{row.email}</a> : '—'}</td>
+                    <td>{row.username ? <Link href={`/u/${row.username}`}>u/{row.username}</Link> : '—'}</td>
+                    <td>{t(PLAN[row.plan] || row.plan)}</td>
+                    <td>{when(row.subscribedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="dash-empty">{t('None in this timeframe.')}</p>}
+      </section>
+
+      <section className="dash-section">
+        <h2>{t('Page accesses')}</h2>
+        {report.accesses.length ? (
+          <div className="dash-scroll">
+            <table className="dash-table">
+              <thead><tr><th>{t('When')}</th><th>{t('Page')}</th></tr></thead>
+              <tbody>
+                {report.accesses.map((row, i) => (
+                  <tr key={`${row.at}-${i}`}>
+                    <td>{when(row.at)}</td>
+                    <td>{row.path ? <Link href={row.path}>{row.path}</Link> : t(KIND[row.kind])}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="dash-empty">{t('None in this timeframe.')}</p>}
+      </section>
     </div>
   );
 }
