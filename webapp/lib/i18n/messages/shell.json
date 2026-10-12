@@ -48,6 +48,69 @@
     "de": "Cloud-Plattformen",
     "it": "Piattaforme cloud"
   },
+  "Workplace devices": {
+    "pt": "Equipamentos de posto de trabalho",
+    "es": "Equipos de puesto de trabajo",
+    "fr": "Postes de travail",
+    "de": "Arbeitsplatzgeräte",
+    "it": "Postazioni di lavoro"
+  },
+  "Servers & data centres": {
+    "pt": "Servidores e centros de dados",
+    "es": "Servidores y centros de datos",
+    "fr": "Serveurs et centres de données",
+    "de": "Server und Rechenzentren",
+    "it": "Server e data centre"
+  },
+  "Networks & telecoms": {
+    "pt": "Redes e telecomunicações",
+    "es": "Redes y telecomunicaciones",
+    "fr": "Réseaux et télécoms",
+    "de": "Netze und Telekommunikation",
+    "it": "Reti e telecomunicazioni"
+  },
+  "Medical equipment": {
+    "pt": "Equipamento médico",
+    "es": "Equipos médicos",
+    "fr": "Équipements médicaux",
+    "de": "Medizintechnik",
+    "it": "Apparecchiature mediche"
+  },
+  "Building energy renovation": {
+    "pt": "Renovação energética de edifícios",
+    "es": "Rehabilitación energética de edificios",
+    "fr": "Rénovation énergétique des bâtiments",
+    "de": "Energetische Gebäudesanierung",
+    "it": "Riqualificazione energetica degli edifici"
+  },
+  "Solar & wind": {
+    "pt": "Energia solar e eólica",
+    "es": "Energía solar y eólica",
+    "fr": "Solaire et éolien",
+    "de": "Solar- und Windenergie",
+    "it": "Solare ed eolico"
+  },
+  "Waste & recycling": {
+    "pt": "Resíduos e reciclagem",
+    "es": "Residuos y reciclaje",
+    "fr": "Déchets et recyclage",
+    "de": "Abfall und Recycling",
+    "it": "Rifiuti e riciclo"
+  },
+  "Electric buses & charging": {
+    "pt": "Autocarros elétricos e carregamento",
+    "es": "Autobuses eléctricos y recarga",
+    "fr": "Bus électriques et recharge",
+    "de": "Elektrobusse und Laden",
+    "it": "Autobus elettrici e ricarica"
+  },
+  "Water & wastewater": {
+    "pt": "Água e águas residuais",
+    "es": "Agua y aguas residuales",
+    "fr": "Eau et assainissement",
+    "de": "Wasser und Abwasser",
+    "it": "Acqua e acque reflue"
+  },
   "Open public tenders and funding calls across Europe.": {
     "pt": "Concursos públicos e avisos de financiamento abertos em toda a Europa.",
     "es": "Licitaciones públicas y convocatorias de financiación abiertas en toda Europa.",

@@ -17,6 +17,8 @@ export const GUEST_GENERAL = 'general';
 export const CATALOG_ORDER = [
   'Artificial Intelligence', 'Cybersecurity', 'Digital ID & Biometrics', 'EUDI Wallet',
   'Healthcare software', 'ERP & business software', 'Cloud platforms',
+  'Workplace devices', 'Servers & data centres', 'Networks & telecoms', 'Medical equipment',
+  'Building energy renovation', 'Solar & wind', 'Waste & recycling', 'Electric buses & charging', 'Water & wastewater',
 ];
 
 export type GuestScopeChoice = {
