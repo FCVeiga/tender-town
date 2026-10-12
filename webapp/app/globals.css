@@ -424,6 +424,8 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
   position: relative; isolation: isolate; overflow: visible;
   padding: 28px 0 26px; color: #fff;
   background: #1248c4;
+  --scope-wash: linear-gradient(100deg, #1248c4 0%, #1C64FB 28%, rgba(28, 100, 251, 0.9) 42%, rgba(28, 100, 251, 0.2) 58%, rgba(28, 100, 251, 0) 70%);
+  --scope-wash-narrow: linear-gradient(180deg, rgba(18, 72, 196, 0.94), rgba(28, 100, 251, 0.84));
 }
 .scope-banner-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
 .scope-banner-art {
@@ -435,11 +437,13 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 :root[data-theme="dark"] .scope-banner-art.dark { display: block; }
 .scope-banner-bg::after {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(100deg, #1248c4 0%, #1C64FB 28%, rgba(28, 100, 251, 0.9) 42%, rgba(28, 100, 251, 0.2) 58%, rgba(28, 100, 251, 0) 70%);
+  background: var(--scope-wash);
 }
-:root[data-theme="dark"] .scope-banner { background: #071833; }
-:root[data-theme="dark"] .scope-banner-bg::after {
-  background: linear-gradient(100deg, #071833 0%, #0c2f78 28%, rgba(12, 47, 120, 0.62) 46%, rgba(7, 24, 51, 0.08) 66%);
+/* Night sky from the dark sidebar illustration (#012981). */
+:root[data-theme="dark"] .scope-banner {
+  background: #012981;
+  --scope-wash: linear-gradient(100deg, #001860 0%, #012981 32%, rgba(1, 41, 129, 0.55) 46%, rgba(1, 41, 129, 0.08) 58%, rgba(1, 41, 129, 0) 66%);
+  --scope-wash-narrow: linear-gradient(180deg, rgba(0, 24, 96, 0.94), rgba(1, 41, 129, 0.82));
 }
 .scope-banner-inner {
   position: relative; z-index: 1;
@@ -497,9 +501,8 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
   .scope-banner { padding: 22px 0 20px; }
   .scope-banner-kicker { font-size: 22px; }
   .scope-banner-inner { max-width: none; width: 100%; padding: 0 16px; gap: 14px; align-items: stretch; }
-  .scope-banner-art { width: 100%; opacity: 0.55; object-position: center 22%; }
-  .scope-banner-bg::after { background: linear-gradient(180deg, rgba(18, 72, 196, 0.94), rgba(28, 100, 251, 0.84)); }
-  :root[data-theme="dark"] .scope-banner-bg::after { background: linear-gradient(180deg, rgba(7, 24, 51, 0.94), rgba(12, 47, 120, 0.88)); }
+  .scope-banner-art { width: 100%; opacity: 0.55; object-position: center 62%; }
+  .scope-banner-bg::after { background: var(--scope-wash-narrow); }
 }
 @media (max-width: 720px) {
   .scope-banner-actions { flex-direction: column; align-items: stretch; }
@@ -1992,6 +1995,13 @@ table.data-table th { background: none; }
   :root[data-theme="auto"] .brand-img.dark { display: block; }
   :root[data-theme="auto"] .guest-banner.light { display: none; }
   :root[data-theme="auto"] .guest-banner.dark { display: block; }
+  :root[data-theme="auto"] .scope-banner-art.light { display: none; }
+  :root[data-theme="auto"] .scope-banner-art.dark { display: block; }
+  :root[data-theme="auto"] .scope-banner {
+    background: #012981;
+    --scope-wash: linear-gradient(100deg, #001860 0%, #012981 32%, rgba(1, 41, 129, 0.55) 46%, rgba(1, 41, 129, 0.08) 58%, rgba(1, 41, 129, 0) 66%);
+    --scope-wash-narrow: linear-gradient(180deg, rgba(0, 24, 96, 0.94), rgba(1, 41, 129, 0.82));
+  }
   :root[data-theme="auto"] .tag.new { background: var(--brand-gradient); color: #F5F5F5; }
 }
 

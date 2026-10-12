@@ -27,25 +27,6 @@ function BannerArt() {
   );
 }
 
-export function ScopeBannerFallback() {
-  const t = useT();
-  return (
-    <section className="scope-banner" aria-busy="true">
-      <BannerArt />
-      <div className="scope-banner-inner">
-        <div className="scope-banner-lead">
-          <p className="scope-banner-kicker">{t('Choose your scope. Find your next opportunity.')}</p>
-          <p className="scope-banner-copy">{t(COPY)}</p>
-        </div>
-        <div className="scope-banner-actions">
-          <button type="button" className="scope-banner-select" disabled>{t('Loading scope')}</button>
-          <button type="button" className="btn primary scope-banner-create" disabled>{t('+ Create a scope')}</button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function ScopeBanner({ model, createAction }: { model: FocusModel; createAction: (() => Promise<void>) | null }) {
   const t = useT();
   const router = useRouter();
