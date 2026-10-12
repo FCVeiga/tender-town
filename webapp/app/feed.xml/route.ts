@@ -45,7 +45,7 @@ export async function GET() {
 <channel>
 <title>Tender Town</title>
 <link>${xml(origin)}</link>
-<description>Public tenders, funding and market news across Europe, plus community posts. Updated every four hours.</description>
+<description>Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs. Updated every four hours.</description>
 <language>en</language>
 ${items.map((item) => `<item>
 <title>${xml(item.title)}</title>

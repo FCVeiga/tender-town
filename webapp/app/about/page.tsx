@@ -3,6 +3,7 @@ import { siteOrigin } from '@/lib/auth';
 import { getT, getTSync } from '@/lib/i18n/server';
 
 const LEAD = 'Public tenders, funding and market news across Europe — and a community of the people who bid on them.';
+const META = 'Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs.';
 
 const QUESTIONS: [string, string][] = [
   ['What is Tender Town?', 'A platform for public tenders, grants and market news across Europe, and a community of the people who bid on them.'],
@@ -22,7 +23,7 @@ const QUESTIONS: [string, string][] = [
 export async function generateMetadata() {
   const t = await getT();
   const origin = siteOrigin();
-  const description = t(LEAD);
+  const description = t(META);
   const title = `${t('About')} — Tender Town`;
   return {
     title,
@@ -43,7 +44,7 @@ export default function AboutPage() {
         '@type': 'WebSite',
         name: 'Tender Town',
         url: origin,
-        description: t(LEAD),
+        description: t(META),
       },
       {
         '@type': 'SoftwareApplication',
@@ -51,7 +52,8 @@ export default function AboutPage() {
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         url: origin,
-        description: t(LEAD),
+        description: t(META),
+        featureList: [t('Find opportunities'), t('Analyse requirements'), t('Prepare proposal briefs')],
         offers: { '@type': 'AggregateOffer', lowPrice: '0', highPrice: '139', priceCurrency: 'EUR', offerCount: 4 },
       },
       {

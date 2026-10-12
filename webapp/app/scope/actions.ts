@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { FOCUS_COOKIE, FOCUS_USER_COOKIE, INTENT_COOKIE } from '@/lib/guestScope';
+import { BANNER_COOKIE, FOCUS_COOKIE, FOCUS_USER_COOKIE, INTENT_COOKIE } from '@/lib/guestScope';
 import { gateScope } from '@/lib/scopeFocus';
 import { getCurrentUser } from '@/lib/auth';
 import { getContext } from '@/lib/accounts';
@@ -41,6 +41,11 @@ export async function rememberFocus(id: string) {
   if (cookies().get(FOCUS_COOKIE)?.value === id && cookies().get(FOCUS_USER_COOKIE)?.value === '1') return;
   cookies().set(FOCUS_COOKIE, id, year);
   cookies().set(FOCUS_USER_COOKIE, '1', year);
+}
+
+/** Remember whether the scope banner is collapsed. Shared by Home, Tenders and News. */
+export async function setBannerCompact(compact: boolean) {
+  cookies().set(BANNER_COOKIE, compact ? '1' : '0', year);
 }
 
 export async function rememberIntent(intent: string) {

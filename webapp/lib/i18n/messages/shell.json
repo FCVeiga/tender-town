@@ -2197,5 +2197,82 @@
     "fr": "Free comprend General et un périmètre modèle, et ne peut pas créer le sien. Starter comprend un périmètre en plus de General, que vous pouvez créer, et 1 évaluation d’appel d’offres par mois. Pro ajoute jusqu’à cinq périmètres, 5 évaluations par mois et 50 rapports d’actualité par mois, à 89 € par mois. Teams ajoute des évaluations illimitées et des notes de proposition, pour plusieurs espaces de travail et membres, à 139 € par mois. Une année coûte onze mois.",
     "de": "Free enthält General und einen Vorlagen-Bereich und kann keinen eigenen erstellen. Starter enthält einen Bereich neben General, den du erstellen kannst, und 1 Ausschreibungsbewertung im Monat. Pro ergänzt bis zu fünf Bereiche, 5 Bewertungen im Monat und 50 Nachrichtenberichte im Monat, für 89 € im Monat. Teams ergänzt unbegrenzte Bewertungen und Angebotsbriefings, für mehrere Arbeitsbereiche und Mitglieder, für 139 € im Monat. Ein Jahr kostet elf Monate.",
     "it": "Free include General e un ambito modello, e non può crearne uno proprio. Starter include un ambito oltre a General, che puoi creare, e 1 valutazione di gara al mese. Pro aggiunge fino a cinque ambiti, 5 valutazioni al mese e 50 report sulle notizie al mese, a 89 € al mese. Teams aggiunge valutazioni illimitate e brief di offerta, per più aree di lavoro e membri, a 139 € al mese. Un anno costa undici mesi."
+  },
+  "Specialised AI agents for your next tender.": {
+    "pt": "Agentes de IA especializados para o seu próximo concurso.",
+    "es": "Agentes de IA especializados para tu próxima licitación.",
+    "fr": "Des agents d’IA spécialisés pour votre prochain appel d’offres.",
+    "de": "Spezialisierte KI-Agenten für deine nächste Ausschreibung.",
+    "it": "Agenti di IA specializzati per la tua prossima gara."
+  },
+  "Choose your market. Our agents find opportunities, analyse tender requirements and prepare proposal briefs. Create a custom scope to tailor their work to your business.": {
+    "pt": "Escolha o seu mercado. Os nossos agentes encontram oportunidades, analisam os requisitos do concurso e preparam resumos de proposta. Crie um âmbito personalizado para adaptar o trabalho deles ao seu negócio.",
+    "es": "Elige tu mercado. Nuestros agentes encuentran oportunidades, analizan los requisitos de la licitación y preparan resúmenes de propuesta. Crea un ámbito a medida para adaptar su trabajo a tu negocio.",
+    "fr": "Choisissez votre marché. Nos agents trouvent des opportunités, analysent les exigences de l’appel d’offres et préparent des notes de proposition. Créez un périmètre sur mesure pour adapter leur travail à votre activité.",
+    "de": "Wähle deinen Markt. Unsere Agenten finden Chancen, analysieren die Anforderungen der Ausschreibung und bereiten Angebotsbriefings vor. Erstelle einen eigenen Bereich, damit ihre Arbeit zu deinem Geschäft passt.",
+    "it": "Scegli il tuo mercato. I nostri agenti trovano opportunità, analizzano i requisiti della gara e preparano brief di offerta. Crea un ambito su misura per adattare il loro lavoro alla tua attività."
+  },
+  "Find opportunities": {
+    "pt": "Encontrar oportunidades",
+    "es": "Encontrar oportunidades",
+    "fr": "Trouver des opportunités",
+    "de": "Chancen finden",
+    "it": "Trovare opportunità"
+  },
+  "Analyse requirements": {
+    "pt": "Analisar requisitos",
+    "es": "Analizar requisitos",
+    "fr": "Analyser les exigences",
+    "de": "Anforderungen analysieren",
+    "it": "Analizzare i requisiti"
+  },
+  "Prepare proposal briefs": {
+    "pt": "Preparar resumos de proposta",
+    "es": "Preparar resúmenes de propuesta",
+    "fr": "Préparer des notes de proposition",
+    "de": "Angebotsbriefings erstellen",
+    "it": "Preparare brief di offerta"
+  },
+  "Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs.": {
+    "pt": "Agentes de IA especializados para o seu próximo concurso. Encontram oportunidades, analisam requisitos e preparam resumos de proposta.",
+    "es": "Agentes de IA especializados para tu próxima licitación. Encuentran oportunidades, analizan requisitos y preparan resúmenes de propuesta.",
+    "fr": "Des agents d’IA spécialisés pour votre prochain appel d’offres. Ils trouvent des opportunités, analysent les exigences et préparent des notes de proposition.",
+    "de": "Spezialisierte KI-Agenten für deine nächste Ausschreibung. Sie finden Chancen, analysieren Anforderungen und erstellen Angebotsbriefings.",
+    "it": "Agenti di IA specializzati per la tua prossima gara. Trovano opportunità, analizzano i requisiti e preparano brief di offerta."
+  },
+  "Choose your market. Create a custom scope to tailor their work to your business.": {
+    "pt": "Escolha o seu mercado. Crie um âmbito personalizado para adaptar o trabalho deles ao seu negócio.",
+    "es": "Elige tu mercado. Crea un ámbito a medida para adaptar su trabajo a tu negocio.",
+    "fr": "Choisissez votre marché. Créez un périmètre sur mesure pour adapter leur travail à votre activité.",
+    "de": "Wähle deinen Markt. Erstelle einen eigenen Bereich, damit ihre Arbeit zu deinem Geschäft passt.",
+    "it": "Scegli il tuo mercato. Crea un ambito su misura per adattare il loro lavoro alla tua attività."
+  },
+  "Your specialised tender agents": {
+    "pt": "Os seus agentes de concursos especializados",
+    "es": "Tus agentes especializados en licitaciones",
+    "fr": "Vos agents spécialisés en appels d’offres",
+    "de": "Deine spezialisierten Ausschreibungsagenten",
+    "it": "I tuoi agenti specializzati per le gare"
+  },
+  "Expand": {
+    "pt": "Expandir",
+    "es": "Ampliar",
+    "fr": "Développer",
+    "de": "Aufklappen",
+    "it": "Espandi"
+  },
+  "Collapse": {
+    "pt": "Reduzir",
+    "es": "Reducir",
+    "fr": "Réduire",
+    "de": "Zuklappen",
+    "it": "Comprimi"
+  },
+  "Hang tight. Our agents are working for you.": {
+    "pt": "Aguarde. Os nossos agentes estão a trabalhar para si.",
+    "es": "Un momento. Nuestros agentes están trabajando para ti.",
+    "fr": "Un instant. Nos agents travaillent pour vous.",
+    "de": "Einen Moment. Unsere Agenten arbeiten für dich.",
+    "it": "Un attimo. I nostri agenti stanno lavorando per te."
   }
 }

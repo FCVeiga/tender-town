@@ -1,8 +1,8 @@
 # Tender Town
 
-> Public tenders, funding and market news across Europe — and a community of the people who bid on them.
+> Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs.
 
-Tender Town tracks open public procurement across Europe: requests for proposals, requests for information, grants and funding calls, with their documents, summaries and requirements, plus regulation, industry and market news. Visitors see the General scope, ranked without a language model. Each scope has configurable agents that fetch and summarise tenders and news, pull documents, and list requirements. On Pro and Teams they also judge the fit and outline how a proposal could be approached, and the News Report Agent writes what to do about a story (50 a month on Pro, unlimited on Teams). Accounts can follow items, post, comment and chat. Paid plans add custom scopes.
+Tender Town tracks open public procurement across Europe: requests for proposals, requests for information, grants and funding calls, with their documents, summaries and requirements, plus regulation, industry and market news. The agents do three jobs: find opportunities, analyse tender requirements, and prepare proposal briefs. Choose a market, or create a custom scope so the agents work to that business. Visitors see the General scope, ranked without a language model. Each scope has configurable agents that fetch and summarise tenders and news, pull documents, and list requirements. On Pro and Teams they also judge the fit and outline how a proposal could be approached, and the News Report Agent writes what to do about a story (50 a month on Pro, unlimited on Teams). Accounts can follow items, post, comment and chat. Paid plans add custom scopes.
 
 The pipeline runs every four hours. It searches TED (Tenders Electronic Daily), national procurement portals, EU funding programmes, development-bank notices, news, and the sources a workspace follows. A tender page starts from the first publication of the procedure and includes later updates.
 

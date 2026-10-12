@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { agentByKey, AgentFaceStyle } from '@/lib/agents';
 
 const INK = '#1A233B';
@@ -40,7 +41,7 @@ export default function AgentAvatar({ agent, size = 44, working = false, off = f
   agent: string; size?: number; working?: boolean; off?: boolean;
 }) {
   const { face } = agentByKey(agent);
-  const id = `agent-bg-${agent}`;
+  const id = `agent-bg-${agent}-${useId().replace(/:/g, '')}`;
   const glow = face.colors[0];
   return (
     <svg className={`agent-face ${working ? 'working' : ''} ${off ? 'off' : ''}`} width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
@@ -53,8 +54,8 @@ export default function AgentAvatar({ agent, size = 44, working = false, off = f
       <rect x="15" y="19" width="18" height="8" rx="4" fill={INK} />
       <Eyes eyes={face.eyes} glow={glow} />
       <Mouth mouth={face.mouth} />
-      <rect x="8" y="20" width="3" height="7" rx="1.5" fill={INK} />
-      <rect x="37" y="20" width="3" height="7" rx="1.5" fill={INK} />
+      <rect className="agent-arm left" x="8" y="20" width="3" height="7" rx="1.5" fill={INK} />
+      <rect className="agent-arm right" x="37" y="20" width="3" height="7" rx="1.5" fill={INK} />
     </svg>
   );
 }

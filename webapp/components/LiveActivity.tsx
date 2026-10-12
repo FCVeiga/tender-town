@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { SourceActivity as Activity } from '@/lib/sourceMeta';
 import SourceIcon from './SourceIcon';
 import { useLocale, useT } from '@/lib/i18n/client';
+import AgentLoader from '@/components/AgentLoader';
 
 type T = ReturnType<typeof useT>;
 
@@ -123,7 +124,7 @@ export default function LiveActivity({ initial, scopeId }: { initial: Activity[]
         <svg className="live-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" /></svg>
       </button>
       <ul className="live-list">
-        {loading && items.length === 0 && <li className="side-empty" aria-busy="true">{t('Loading activity')}</li>}
+        {loading && items.length === 0 && <li aria-busy="true"><AgentLoader compact /></li>}
         {!loading && items.length === 0 && <li className="side-empty">{t('No activity yet for this scope.')}</li>}
         {items.length > 0 && <li className="live-note">{t('Posts from sources this scope follows. Not scored results.')}</li>}
         {items.map((a) => (

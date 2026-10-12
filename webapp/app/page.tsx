@@ -16,6 +16,7 @@ import { HomeSkeleton } from '@/components/ContentSkeleton';
 import ScopeView from '@/components/ScopeView';
 import ScopeStatus, { CheckedLine } from '@/components/ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
+import AgentLoader from '@/components/AgentLoader';
 
 const likeOf = (likes: { signedIn: boolean; liked: Set<string> }, href: string) => {
   const t = likeTarget(href);
@@ -23,7 +24,7 @@ const likeOf = (likes: { signedIn: boolean; liked: Set<string> }, href: string) 
 };
 
 const PAGE = 30;
-const LEAD = 'Public tenders, funding and market news across Europe — and a community of the people who bid on them.';
+const LEAD = 'Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs.';
 
 export async function generateMetadata() {
   const t = await getT();
@@ -44,11 +45,24 @@ export default async function FeedPage({ searchParams }: { searchParams: { view?
     <div className="home-layout">
       <JsonLd data={{
         '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'Tender Town',
-        url: origin,
-        description: t(LEAD),
-        potentialAction: { '@type': 'SearchAction', target: `${origin}/search?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+        '@graph': [
+          {
+            '@type': 'WebSite',
+            name: 'Tender Town',
+            url: origin,
+            description: t(LEAD),
+            potentialAction: { '@type': 'SearchAction', target: `${origin}/search?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+          },
+          {
+            '@type': 'SoftwareApplication',
+            name: 'Tender Town',
+            applicationCategory: 'BusinessApplication',
+            operatingSystem: 'Web',
+            url: origin,
+            description: t(LEAD),
+            featureList: [t('Find opportunities'), t('Analyse requirements'), t('Prepare proposal briefs')],
+          },
+        ],
       }} />
       <ScopeBannerSuspense />
       <Suspense fallback={<HomeSkeleton />}>
@@ -94,7 +108,7 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
       <div className="feed-page">
         <ScopeView scopeId={scopeId}>
         {error && <div className="callout error"><strong>{t('Error loading the feed.')}</strong> {error.message}</div>}
-        {kind === 'loading' && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+        {kind === 'loading' && <AgentLoader />}
         {!error && kind === 'stale' && (
           <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="feed" signedIn={focus.signedIn} />
         )}

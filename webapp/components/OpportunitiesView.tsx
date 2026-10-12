@@ -10,6 +10,7 @@ import { resolveFocus } from '@/lib/scopeFocus';
 import { Suspense } from 'react';
 import { ScopeBannerSuspense } from './ScopeBannerSlot';
 import { ListSkeleton } from './ContentSkeleton';
+import AgentLoader from '@/components/AgentLoader';
 import ScopeView from './ScopeView';
 import ScopeStatus, { CheckedLine } from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
@@ -27,7 +28,7 @@ export default async function OpportunitiesView({ view }: { view: View }) {
     <div>
       <ScopeBannerSuspense />
       <h1 className="opps-h1">{t(TITLES[view])}</h1>
-      <Suspense fallback={<ListSkeleton rows="tenders" />}>
+      <Suspense fallback={<ListSkeleton />}>
         <OpportunitiesBody view={view} />
       </Suspense>
     </div>
@@ -82,7 +83,7 @@ async function OpportunitiesBody({ view }: { view: View }) {
       {error && (
         <div className="callout error"><strong>{t('Error loading tenders.')}</strong> {error.message}</div>
       )}
-      {kind === 'loading' && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+      {kind === 'loading' && <AgentLoader />}
       {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
         <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="tenders" signedIn={focus.signedIn} />
       )}

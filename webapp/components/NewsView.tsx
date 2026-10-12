@@ -15,6 +15,7 @@ import { ListSkeleton } from './ContentSkeleton';
 import ScopeView from './ScopeView';
 import ScopeStatus, { CheckedLine } from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
+import AgentLoader from '@/components/AgentLoader';
 
 
 type View = 'all' | 'signals' | (typeof NEWS_CATEGORIES)[number]['slug'];
@@ -114,7 +115,7 @@ async function NewsBody({ view }: { view: View }) {
       <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />
 
       {error && <div className="callout error"><strong>{t('Error loading news.')}</strong> {error.message}</div>}
-      {kind === 'loading' && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+      {kind === 'loading' && <AgentLoader />}
       {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
         <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface={surface} signedIn={focus.signedIn} />
       )}

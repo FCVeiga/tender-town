@@ -1,8 +1,12 @@
 'use client';
 
 import { useT } from '@/lib/i18n/client';
+import { BannerJobs } from '@/components/ScopeBanner';
+import AgentLoader from '@/components/AgentLoader';
 
-const COPY = 'Explore tenders, funding and news in your market. Create a custom scope to put specialised agents to work finding opportunities, analysing requirements and preparing proposal briefs.';
+const HEADING = 'Specialised AI agents for your next tender.';
+const COPY = 'Choose your market. Create a custom scope to tailor their work to your business.';
+const NOTE = 'Your specialised tender agents';
 
 function Bars({ n, className }: { n: number; className: string }) {
   return (
@@ -13,21 +17,26 @@ function Bars({ n, className }: { n: number; className: string }) {
 }
 
 /** The illustrated banner, before the scope list has arrived. */
-export function BannerSkeleton() {
+export function BannerSkeleton({ compact = false }: { compact?: boolean }) {
   const t = useT();
   return (
     <div className="scope-banner-slot">
-      <section className="scope-banner" aria-busy="true">
+      <section className={`scope-banner${compact ? ' compact' : ''}`} aria-busy="true">
         <span className="sr-only">{t('Loading scope')}</span>
         <div className="scope-banner-bg" aria-hidden="true">
           <img className="scope-banner-art light" src="/brand/sidebar-banner-light.jpg" alt="" />
           <img className="scope-banner-art dark" src="/brand/sidebar-banner.jpg" alt="" />
         </div>
         <div className="scope-banner-inner">
-          <div className="scope-banner-lead">
-            <p className="scope-banner-kicker">{t('Choose your scope. Find your next opportunity.')}</p>
-            <p className="scope-banner-copy">{t(COPY)}</p>
-          </div>
+          {compact ? (
+            <p className="scope-banner-note">{t(NOTE)}</p>
+          ) : (
+            <div className="scope-banner-lead">
+              <p className="scope-banner-kicker">{t(HEADING)}</p>
+              <p className="scope-banner-copy">{t(COPY)}</p>
+              <BannerJobs />
+            </div>
+          )}
           <div className="scope-banner-actions" aria-hidden="true">
             <div className="skel skel-select" />
             <div className="skel skel-btn" />
@@ -38,38 +47,29 @@ export function BannerSkeleton() {
   );
 }
 
-/** Home feed, sort, and activity while results are loading. */
+/** Home feed and activity while results are loading. */
 export function HomeSkeleton() {
   const t = useT();
   return (
     <>
-      <div className="feed-sort" aria-hidden="true">
-        <Bars n={3} className="skel-pill" />
-      </div>
-      <div className="feed-page" aria-busy="true">
-        <span className="sr-only">{t('Loading scope')}</span>
-        <div className="feed-skel"><Bars n={4} className="skel-card" /></div>
+      <div className="feed-page agent-loader-slot" aria-busy="true">
+        <AgentLoader />
       </div>
       <aside className="home-right" aria-busy="true" aria-label={t('Live activity')}>
         <div className="live-panel">
           <div className="live-head"><span className="live-title"><span className="live-pulse" />{t('Live activity')}</span></div>
-          <ul className="live-list"><Bars n={3} className="skel-activity" /></ul>
+          <AgentLoader compact />
         </div>
       </aside>
     </>
   );
 }
 
-/** Tender or news rows while that list is loading. */
-export function ListSkeleton({ rows = 'cards' }: { rows?: 'cards' | 'tenders' }) {
-  const t = useT();
+/** Tender or news list while that section is loading. */
+export function ListSkeleton() {
   return (
     <div aria-busy="true">
-      <span className="sr-only">{t('Loading scope')}</span>
-      <div className="feed-sort" aria-hidden="true"><Bars n={4} className="skel-pill" /></div>
-      <div className={rows === 'tenders' ? 'opp-skel' : 'feed-skel'}>
-        <Bars n={4} className={rows === 'tenders' ? 'skel-row' : 'skel-card'} />
-      </div>
+      <AgentLoader />
     </div>
   );
 }

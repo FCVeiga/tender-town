@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useT } from '@/lib/i18n/client';
+import AgentLoader from '@/components/AgentLoader';
 
 /** Hides the previous scope's lists as soon as a switch starts, until this render is that scope. */
 export default function ScopeView({ scopeId, children }: { scopeId: string | null; children: React.ReactNode }) {
-  const t = useT();
   const [pending, setPending] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ export default function ScopeView({ scopeId, children }: { scopeId: string | nul
   }, [pending, scopeId]);
 
   if (pending && pending !== scopeId) {
-    return <div className="callout" aria-busy="true">{t('Loading scope')}</div>;
+    return <AgentLoader />;
   }
   return <>{children}</>;
 }

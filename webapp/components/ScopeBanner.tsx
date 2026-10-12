@@ -4,13 +4,34 @@ import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n/client';
-import { chooseScope, rememberFocus, rememberIntent } from '@/app/scope/actions';
+import { chooseScope, rememberFocus, rememberIntent, setBannerCompact } from '@/app/scope/actions';
 import { Modal } from '@/components/settings/SettingsUI';
 import type { FocusModel } from '@/lib/scopeFocus';
 
 type Gate = { action: 'switch' | 'create'; kind: 'plan' | 'permission' | 'signup' | 'limit'; scopeId?: string };
 
-const COPY = 'Explore tenders, funding and news in your market. Create a custom scope to put specialised agents to work finding opportunities, analysing requirements and preparing proposal briefs.';
+const HEADING = 'Specialised AI agents for your next tender.';
+const COPY = 'Choose your market. Create a custom scope to tailor their work to your business.';
+const NOTE = 'Your specialised tender agents';
+const JOBS = [
+  { label: 'Find opportunities', icon: 'search' },
+  { label: 'Analyse requirements', icon: 'document' },
+  { label: 'Prepare proposal briefs', icon: 'write' },
+] as const;
+
+export function BannerJobs() {
+  const t = useT();
+  return (
+    <ul className="scope-banner-jobs">
+      {JOBS.map((job) => (
+        <li key={job.label}>
+          <JobIcon name={job.icon} />
+          <span>{t(job.label)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function limitText(t: (k: string, v?: Record<string, string | number>) => string, allowance: number | null, used: number, planName: string) {
   if (!allowance) return t('The Free plan includes only General.');
@@ -27,12 +48,13 @@ function BannerArt() {
   );
 }
 
-export default function ScopeBanner({ model, createAction }: {
-  model: FocusModel; createAction: (() => Promise<void>) | null;
+export default function ScopeBanner({ model, createAction, compact: compactSaved }: {
+  model: FocusModel; createAction: (() => Promise<void>) | null; compact: boolean;
 }) {
   const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [compact, setCompact] = useState(compactSaved);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [gate, setGate] = useState<Gate | null>(model.deny ? { action: 'switch', kind: model.deny.kind, scopeId: model.deny.scopeId } : null);
@@ -172,16 +194,27 @@ export default function ScopeBanner({ model, createAction }: {
   };
 
   const shownAt = Math.max(0, shown.findIndex((c) => c.id === (current?.id || '')));
+  const toggleCompact = () => {
+    const next = !compact;
+    setCompact(next);
+    setOpen(false);
+    void setBannerCompact(next);
+  };
 
   return (
-    <section className="scope-banner" aria-busy={!!model.hold}>
+    <section className={`scope-banner${compact ? ' compact' : ''}`} aria-busy={!!model.hold}>
       <BannerArt />
       <div className="scope-banner-inner">
-        <div className="scope-banner-lead">
-          <p className="scope-banner-kicker">{t('Choose your scope. Find your next opportunity.')}</p>
-          <p className="scope-banner-copy">{t(COPY)}</p>
-          {!model.choices.length && <p className="form-msg err">{t('Could not load scopes.')}</p>}
-        </div>
+        {compact ? (
+          <p className="scope-banner-note">{t(NOTE)}</p>
+        ) : (
+          <div className="scope-banner-lead">
+            <p className="scope-banner-kicker">{t(HEADING)}</p>
+            <p className="scope-banner-copy">{t(COPY)}</p>
+            <BannerJobs />
+            {!model.choices.length && <p className="form-msg err">{t('Could not load scopes.')}</p>}
+          </div>
+        )}
       <div className="scope-banner-actions">
         <div className="scope-banner-picker" ref={box}>
           <button
@@ -235,6 +268,9 @@ export default function ScopeBanner({ model, createAction }: {
             {t('+ Create a scope')}
           </button>
         )}
+        <button type="button" className="scope-banner-fold" aria-expanded={!compact} aria-label={compact ? t('Expand') : t('Collapse')} onClick={toggleCompact}>
+          <Chevron up={!compact} />
+        </button>
       </div>
       </div>
       {gate && (
@@ -302,8 +338,17 @@ function GateModal({ gate, model, onClose }: { gate: Gate; model: FocusModel; on
   );
 }
 
-function Chevron() {
-  return <svg className="scope-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>;
+function Chevron({ up = false }: { up?: boolean }) {
+  return <svg className={`scope-chevron${up ? ' up' : ''}`} viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>;
+}
+function JobIcon({ name }: { name: 'search' | 'document' | 'write' }) {
+  if (name === 'search') {
+    return <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.25" /><path d="M10.2 10.2L13 13" /></svg>;
+  }
+  if (name === 'document') {
+    return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h5.2L12.5 5.8V13.5H4z" /><path d="M9.1 2.7V6h3.2" /></svg>;
+  }
+  return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.1 2.9l4 4L5.6 14.4 1.8 14.8l.5-3.8z" /><path d="M8 4l4 4" /></svg>;
 }
 function Check() {
   return <svg className="scope-check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.2l3 3 6-6.5" /></svg>;

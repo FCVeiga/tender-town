@@ -42,7 +42,7 @@ export const viewport = {
 
 export async function generateMetadata() {
   const t = await getT();
-  const description = t('Public tenders, funding and market news across Europe — and a community of the people who bid on them.');
+  const description = t('Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs.');
   return {
     metadataBase: new URL(siteOrigin()),
     title: { default: 'Tender Town', template: '%s' },
