@@ -12,10 +12,10 @@ import { getT } from '@/lib/i18n/server';
 import { withPublicScope } from '@/lib/guestScope';
 import { resolveFocus } from '@/lib/scopeFocus';
 import { ScopeBannerSuspense } from '@/components/ScopeBannerSlot';
+import { HomeSkeleton } from '@/components/ContentSkeleton';
 import ScopeView from '@/components/ScopeView';
-import ScopeStatus from '@/components/ScopeStatus';
+import ScopeStatus, { CheckedLine } from '@/components/ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
-import { getLocale } from '@/lib/i18n/server';
 
 const likeOf = (likes: { signedIn: boolean; liked: Set<string> }, href: string) => {
   const t = likeTarget(href);
@@ -51,7 +51,7 @@ export default async function FeedPage({ searchParams }: { searchParams: { view?
         potentialAction: { '@type': 'SearchAction', target: `${origin}/search?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
       }} />
       <ScopeBannerSuspense />
-      <Suspense fallback={null}>
+      <Suspense fallback={<HomeSkeleton />}>
         <HomeFeed view={searchParams.view} n={searchParams.n} />
       </Suspense>
     </div>
@@ -70,9 +70,6 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
   ]);
   const run = scopeRun(focus.current);
   const kind = collectionKind(run, items.length > 0, !!focus.hold);
-  const collected = run.lastSuccessAt && !Number.isNaN(new Date(run.lastSuccessAt).getTime())
-    ? new Date(run.lastSuccessAt).toLocaleString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    : null;
   const shown = Math.max(PAGE, Number(n) || PAGE);
   const likes = await getFeedLikes(items.map((i) => i.href));
   const href = (v: FeedView, more?: number) => {
@@ -104,7 +101,7 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
         {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
           <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="feed" signedIn={focus.signedIn} />
         )}
-        {kind === 'ready' && collected && <p className="scope-collected">{t('Last collected {time}.', { time: collected })}</p>}
+        {kind === 'ready' && <CheckedLine iso={run.lastSuccessAt} surface="feed" />}
         <div className="feed">
           {(kind === 'ready' || kind === 'stale') && items.slice(0, shown).map((item) => (
             <FeedCard key={item.key} item={item} now={now} value={view === 'relevance' ? item.score : item.combined} like={likeOf(likes, item.href)} />

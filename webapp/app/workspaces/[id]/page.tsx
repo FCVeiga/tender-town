@@ -75,7 +75,7 @@ export default async function WorkspaceDetailPage({ params }: { params: { id: st
   const limit = ctx.isDefault ? Infinity : plan.scopes;
   const slotsUsed = use.custom + use.pickIds.length;
   const canAdd = ctx.canCustomize && slotsUsed < limit;
-  const showSlots = Number.isFinite(limit) && limit < 1000 && plan.customize;
+  const showSlots = Number.isFinite(limit) && limit < 1000;
   const viewerPlan = { key: account?.planKey ?? 'free', status: account?.planStatus ?? 'active', periodEnd: account?.periodEnd ?? null, hasBilling: !!account?.stripeCustomerId };
   const owned = mine.filter((m) => m.workspace.ownerId === user.id && !m.isDefault);
   const addScope = createScope.bind(null, wsId);

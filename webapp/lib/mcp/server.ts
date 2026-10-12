@@ -66,7 +66,7 @@ export function createMcpServer(origin: string) {
   }, 'list_scopes'));
 
   server.registerTool('create_scope', {
-    description: 'Create a scope in a workspace. Counts toward the plan. Not included on Free.',
+    description: 'Create a custom scope in a workspace. Counts toward the plan. Not included on Free; Free can turn on one catalog scope instead.',
     inputSchema: { workspace_id: z.string(), name: z.string(), instructions: z.string().optional() },
   }, async ({ workspace_id, name, instructions }) => call(workspace_id, () => ops.createScope(workspace_id, name, instructions), 'create_scope'));
 

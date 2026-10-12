@@ -21,7 +21,7 @@ export const MCP_DOC: Doc[] = [
   { ul: [
     'General is the shared default. Every account can read it. A workspace can hide it only while another scope is switched on. It cannot be renamed or given new instructions.',
     'A catalog scope is a shared scope Tender Town publishes. Turning it on for a workspace uses one scope slot. It cannot be renamed.',
-    'A custom scope belongs to one workspace. Starter includes 1 besides General, Pro includes 5, Teams is unlimited. Free includes none.',
+    'A custom scope belongs to one workspace. Free cannot create one. Starter includes 1 besides General, Pro includes 5, Teams is unlimited.',
   ] },
   { h: 3, text: 'Scope agents' },
   { p: 'Each scope has five agents you can configure. Search and triage run on the platform’s schedule. The other three run only when you ask, and each run is counted.' },
@@ -79,12 +79,12 @@ export const MCP_DOC: Doc[] = [
   { h: 2, text: 'Plans' },
   { p: 'Limits follow the workspace owner’s plan.' },
   { ul: [
-    'Free: 1 workspace, no custom scopes, no evaluations, no proposal briefs, no news reports, requirements on 2 tenders a month.',
-    'Starter: 1 workspace, 1 scope besides General, 1 evaluation a month, requirements on 10 tenders a month.',
+    'Free: 1 workspace, 1 template scope besides General, no custom scopes, no evaluations, no proposal briefs, no news reports, requirements on 2 tenders a month.',
+    'Starter: 1 workspace, 1 scope besides General that you can create, 1 evaluation a month, requirements on 10 tenders a month.',
     'Pro: 1 workspace, 5 scopes besides General, 5 evaluations a month, 50 news reports a month, requirements on every tender.',
     'Teams: unlimited workspaces, members, scopes, evaluations, proposal briefs and news reports.',
   ] },
-  { p: 'A catalog scope that is switched on uses a scope slot. General does not. Inviting a member needs Teams, and an admin of that workspace. Editing scopes and agents needs an admin, on a plan that allows customizing. A member can read.' },
+  { p: 'A catalog scope that is switched on uses a scope slot. General does not. Free can turn on one catalog scope and cannot create a scope. Inviting a member needs Teams, and an admin of that workspace. Creating or editing a scope needs an admin on Starter or above. A member can read.' },
 
   { h: 2, text: 'A normal job' },
   { ul: [

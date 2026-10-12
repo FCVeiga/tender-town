@@ -38,7 +38,10 @@ SCOPE_AGENTS = ["search", "triage", "tender_evaluation", "proposal_manager", "ne
 PLATFORM_AGENTS = ["tender_documents", "tender_analysis", "feed_writer", "translator"]
 ALL_AGENTS = SCOPE_AGENTS + PLATFORM_AGENTS
 DEFAULT_SCOPE_NAME = "General"
-# Agent updates per day by plan (keep in sync with webapp/lib/plans.ts); scopes per workspace.
+# Agent updates per day by plan (keep in sync with webapp/lib/plans.ts).
+# SCOPES_PER_PLAN is how many custom scopes a workspace may run. Free is 0:
+# a Free workspace can turn on one catalog template, and cannot create a scope.
+# Catalog scopes and General run once a day on every plan (see _due).
 RUNS_PER_DAY = {"free": 1, "starter": 2, "pro": 3, "teams": 6}
 SCOPES_PER_PLAN = {"free": 0, "starter": 1, "pro": 5, "teams": 1000}
 

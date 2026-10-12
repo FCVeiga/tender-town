@@ -125,6 +125,7 @@ export default function LiveActivity({ initial, scopeId }: { initial: Activity[]
       <ul className="live-list">
         {loading && items.length === 0 && <li className="side-empty" aria-busy="true">{t('Loading activity')}</li>}
         {!loading && items.length === 0 && <li className="side-empty">{t('No activity yet for this scope.')}</li>}
+        {items.length > 0 && <li className="live-note">{t('Posts from sources this scope follows. Not scored results.')}</li>}
         {items.map((a) => (
           <li key={a.id} className="la-item">
             <SourceIcon type={a.sources?.source_type ?? 'NEWS'} size={26} />

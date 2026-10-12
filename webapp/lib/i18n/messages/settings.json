@@ -1447,5 +1447,68 @@
     "fr": "Les éléments entre [crochets] doivent être complétés par l'opérateur avant que ce document ne fasse foi.",
     "de": "Angaben in [eckigen Klammern] werden vom Betreiber ergänzt, bevor dieses Dokument verbindlich ist.",
     "it": "Gli elementi tra [parentesi quadre] devono essere completati dall'operatore prima che il documento sia valido."
+  },
+  "One template scope besides General.": {
+    "pt": "Um âmbito modelo para além do General.",
+    "es": "Un ámbito de plantilla además de General.",
+    "fr": "Un périmètre modèle en plus de General.",
+    "de": "Ein Vorlagen-Bereich neben General.",
+    "it": "Un ambito modello oltre a General."
+  },
+  "One template scope besides General": {
+    "pt": "Um âmbito modelo para além do General",
+    "es": "Un ámbito de plantilla además de General",
+    "fr": "Un périmètre modèle en plus de General",
+    "de": "Ein Vorlagen-Bereich neben General",
+    "it": "Un ambito modello oltre a General"
+  },
+  "Creating your own scope is not included": {
+    "pt": "Criar o seu próprio âmbito não está incluído",
+    "es": "Crear tu propio ámbito no está incluido",
+    "fr": "Créer votre propre périmètre n’est pas inclus",
+    "de": "Einen eigenen Bereich erstellen ist nicht enthalten",
+    "it": "Creare un tuo ambito non è incluso"
+  },
+  "One scope you can create.": {
+    "pt": "Um âmbito que pode criar.",
+    "es": "Un ámbito que puedes crear.",
+    "fr": "Un périmètre que vous pouvez créer.",
+    "de": "Ein Bereich, den du erstellen kannst.",
+    "it": "Un ambito che puoi creare."
+  },
+  "One scope besides General, which you can create": {
+    "pt": "Um âmbito para além do General, que pode criar",
+    "es": "Un ámbito además de General, que puedes crear",
+    "fr": "Un périmètre en plus de General, que vous pouvez créer",
+    "de": "Ein Bereich neben General, den du erstellen kannst",
+    "it": "Un ambito oltre a General, che puoi creare"
+  },
+  "Scopes besides General": {
+    "pt": "Âmbitos para além do General",
+    "es": "Ámbitos además de General",
+    "fr": "Périmètres en plus de General",
+    "de": "Bereiche neben General",
+    "it": "Ambiti oltre a General"
+  },
+  "1 template": {
+    "pt": "1 modelo",
+    "es": "1 plantilla",
+    "fr": "1 modèle",
+    "de": "1 Vorlage",
+    "it": "1 modello"
+  },
+  "1 you can create": {
+    "pt": "1 que pode criar",
+    "es": "1 que puedes crear",
+    "fr": "1 que vous pouvez créer",
+    "de": "1, den du erstellen kannst",
+    "it": "1 che puoi creare"
+  },
+  "A workspace holds your scopes. Every account has General and the template scopes. Free can turn on one template scope besides General, and cannot create its own. Starter can turn on one scope besides General, and that scope can be one you create. Pro can turn on up to five. Teams adds unlimited workspaces, each with its own team members (admins configure, members see the results). Create workspaces and add members on <workspaces>Workspaces</workspaces>, change your plan in <settings>Settings</settings>, and switch workspaces from your account menu.": {
+    "pt": "Um espaço de trabalho reúne os seus âmbitos. Todas as contas têm o General e os âmbitos modelo. O Free pode ativar um âmbito modelo para além do General e não pode criar o seu. O Starter pode ativar um âmbito para além do General, e esse âmbito pode ser um que crie. O Pro pode ativar até cinco. O Teams acrescenta espaços de trabalho ilimitados, cada um com os seus membros (os administradores configuram, os membros veem os resultados). Crie espaços de trabalho e adicione membros em <workspaces>Espaços de trabalho</workspaces>, mude de plano nas <settings>Definições</settings> e alterne entre espaços de trabalho no menu da conta.",
+    "es": "Un espacio de trabajo agrupa tus ámbitos. Todas las cuentas tienen General y los ámbitos de plantilla. Free puede activar un ámbito de plantilla además de General y no puede crear el suyo. Starter puede activar un ámbito además de General, y ese ámbito puede ser uno que crees. Pro puede activar hasta cinco. Teams añade espacios de trabajo ilimitados, cada uno con sus miembros (los administradores configuran, los miembros ven los resultados). Crea espacios de trabajo y añade miembros en <workspaces>Espacios de trabajo</workspaces>, cambia de plan en <settings>Configuración</settings> y cambia de espacio de trabajo desde el menú de tu cuenta.",
+    "fr": "Un espace de travail regroupe vos périmètres. Chaque compte a General et les périmètres modèles. Free peut activer un périmètre modèle en plus de General et ne peut pas créer le sien. Starter peut activer un périmètre en plus de General, et ce périmètre peut être un périmètre que vous créez. Pro peut en activer jusqu’à cinq. Teams ajoute des espaces de travail illimités, chacun avec ses membres (les administrateurs configurent, les membres voient les résultats). Créez des espaces de travail et ajoutez des membres dans <workspaces>Espaces de travail</workspaces>, changez d’offre dans <settings>Paramètres</settings> et passez d’un espace de travail à l’autre depuis le menu de votre compte.",
+    "de": "Ein Arbeitsbereich enthält deine Bereiche. Jedes Konto hat General und die Vorlagen-Bereiche. Mit Free kannst du einen Vorlagen-Bereich neben General einschalten und keinen eigenen erstellen. Mit Starter kannst du einen Bereich neben General einschalten, und dieser Bereich kann einer sein, den du erstellst. Mit Pro kannst du bis zu fünf einschalten. Teams bietet unbegrenzte Arbeitsbereiche mit jeweils eigenen Teammitgliedern (Admins konfigurieren, Mitglieder sehen die Ergebnisse). Arbeitsbereiche erstellen und Mitglieder hinzufügen kannst du unter <workspaces>Arbeitsbereiche</workspaces>, deinen Tarif änderst du in den <settings>Einstellungen</settings>, und zwischen Arbeitsbereichen wechselst du im Kontomenü.",
+    "it": "Un’area di lavoro raccoglie i tuoi ambiti. Ogni account ha General e gli ambiti modello. Free può attivare un ambito modello oltre a General e non può crearne uno proprio. Starter può attivare un ambito oltre a General, e quell’ambito può essere uno che crei. Pro può attivarne fino a cinque. Teams aggiunge aree di lavoro illimitate, ognuna con i propri membri (gli amministratori configurano, i membri vedono i risultati). Crea aree di lavoro e aggiungi membri in <workspaces>Aree di lavoro</workspaces>, cambia piano nelle <settings>Impostazioni</settings> e passa da un’area di lavoro all’altra dal menu dell’account."
   }
 }

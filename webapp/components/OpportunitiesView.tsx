@@ -7,9 +7,11 @@ import SectionTabs from './SectionTabs';
 import { getT } from '@/lib/i18n/server';
 import { withPublicScope } from '@/lib/guestScope';
 import { resolveFocus } from '@/lib/scopeFocus';
+import { Suspense } from 'react';
 import { ScopeBannerSuspense } from './ScopeBannerSlot';
+import { ListSkeleton } from './ContentSkeleton';
 import ScopeView from './ScopeView';
-import ScopeStatus from './ScopeStatus';
+import ScopeStatus, { CheckedLine } from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 
 type View = 'all' | 'new' | (typeof OPP_CATEGORIES)[number]['slug'];
@@ -20,6 +22,19 @@ const TITLES: Record<string, string> = {
 };
 
 export default async function OpportunitiesView({ view }: { view: View }) {
+  const t = await getT();
+  return (
+    <div>
+      <ScopeBannerSuspense />
+      <h1 className="opps-h1">{t(TITLES[view])}</h1>
+      <Suspense fallback={<ListSkeleton rows="tenders" />}>
+        <OpportunitiesBody view={view} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function OpportunitiesBody({ view }: { view: View }) {
   const t = await getT();
   const focus = await resolveFocus();
   const scope = (href: string) => withPublicScope(href, focus.publicSlug);
@@ -61,10 +76,7 @@ export default async function OpportunitiesView({ view }: { view: View }) {
   const scopeId = focus.hold?.id ?? focus.current?.id ?? null;
 
   return (
-    <div>
-      <ScopeBannerSuspense />
-      <h1 className="opps-h1">{t(TITLES[view])}</h1>
-      <ScopeView scopeId={scopeId}>
+    <ScopeView scopeId={scopeId}>
       <SectionTabs tabs={tabs} active={activeHref} />
 
       {error && (
@@ -83,6 +95,7 @@ export default async function OpportunitiesView({ view }: { view: View }) {
           {view === 'new' && <> {t('None in the last {n} days.', { n: NEW_WINDOW_DAYS })}</>}
         </div>
       )}
+      {kind === 'ready' && <CheckedLine iso={run.lastSuccessAt} surface="tenders" />}
       <RingGradients />
       <div className="opp-rows">
         {(kind === 'ready' || kind === 'stale') && shown.map((o) => (
@@ -92,7 +105,6 @@ export default async function OpportunitiesView({ view }: { view: View }) {
                           updates={updates.get(o.opportunity_id) ?? []} />
         ))}
       </div>
-      </ScopeView>
-    </div>
+    </ScopeView>
   );
 }

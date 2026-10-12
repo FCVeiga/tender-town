@@ -101,14 +101,18 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
   const unlimited = limit >= UNLIMITED;
   const used = use.custom + use.pickIds.length;
   const isAdmin = !!ctx?.isAdmin;
-  const room = isAdmin && !!ctx?.canCustomize && (unlimited || used < limit);
+  const slotFree = unlimited || used < limit;
+  // A template scope uses a slot on every plan, including Free. Creating or
+  // switching on a scope of your own also needs a plan that allows it.
+  const catalogRoom = isAdmin && slotFree;
+  const customRoom = isAdmin && !!ctx?.canCustomize && slotFree;
   const custom = own.filter((s) => !s.isDefault && !s.catalog);
   const pool = [...publics, ...custom];
 
   const choice = (s: Scope, group: 'public' | 'yours'): ScopeChoice => ({
     id: s.id, name: s.name, description: blurb(s.instructions),
     slug: group === 'public' ? scopeSlug(s.name) : null, group,
-    locked: scopeLock({ entitled: entitled.has(s.id), general: s.isDefault, isAdmin, room }),
+    locked: scopeLock({ entitled: entitled.has(s.id), general: s.isDefault, isAdmin, room: group === 'yours' ? customRoom : catalogRoom }),
   });
 
   const requested = (headers().get(SCOPE_QUERY_HEADER) || '').trim();
@@ -123,7 +127,7 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
   let hold: Scope | null = null;
   let deny: FocusModel['deny'] = null;
   if (fromUrl && !allowed(fromUrl)) {
-    const locked = scopeLock({ entitled: false, general: fromUrl.isDefault, isAdmin, room });
+    const locked = scopeLock({ entitled: false, general: fromUrl.isDefault, isAdmin, room: fromUrl.catalog || fromUrl.isDefault ? catalogRoom : customRoom });
     if (!locked) hold = fromUrl;
     else deny = { kind: locked, scopeId: fromUrl.id, scopeName: fromUrl.name };
   }

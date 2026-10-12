@@ -23,7 +23,7 @@ function monthCount(n: number | null, t: (key: string, vars?: { n: number }) => 
 
 const ROWS: { label: string; cell: (plan: Plan, t: (key: string, vars?: { n: number }) => string) => string }[] = [
   { label: 'Workspaces', cell: (p, t) => (p.workspaces == null ? t('Unlimited') : String(p.workspaces)) },
-  { label: 'Custom scopes', cell: (p, t) => (p.scopes >= 1000 ? t('Unlimited') : p.customize ? String(p.scopes) : t('General scope')) },
+  { label: 'Scopes besides General', cell: (p, t) => (p.scopes >= 1000 ? t('Unlimited') : !p.customize ? t('1 template') : p.scopes === 1 ? t('1 you can create') : String(p.scopes)) },
   { label: 'Members', cell: (p, t) => (p.members == null ? t('Unlimited') : String(p.members)) },
   { label: 'Agent updates', cell: (p, t) => t(CADENCE[p.runsPerDay] ?? `${p.runsPerDay}`) },
   { label: 'Tender requirements', cell: (p, t) => (p.requirementViewsPerMonth == null ? t('Every tender') : t('{n} tenders a month', { n: p.requirementViewsPerMonth })) },

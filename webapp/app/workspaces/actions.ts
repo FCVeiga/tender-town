@@ -67,7 +67,7 @@ export async function setScopeActive(scopeId: string, active: boolean): Promise<
   return {};
 }
 
-/** Turn a shared catalog scope on or off for this workspace. Counts toward the plan, like a scope they create. */
+/** Turn a shared catalog scope on or off for this workspace. Uses a scope slot on every plan, including Free. */
 export async function setCatalogPick(workspaceId: string, scopeId: string, on: boolean): Promise<{ error?: string; upgrade?: boolean }> {
   const ctx = await getWorkspaceContext(workspaceId);
   const t = await getT();

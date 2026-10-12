@@ -9,9 +9,11 @@ import { getEngagement } from '@/lib/engagement';
 import { getT } from '@/lib/i18n/server';
 import { withPublicScope } from '@/lib/guestScope';
 import { resolveFocus } from '@/lib/scopeFocus';
+import { Suspense } from 'react';
 import { ScopeBannerSuspense } from './ScopeBannerSlot';
+import { ListSkeleton } from './ContentSkeleton';
 import ScopeView from './ScopeView';
-import ScopeStatus from './ScopeStatus';
+import ScopeStatus, { CheckedLine } from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 
 
@@ -19,11 +21,24 @@ type View = 'all' | 'signals' | (typeof NEWS_CATEGORIES)[number]['slug'];
 
 export default async function NewsView({ view }: { view: View }) {
   const t = await getT();
+  const heading = view === 'signals' ? { label: 'Signals' } : NEWS_CATEGORIES.find((c) => c.slug === view);
+  return (
+    <div>
+      <ScopeBannerSuspense />
+      <h1 className="opps-h1">{heading ? t(heading.label) : t('News')}</h1>
+      <Suspense fallback={<ListSkeleton />}>
+        <NewsBody view={view} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function NewsBody({ view }: { view: View }) {
+  const t = await getT();
   const focus = await resolveFocus();
   const scope = (href: string) => withPublicScope(href, focus.publicSlug);
   const now = new Date();
   const [{ news: all, error }, { opportunities: signals }] = await Promise.all([getNews(), getActiveOpportunities('signal')]);
-  const heading = view === 'signals' ? { label: 'Signals' } : NEWS_CATEGORIES.find((c) => c.slug === view);
 
   // The agents' post for each story: substance-first English copy, and the
   // feed ranks behind the movement arrows.
@@ -95,9 +110,6 @@ export default async function NewsView({ view }: { view: View }) {
   const surface = view === 'signals' ? 'signals' : 'news';
 
   return (
-    <div className="news-page">
-      <ScopeBannerSuspense />
-      <h1 className="opps-h1">{heading ? t(heading.label) : t('News')}</h1>
       <ScopeView scopeId={focus.hold?.id ?? focus.current?.id ?? null}>
       <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />
 
@@ -113,11 +125,11 @@ export default async function NewsView({ view }: { view: View }) {
         <div className="callout"><strong>{t('Nothing in this section right now.')}</strong></div>
       )}
 
+      {kind === 'ready' && <CheckedLine iso={run.lastSuccessAt} surface={surface} />}
       <div className="feed">
         {(kind === 'ready' || kind === 'stale') && visible.map((i) => <FeedCard key={i.key} item={i} now={now}
           social={{ engagement: engOf(i.href).get(likeTarget(i.href)?.[1] ?? ''), signedIn: newsEng.signedIn }} />)}
       </div>
       </ScopeView>
-    </div>
   );
 }

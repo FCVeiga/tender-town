@@ -971,5 +971,33 @@
     "fr": "Enregistrer des instructions de recherche ne récupère pas les appels d’offres tout de suite. La recherche et le tri s’exécutent selon l’horaire de la plateforme.",
     "de": "Suchanweisungen zu speichern holt die Ausschreibungen nicht sofort. Suche und Triage laufen nach dem Zeitplan der Plattform.",
     "it": "Salvare le istruzioni di ricerca non recupera le gare subito. Ricerca e triage girano secondo il calendario della piattaforma."
+  },
+  "A custom scope belongs to one workspace. Free cannot create one. Starter includes 1 besides General, Pro includes 5, Teams is unlimited.": {
+    "pt": "Um âmbito personalizado pertence a um espaço de trabalho. O Free não pode criar um. O Starter inclui 1 além do General, o Pro inclui 5, o Teams é ilimitado.",
+    "es": "Un ámbito personalizado pertenece a un espacio de trabajo. Free no puede crear uno. Starter incluye 1 además de General, Pro incluye 5, Teams es ilimitado.",
+    "fr": "Un périmètre personnalisé appartient à un espace de travail. Free ne peut pas en créer. Starter en inclut 1 en plus de General, Pro en inclut 5, Teams est illimité.",
+    "de": "Ein eigener Scope gehört zu einem Arbeitsbereich. Free kann keinen erstellen. Starter enthält 1 neben General, Pro enthält 5, Teams ist unbegrenzt.",
+    "it": "Un ambito personalizzato appartiene a un’area di lavoro. Free non può crearne uno. Starter ne include 1 oltre General, Pro ne include 5, Teams è illimitato."
+  },
+  "Free: 1 workspace, 1 template scope besides General, no custom scopes, no evaluations, no proposal briefs, no news reports, requirements on 2 tenders a month.": {
+    "pt": "Free: 1 espaço de trabalho, 1 âmbito modelo para além do General, sem âmbitos personalizados, sem avaliações, sem resumos de proposta, sem relatórios de notícias, requisitos em 2 concursos por mês.",
+    "es": "Free: 1 espacio de trabajo, 1 ámbito de plantilla además de General, sin ámbitos personalizados, sin evaluaciones, sin resúmenes de propuesta, sin informes de noticias, requisitos en 2 licitaciones al mes.",
+    "fr": "Free : 1 espace de travail, 1 périmètre modèle en plus de General, pas de périmètre personnalisé, pas d’évaluation, pas de note de proposition, pas de rapport d’actualité, exigences sur 2 appels d’offres par mois.",
+    "de": "Free: 1 Arbeitsbereich, 1 Vorlagen-Bereich neben General, keine eigenen Bereiche, keine Bewertungen, keine Angebotsbriefings, keine Nachrichtenberichte, Anforderungen bei 2 Ausschreibungen im Monat.",
+    "it": "Free: 1 area di lavoro, 1 ambito modello oltre a General, nessun ambito personalizzato, nessuna valutazione, nessun brief di offerta, nessun report sulle notizie, requisiti su 2 gare al mese."
+  },
+  "Starter: 1 workspace, 1 scope besides General that you can create, 1 evaluation a month, requirements on 10 tenders a month.": {
+    "pt": "Starter: 1 espaço de trabalho, 1 âmbito para além do General que pode criar, 1 avaliação por mês, requisitos em 10 concursos por mês.",
+    "es": "Starter: 1 espacio de trabajo, 1 ámbito además de General que puedes crear, 1 evaluación al mes, requisitos en 10 licitaciones al mes.",
+    "fr": "Starter : 1 espace de travail, 1 périmètre en plus de General que vous pouvez créer, 1 évaluation par mois, exigences sur 10 appels d’offres par mois.",
+    "de": "Starter: 1 Arbeitsbereich, 1 Bereich neben General, den du erstellen kannst, 1 Bewertung im Monat, Anforderungen bei 10 Ausschreibungen im Monat.",
+    "it": "Starter: 1 area di lavoro, 1 ambito oltre a General che puoi creare, 1 valutazione al mese, requisiti su 10 gare al mese."
+  },
+  "A catalog scope that is switched on uses a scope slot. General does not. Free can turn on one catalog scope and cannot create a scope. Inviting a member needs Teams, and an admin of that workspace. Creating or editing a scope needs an admin on Starter or above. A member can read.": {
+    "pt": "Um âmbito de catálogo ligado ocupa uma vaga de âmbito. O General não ocupa. O Free pode ligar um âmbito de catálogo e não pode criar um âmbito. Convidar um membro exige o Teams e um administrador desse espaço de trabalho. Criar ou editar um âmbito exige um administrador no Starter ou superior. Um membro pode ler.",
+    "es": "Un ámbito de catálogo activado usa una plaza de ámbito. General no la usa. Free puede activar un ámbito de catálogo y no puede crear un ámbito. Invitar a un miembro exige Teams y un administrador de ese espacio de trabajo. Crear o editar un ámbito exige un administrador en Starter o superior. Un miembro puede leer.",
+    "fr": "Un périmètre du catalogue activé utilise un emplacement de périmètre. General n’en utilise pas. Free peut activer un périmètre du catalogue et ne peut pas en créer. Inviter un membre exige Teams et un administrateur de cet espace de travail. Créer ou modifier un périmètre exige un administrateur à partir de Starter. Un membre peut lire.",
+    "de": "Ein eingeschalteter Katalog-Scope belegt einen Scope-Platz. General nicht. Free kann einen Katalog-Scope einschalten und keinen Scope erstellen. Ein Mitglied einzuladen braucht Teams und einen Admin dieses Arbeitsbereichs. Einen Scope erstellen oder bearbeiten braucht einen Admin ab Starter. Ein Mitglied kann lesen.",
+    "it": "Un ambito di catalogo attivo usa un posto ambito. General no. Free può attivare un ambito di catalogo e non può crearne uno. Invitare un membro richiede Teams e un amministratore di quell’area di lavoro. Creare o modificare un ambito richiede un amministratore da Starter in su. Un membro può leggere."
   }
 }

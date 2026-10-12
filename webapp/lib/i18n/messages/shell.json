@@ -2148,5 +2148,54 @@
     "fr": "Rien dans cette section pour le moment.",
     "de": "Gerade nichts in diesem Abschnitt.",
     "it": "Niente in questa sezione in questo momento."
+  },
+  "Tenders last checked {time}.": {
+    "pt": "Concursos verificados pela última vez {time}.",
+    "es": "Licitaciones comprobadas por última vez {time}.",
+    "fr": "Appels d’offres vérifiés pour la dernière fois {time}.",
+    "de": "Ausschreibungen zuletzt geprüft {time}.",
+    "it": "Gare controllate l’ultima volta {time}."
+  },
+  "News last checked {time}.": {
+    "pt": "Notícias verificadas pela última vez {time}.",
+    "es": "Noticias comprobadas por última vez {time}.",
+    "fr": "Actualités vérifiées pour la dernière fois {time}.",
+    "de": "Nachrichten zuletzt geprüft {time}.",
+    "it": "Notizie controllate l’ultima volta {time}."
+  },
+  "Tenders and news last checked {time}.": {
+    "pt": "Concursos e notícias verificados pela última vez {time}.",
+    "es": "Licitaciones y noticias comprobadas por última vez {time}.",
+    "fr": "Appels d’offres et actualités vérifiés pour la dernière fois {time}.",
+    "de": "Ausschreibungen und Nachrichten zuletzt geprüft {time}.",
+    "it": "Gare e notizie controllate l’ultima volta {time}."
+  },
+  "Signals last checked {time}.": {
+    "pt": "Sinais verificados pela última vez {time}.",
+    "es": "Señales comprobadas por última vez {time}.",
+    "fr": "Signaux vérifiés pour la dernière fois {time}.",
+    "de": "Signale zuletzt geprüft {time}.",
+    "it": "Segnali controllati l’ultima volta {time}."
+  },
+  "Posts from sources this scope follows. Not scored results.": {
+    "pt": "Publicações das fontes que este âmbito segue. Não são resultados avaliados.",
+    "es": "Publicaciones de las fuentes que sigue este ámbito. No son resultados valorados.",
+    "fr": "Publications des sources suivies par ce périmètre. Ce ne sont pas des résultats évalués.",
+    "de": "Beiträge von Quellen, denen dieser Bereich folgt. Keine bewerteten Ergebnisse.",
+    "it": "Post delle fonti seguite da questo ambito. Non sono risultati valutati."
+  },
+  "The Free plan includes one template scope besides General. Creating your own scope starts on Starter.": {
+    "pt": "O plano Free inclui um âmbito modelo para além do General. Criar o seu próprio âmbito começa no Starter.",
+    "es": "El plan Free incluye un ámbito de plantilla además de General. Crear tu propio ámbito empieza en Starter.",
+    "fr": "Le forfait Free comprend un périmètre modèle en plus de General. Créer votre propre périmètre commence avec Starter.",
+    "de": "Der Free-Plan enthält einen Vorlagen-Bereich neben General. Einen eigenen Bereich erstellen kannst du ab Starter.",
+    "it": "Il piano Free include un ambito modello oltre a General. Creare un tuo ambito inizia con Starter."
+  },
+  "Free includes General and one template scope, and cannot create its own. Starter includes one scope besides General, which you can create, and 1 tender evaluation a month. Pro adds up to five scopes, 5 evaluations a month and 50 news reports a month, at €89 a month. Teams adds unlimited evaluations and proposal briefs, for several workspaces and members, at €139 a month. A year costs eleven months.": {
+    "pt": "O Free inclui o General e um âmbito modelo, e não pode criar o seu. O Starter inclui um âmbito para além do General, que pode criar, e 1 avaliação de concurso por mês. O Pro acrescenta até cinco âmbitos, 5 avaliações por mês e 50 relatórios de notícias por mês, a 89 € por mês. O Teams acrescenta avaliações ilimitadas e resumos de proposta, para vários espaços de trabalho e membros, a 139 € por mês. Um ano custa onze meses.",
+    "es": "Free incluye General y un ámbito de plantilla, y no puede crear el suyo. Starter incluye un ámbito además de General, que puedes crear, y 1 evaluación de licitación al mes. Pro añade hasta cinco ámbitos, 5 evaluaciones al mes y 50 informes de noticias al mes, a 89 € al mes. Teams añade evaluaciones ilimitadas y resúmenes de propuesta, para varios espacios de trabajo y miembros, a 139 € al mes. Un año cuesta once meses.",
+    "fr": "Free comprend General et un périmètre modèle, et ne peut pas créer le sien. Starter comprend un périmètre en plus de General, que vous pouvez créer, et 1 évaluation d’appel d’offres par mois. Pro ajoute jusqu’à cinq périmètres, 5 évaluations par mois et 50 rapports d’actualité par mois, à 89 € par mois. Teams ajoute des évaluations illimitées et des notes de proposition, pour plusieurs espaces de travail et membres, à 139 € par mois. Une année coûte onze mois.",
+    "de": "Free enthält General und einen Vorlagen-Bereich und kann keinen eigenen erstellen. Starter enthält einen Bereich neben General, den du erstellen kannst, und 1 Ausschreibungsbewertung im Monat. Pro ergänzt bis zu fünf Bereiche, 5 Bewertungen im Monat und 50 Nachrichtenberichte im Monat, für 89 € im Monat. Teams ergänzt unbegrenzte Bewertungen und Angebotsbriefings, für mehrere Arbeitsbereiche und Mitglieder, für 139 € im Monat. Ein Jahr kostet elf Monate.",
+    "it": "Free include General e un ambito modello, e non può crearne uno proprio. Starter include un ambito oltre a General, che puoi creare, e 1 valutazione di gara al mese. Pro aggiunge fino a cinque ambiti, 5 valutazioni al mese e 50 report sulle notizie al mese, a 89 € al mese. Teams aggiunge valutazioni illimitate e brief di offerta, per più aree di lavoro e membri, a 139 € al mese. Un anno costa undici mesi."
   }
 }

@@ -269,14 +269,15 @@ function GateModal({ gate, model, onClose }: { gate: Gate; model: FocusModel; on
   const permission = gate.kind === 'permission';
   const signup = gate.kind === 'signup' || (!model.signedIn && gate.action === 'create');
   const title = signup || gate.action === 'create' ? t('Create your own scope') : permission ? t('Scope unavailable') : t('Unlock more scopes');
+  const freeCreate = t('The Free plan includes one template scope besides General. Creating your own scope starts on Starter.');
   const body = signup
-    ? t('Custom scopes require a paid account.')
+    ? freeCreate
     : permission
       ? (gate.action === 'create'
         ? t('Only a workspace administrator can create scopes. Ask them for access.')
         : t('This scope is not on in your workspace. Ask a workspace administrator to turn it on.'))
       : gate.action === 'create' && gate.kind === 'plan'
-        ? t('The Free plan does not include custom scopes.')
+        ? freeCreate
         : limitText(t, model.allowance, model.used, model.planName);
   const next = '/settings/account?plan=1&intent=create';
   const upgrade = () => start(async () => {

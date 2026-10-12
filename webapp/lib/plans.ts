@@ -22,16 +22,16 @@ export const yearPrice = (monthlyEur: number) => monthlyEur * 11;
 
 export const PLANS: Plan[] = [
   {
-    key: 'free', name: 'Free', priceEur: 0, kind: 'personal', workspaces: 1, scopes: 0, members: 1, runsPerDay: 1, customize: false,
+    key: 'free', name: 'Free', priceEur: 0, kind: 'personal', workspaces: 1, scopes: 1, members: 1, runsPerDay: 1, customize: false,
     evaluationsPerMonth: 0, proposalsPerMonth: 0, requirementViewsPerMonth: 2, newsReportsPerMonth: 0,
-    blurb: 'Follow the radar’s default scope.',
-    features: ['One workspace', 'The default scope (General)', 'Requirements on 2 tender pages a month', 'Agents update tenders and news once a day', 'Community, chat and notifications'],
+    blurb: 'One template scope besides General.',
+    features: ['One workspace', 'One template scope besides General', 'Creating your own scope is not included', 'Requirements on 2 tender pages a month', 'Agents update tenders and news once a day', 'Community, chat and notifications'],
   },
   {
     key: 'starter', name: 'Starter', priceEur: 49, kind: 'personal', workspaces: 1, scopes: 1, members: 1, runsPerDay: 2, customize: true,
     evaluationsPerMonth: 1, proposalsPerMonth: 0, requirementViewsPerMonth: 10, newsReportsPerMonth: 0,
-    blurb: 'Your own radar, tuned to your business.',
-    features: ['One workspace', 'One scope besides General', 'Requirements on 10 tender pages a month', '1 tender evaluation a month', 'Agents update twice a day'],
+    blurb: 'One scope you can create.',
+    features: ['One workspace', 'One scope besides General, which you can create', 'Requirements on 10 tender pages a month', '1 tender evaluation a month', 'Agents update twice a day'],
   },
   {
     key: 'pro', name: 'Pro', priceEur: 89, kind: 'personal', workspaces: 1, scopes: 5, members: 1, runsPerDay: 3, customize: true,

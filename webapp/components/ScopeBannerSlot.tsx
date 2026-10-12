@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import ScopeBanner from '@/components/ScopeBanner';
+import { BannerSkeleton } from '@/components/ContentSkeleton';
 import { resolveFocus } from '@/lib/scopeFocus';
 import { createScope } from '@/app/workspaces/actions';
 
@@ -15,7 +16,7 @@ export async function ScopeBannerSlot() {
 
 export function ScopeBannerSuspense() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<BannerSkeleton />}>
       <ScopeBannerSlot />
     </Suspense>
   );
