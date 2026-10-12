@@ -39,6 +39,12 @@ const toScope = (r: any): Scope => ({
 const byCatalogOrder = (a: Scope, b: Scope) =>
   (CATALOG_ORDER.indexOf(a.name) + 1 || 99) - (CATALOG_ORDER.indexOf(b.name) + 1 || 99);
 
+/** The shared General scope visitors and new workspaces start from. */
+export async function getGeneralScope(): Promise<Scope | null> {
+  const { data } = await getSupabaseServerClient().from('scopes').select('*').eq('is_default', true).eq('active', true).limit(1);
+  return data?.[0] ? toScope(data[0]) : null;
+}
+
 /** Shared scopes every workspace can turn on. */
 export async function getCatalogScopes(): Promise<Scope[]> {
   const { data } = await getSupabaseServerClient().from('scopes').select('*').eq('catalog', true).eq('active', true);
@@ -146,10 +152,20 @@ async function guestView(defaults: Scope[]): Promise<Scope[]> {
 
 export type ScopeItems = { ids: string[]; relevance: Map<string, number>; scopesOf: Map<string, string[]> };
 
-/** Tenders or news found by the viewer's scopes, with the best relevance any of them gave. */
-export const getScopeItems = cache(async (type: 'tender' | 'news'): Promise<ScopeItems | null> => {
-  const { scopes } = await getViewScopes();
-  if (!scopes.length) return null;  // no scopes at all yet: show everything
+/** Tenders or news found by the viewer's scopes, with the best relevance any of them gave.
+ * `focused` is the one scope Home, Tenders and News are showing. An empty result
+ * (not null) means show nothing — null still means there is no scope setup yet. */
+export const getScopeItems = cache(async (type: 'tender' | 'news', focused = false): Promise<ScopeItems | null> => {
+  let scopes: Scope[];
+  if (focused) {
+    const { focusedScope } = await import('@/lib/scopeFocus');
+    const picked = await focusedScope();
+    if (picked.hold) return { ids: [], relevance: new Map(), scopesOf: new Map() };
+    scopes = picked.scope ? [picked.scope] : [];
+  } else {
+    scopes = (await getViewScopes()).scopes;
+  }
+  if (!scopes.length) return focused ? { ids: [], relevance: new Map(), scopesOf: new Map() } : null;
   const { data } = await getSupabaseServerClient().from('scope_items').select('scope_id, item_id, relevance')
     .eq('item_type', type).in('scope_id', scopes.map((s) => s.id)).limit(20000);
   const relevance = new Map<string, number>();

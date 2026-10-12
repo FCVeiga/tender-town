@@ -5,6 +5,9 @@ import OpportunityRow, { RingGradients } from './OpportunityRow';
 import type { UpdateEvent } from './UpdateComment';
 import SectionTabs from './SectionTabs';
 import { getT } from '@/lib/i18n/server';
+import { withPublicScope } from '@/lib/guestScope';
+import { resolveFocus } from '@/lib/scopeFocus';
+import { ScopeBannerSuspense } from './ScopeBannerSlot';
 
 type View = 'all' | 'new' | (typeof OPP_CATEGORIES)[number]['slug'];
 
@@ -15,6 +18,8 @@ const TITLES: Record<string, string> = {
 
 export default async function OpportunitiesView({ view }: { view: View }) {
   const t = await getT();
+  const focus = await resolveFocus();
+  const scope = (href: string) => withPublicScope(href, focus.publicSlug);
   // One query for the whole active set: the tab counts and the list come from it.
   const { opportunities: all, error } = await getActiveOpportunities();
   const active = all.filter((o) => o.opportunity_type !== 'signal');  // signals: home feed and News
@@ -24,10 +29,10 @@ export default async function OpportunitiesView({ view }: { view: View }) {
     view === 'all' ? active : view === 'new' ? newOnes : active.filter((o) => o.opportunity_type === view);
 
   const tabs = [
-    { href: '/tenders', label: t('All active'), count: active.length },
-    { href: '/tenders/new', label: t('New'), count: newOnes.length },
+    { href: scope('/tenders'), label: t('All active'), count: active.length },
+    { href: scope('/tenders/new'), label: t('New'), count: newOnes.length },
     ...TENDER_CATEGORIES.map((c) => ({
-      href: `/tenders/${c.path}`,
+      href: scope(`/tenders/${c.path}`),
       label: t(c.label),
       count: active.filter((o) => o.opportunity_type === c.slug).length,
     })),
@@ -46,18 +51,20 @@ export default async function OpportunitiesView({ view }: { view: View }) {
   const copy = new Map((posts || []).map((p: any) => [p.post_id.slice(4), p]));
   const names = new Map((countries || []).map((c: any) => [c.code, c.name]));
 
-  const activeHref = view === 'all' ? '/tenders' : view === 'new' ? '/tenders/new'
-    : `/tenders/${OPP_CATEGORIES.find((c) => c.slug === view)!.path}`;
+  const activeHref = scope(view === 'all' ? '/tenders' : view === 'new' ? '/tenders/new'
+    : `/tenders/${OPP_CATEGORIES.find((c) => c.slug === view)!.path}`);
 
   return (
     <div>
+      <ScopeBannerSuspense />
       <h1 className="opps-h1">{t(TITLES[view])}</h1>
       <SectionTabs tabs={tabs} active={activeHref} />
 
       {error && (
         <div className="callout error"><strong>{t('Error loading tenders.')}</strong> {error.message}</div>
       )}
-      {!error && shown.length === 0 && (
+      {focus.hold && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+      {!error && !focus.hold && shown.length === 0 && (
         <div className="callout">
           <strong>{t('Nothing here right now.')}</strong>{' '}
           {view === 'new'
@@ -67,7 +74,7 @@ export default async function OpportunitiesView({ view }: { view: View }) {
       )}
       <RingGradients />
       <div className="opp-rows">
-        {shown.map((o) => (
+        {!focus.hold && shown.map((o) => (
           <OpportunityRow key={o.opportunity_id} o={o} copy={copy.get(o.opportunity_id)}
                           like={{ liked: likes.liked.has(o.opportunity_id), signedIn: likes.signedIn }}
                           countryName={o.country ? names.get(o.country) ?? null : null}

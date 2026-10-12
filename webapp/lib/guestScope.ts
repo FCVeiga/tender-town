@@ -12,6 +12,20 @@ export const GUEST_PREFS_COOKIE = 'guest_prefs';
 export const GUEST_TZ_COOKIE = 'guest_tz';
 export const GUEST_SCOPE_HEADER = 'x-guest-scope';
 export const GUEST_GENERAL = 'general';
+/** A scope the person chose. Guests and signed-in users both use it; signed-in reads count only with FOCUS_USER_COOKIE. */
+export const FOCUS_COOKIE = 'tt_scope';
+export const FOCUS_USER_COOKIE = 'tt_scope_user';
+/** create, or switch:<scope id>, so signup and checkout can resume the action. */
+export const INTENT_COOKIE = 'tt_intent';
+export const SCOPE_QUERY_HEADER = 'x-tt-scope';
+
+const SCOPE_QUERY = /^[a-z0-9-]{1,80}$/;
+
+/** A scope slug or id safe to copy onto Home, Tenders and News links. */
+export function scopeQuery(raw: string | null | undefined): string | null {
+  const q = (raw || '').trim().toLowerCase();
+  return SCOPE_QUERY.test(q) ? q : null;
+}
 
 /** Same order as the catalog cards. Kept here so middleware can use it. */
 export const CATALOG_ORDER = [
@@ -151,6 +165,24 @@ function matchesRequest(scope: GuestScopeChoice, requested: string) {
   return requested === scope.id || requested === scopeSlug(scope.name);
 }
 
+/** A public scope the visitor asked for, by id or slug. Empty scopes still count: a choice beats the ranking. */
+export function explicitGuestScope(scopes: GuestScopeChoice[], requested: string | null): string | null {
+  const raw = (requested || '').trim().toLowerCase();
+  if (!raw) return null;
+  if (raw === GUEST_GENERAL || raw === 'default') return GUEST_GENERAL;
+  const hit = scopes.find((scope) => matchesRequest(scope, raw));
+  return hit ? hit.id : null;
+}
+
+/** Keep a public scope on links, pagination and the back button. */
+export function withPublicScope(href: string, slug: string | null) {
+  if (!slug) return href;
+  const url = new URL(href, 'http://local');
+  url.searchParams.set('scope', slug);
+  const q = url.searchParams.toString();
+  return q ? `${url.pathname}?${q}` : url.pathname;
+}
+
 /** Higher means this preset fits the visitor better. Result counts are not part of the score. */
 export function preferenceScore(scope: GuestScopeChoice, signals: GuestSignals): number {
   const requested = (signals.requested || '').trim().toLowerCase();
@@ -171,8 +203,8 @@ export function preferenceScore(scope: GuestScopeChoice, signals: GuestSignals):
  * used only when every preset is empty, or when the visitor asked for it.
  */
 export function pickGuestScope(scopes: GuestScopeChoice[], signals: GuestSignals): string {
-  const requested = (signals.requested || '').trim().toLowerCase();
-  if (requested === GUEST_GENERAL || requested === 'default') return GUEST_GENERAL;
+  const explicit = explicitGuestScope(scopes, signals.requested);
+  if (explicit) return explicit;
   const ranked = [...scopes].sort((a, b) => {
     const byPref = preferenceScore(b, signals) - preferenceScore(a, signals);
     if (byPref) return byPref;

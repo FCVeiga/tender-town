@@ -1,4 +1,7 @@
+import { cookies } from 'next/headers';
 import { authClient, getCurrentUser, siteOrigin } from '@/lib/auth';
+import { INTENT_COOKIE } from '@/lib/guestScope';
+import ResumeScopeIntent from '@/components/ResumeScopeIntent';
 import { getPersonalAccount, isPlatformAdmin } from '@/lib/accounts';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { PLANS } from '@/lib/plans';
@@ -18,7 +21,10 @@ export default async function AccountSettings({ searchParams }: { searchParams: 
   const identities = auth?.identities || [];
   const google = identities.find((i: any) => i.provider === 'google');
 
+  const intent = cookies().get(INTENT_COOKIE)?.value || '';
   return (
+    <>
+    <ResumeScopeIntent active={searchParams.billing === 'success' && (intent === 'create' || intent.startsWith('switch:'))} />
     <AccountTab
       userId={user.id} username={user.username} email={user.email}
       hasPassword={identities.some((i: any) => i.provider === 'email')}
@@ -29,5 +35,6 @@ export default async function AccountSettings({ searchParams }: { searchParams: 
       openPlan={searchParams.plan === '1'} paid={searchParams.billing === 'success'}
       tokens={tokens} endpoint={`${siteOrigin()}/api/mcp`}
     />
+    </>
   );
 }

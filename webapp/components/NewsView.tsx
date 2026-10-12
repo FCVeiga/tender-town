@@ -7,12 +7,17 @@ import SectionTabs from './SectionTabs';
 import { likeTarget } from '@/lib/likes';
 import { getEngagement } from '@/lib/engagement';
 import { getT } from '@/lib/i18n/server';
+import { withPublicScope } from '@/lib/guestScope';
+import { resolveFocus } from '@/lib/scopeFocus';
+import { ScopeBannerSuspense } from './ScopeBannerSlot';
 
 
 type View = 'all' | 'signals' | (typeof NEWS_CATEGORIES)[number]['slug'];
 
 export default async function NewsView({ view }: { view: View }) {
   const t = await getT();
+  const focus = await resolveFocus();
+  const scope = (href: string) => withPublicScope(href, focus.publicSlug);
   const now = new Date();
   const [{ news: all, error }, { opportunities: signals }] = await Promise.all([getNews(), getActiveOpportunities('signal')]);
   const heading = view === 'signals' ? { label: 'Signals' } : NEWS_CATEGORIES.find((c) => c.slug === view);
@@ -74,27 +79,29 @@ export default async function NewsView({ view }: { view: View }) {
   const engOf = (href: string) => { const tg = likeTarget(href); return tg?.[0] === 'tender' ? tenderEng : newsEng; };
   const visible = items.filter((i) => { const tg = likeTarget(i.href); return !tg || !engOf(i.href).hidden.has(tg[1]); });
   const tabs = [
-    { href: '/news', label: t('All'), count: all.length + signals.length },
+    { href: scope('/news'), label: t('All'), count: all.length + signals.length },
     ...NEWS_CATEGORIES.map((c) => ({
-      href: `/news/${c.slug}`, label: t(c.label), count: all.filter((n) => n.category === c.slug).length,
+      href: scope(`/news/${c.slug}`), label: t(c.label), count: all.filter((n) => n.category === c.slug).length,
     })),
-    { href: '/news/signals', label: t('Signals'), count: signals.length },
+    { href: scope('/news/signals'), label: t('Signals'), count: signals.length },
   ];
 
   return (
     <div className="news-page">
+      <ScopeBannerSuspense />
       <h1 className="opps-h1">{heading ? t(heading.label) : t('EUDI News')}</h1>
-      <SectionTabs tabs={tabs} active={view === 'all' ? '/news' : `/news/${view}`} />
+      <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />
 
       {error && <div className="callout error"><strong>{t('Error loading news.')}</strong> {error.message}</div>}
-      {!error && visible.length === 0 && (
+      {focus.hold && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+      {!error && !focus.hold && visible.length === 0 && (
         <div className="callout">
           <strong>{view === 'signals' ? t('No confirmed signals right now.') : t('No news in this section yet.')}</strong>
         </div>
       )}
 
       <div className="feed">
-        {visible.map((i) => <FeedCard key={i.key} item={i} now={now}
+        {!focus.hold && visible.map((i) => <FeedCard key={i.key} item={i} now={now}
           social={{ engagement: engOf(i.href).get(likeTarget(i.href)?.[1] ?? ''), signedIn: newsEng.signedIn }} />)}
       </div>
     </div>

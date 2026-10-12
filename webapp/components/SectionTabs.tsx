@@ -23,7 +23,7 @@ export default function SectionTabs({ tabs, active }: { tabs: Tab[]; active: str
   return (
     <nav className="feed-sort section-tabs" aria-label={tr('Sections')}>
       {tabs.map((t) => {
-        const icon = ICONS[t.href.split('/').filter(Boolean).pop() ?? ''];
+        const icon = ICONS[t.href.split('?')[0].split('/').filter(Boolean).pop() ?? ''];
         const on = t.href === active;
         return (
           <Link key={t.href} href={t.href} className={`feed-sort-link ${on ? 'active' : ''}`} aria-current={on ? 'page' : undefined}>

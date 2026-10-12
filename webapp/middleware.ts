@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import {
-  GUEST_PREFS_COOKIE, GUEST_SCOPE_COOKIE, GUEST_SCOPE_HEADER, GUEST_TZ_COOKIE,
-  countryFrom, encodePrefs, isBot, noteInterest, parsePrefs, pickGuestScope,
+  FOCUS_COOKIE, GUEST_PREFS_COOKIE, GUEST_SCOPE_COOKIE, GUEST_SCOPE_HEADER, GUEST_TZ_COOKIE,
+  INTENT_COOKIE, SCOPE_QUERY_HEADER,
+  countryFrom, encodePrefs, explicitGuestScope, isBot, noteInterest, parsePrefs, pickGuestScope,
   scopeTerms, scopesToRemember, signalWords, type GuestScopeChoice,
 } from '@/lib/guestScope';
 import { SUPER_ADMIN_EMAIL, clientIp, isInternalClient } from '@/lib/internal';
@@ -223,20 +224,25 @@ async function catalogScopes(): Promise<{ scopes: GuestScopeChoice[]; byItem: Ma
   return catalogCache;
 }
 
-function withGuestScope(request: NextRequest, scopeId: string, prefs: string | null) {
+const focusCookie = { path: '/', maxAge: COOKIE_MAX_AGE, sameSite: 'lax' as const, httpOnly: true };
+
+function withGuestScope(request: NextRequest, scopeId: string, prefs: string | null, lock: string | null) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(GUEST_SCOPE_HEADER, scopeId);
+  requestHeaders.set(SCOPE_QUERY_HEADER, request.nextUrl.searchParams.get('scope') || '');
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   const cookie = { path: '/', maxAge: COOKIE_MAX_AGE, sameSite: 'lax' as const, httpOnly: true };
   response.cookies.set(GUEST_SCOPE_COOKIE, scopeId, cookie);
   if (prefs != null) response.cookies.set(GUEST_PREFS_COOKIE, prefs, cookie);
+  if (lock) response.cookies.set(FOCUS_COOKIE, lock, focusCookie);
   return response;
 }
 
 async function personalizeGuest(request: NextRequest): Promise<{ response: NextResponse; scopeId: string | null }> {
   if (isBot(request.headers.get('user-agent')) || SKIP_GUEST.test(request.nextUrl.pathname)) return { response: NextResponse.next(), scopeId: null };
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return { response: NextResponse.next(), scopeId: null };
-  const requested = request.nextUrl.searchParams.get('scope');
+  const queryScope = request.nextUrl.searchParams.get('scope');
+  const storedScope = request.cookies.get(FOCUS_COOKIE)?.value || null;
   try {
     const tzRaw = request.cookies.get(GUEST_TZ_COOKIE)?.value;
     let timeZone: string | null = null;
@@ -244,6 +250,10 @@ async function personalizeGuest(request: NextRequest): Promise<{ response: NextR
     const acceptLanguage = request.headers.get('accept-language');
     const { scopes, byItem } = await catalogScopes();
     const country = countryFrom(request.headers.get('x-vercel-ip-country'), acceptLanguage, timeZone);
+    const fromQuery = explicitGuestScope(scopes, queryScope);
+    const fromStore = explicitGuestScope(scopes, storedScope);
+    // A scope in the link wins. Otherwise a scope they already chose beats a fresh recommendation.
+    const requested = fromQuery ? queryScope : (!queryScope && fromStore ? storedScope : null);
     const signals = {
       country, requested,
       prefs: parsePrefs(request.cookies.get(GUEST_PREFS_COOKIE)?.value),
@@ -256,7 +266,10 @@ async function personalizeGuest(request: NextRequest): Promise<{ response: NextR
     const prefs = noteInterest(noteInterest(signals.prefs, remembered, requested ? 8 : 2), opened, 2);
     const scopeId = pickGuestScope(scopes, { ...signals, prefs });
     const encoded = encodePrefs(prefs);
-    return { response: withGuestScope(request, scopeId, encoded === before ? null : encoded), scopeId };
+    // A link's scope wins. With no scope in the link, remember the one we resolved
+    // so refresh and the next page stay on it. An unrecognised link does not wipe a choice.
+    const lock = fromQuery || (!queryScope ? scopeId : fromStore);
+    return { response: withGuestScope(request, scopeId, encoded === before ? null : encoded, lock), scopeId };
   } catch {
     return { response: NextResponse.next(), scopeId: null };
   }
@@ -282,23 +295,34 @@ export async function middleware(request: NextRequest) {
   if (moved) return moved;
   // A leftover login verifier is not a session. Only the auth token means someone is signed in.
   const hasSession = request.cookies.getAll().some((c) => c.name.startsWith('sb-') && !c.name.includes('code-verifier'));
+  const intent = request.nextUrl.searchParams.get('intent') || '';
+  const stampIntent = (response: NextResponse) => {
+    if (intent === 'create' || /^switch:[0-9a-f-]{36}$/i.test(intent)) {
+      response.cookies.set(INTENT_COOKIE, intent.slice(0, 80), {
+        path: '/', maxAge: 60 * 60, sameSite: 'lax', httpOnly: true,
+      });
+    }
+    return response;
+  };
   if (!hasSession) {
     const guest = await personalizeGuest(request);
-    return trackVisit(request, guest.response, { signedIn: false, userId: null, scopeId: guest.scopeId, email: null });
+    return trackVisit(request, stampIntent(guest.response), { signedIn: false, userId: null, scopeId: guest.scopeId, email: null });
   }
-  let response = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(SCOPE_QUERY_HEADER, (request.nextUrl.searchParams.get('scope') || '').slice(0, 80));
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
   const supabase = createServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!, {
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (list) => {
         list.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
+        response = NextResponse.next({ request: { headers: requestHeaders } });
         list.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       },
     },
   });
   const { data } = await supabase.auth.getUser();
-  return trackVisit(request, response, { signedIn: !!data.user, userId: data.user?.id ?? null, scopeId: null, email: data.user?.email ?? null });
+  return trackVisit(request, stampIntent(response), { signedIn: !!data.user, userId: data.user?.id ?? null, scopeId: null, email: data.user?.email ?? null });
 }
 
 export const config = {

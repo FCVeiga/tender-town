@@ -81,7 +81,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
   ]);
   const active = new Map(opportunities.map((o) => [o.opportunity_id, o]));
   // The viewer's scopes: which items count, and the relevance each scope gave them.
-  const [tenderItems, newsItems] = await Promise.all([getScopeItems('tender'), getScopeItems('news')]);
+  const [tenderItems, newsItems] = await Promise.all([getScopeItems('tender', true), getScopeItems('news', true)]);
   const inScope = (p: PostRow) => p.kind === 'news'
     ? !newsItems || (!!p.news_id && newsItems.relevance.has(p.news_id))
     : !tenderItems || (!!p.opportunity_id && tenderItems.relevance.has(p.opportunity_id));

@@ -1,7 +1,7 @@
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { TRANSLATION_PENDING, nameInLanguage, firstInLanguage, inPlatformLanguage } from '@/lib/english';
 import { getPlatformLanguage } from '@/lib/language';
-import { getScopeItems, getViewScopes } from '@/lib/scopes';
+import { getScopeItems } from '@/lib/scopes';
 import { getContext } from '@/lib/accounts';
 
 // Opportunity categories — must match OPPORTUNITY_TYPES values in run_daily.py.
@@ -117,17 +117,19 @@ export function daysUntil(iso: string | null, now = new Date()) {
  */
 export async function getActiveOpportunities(category?: string) {
   await getPlatformLanguage();  // the display filter's language
+  const items = await getScopeItems('tender', true);
+  if (!items || items.ids.length === 0) return { opportunities: [] as Opportunity[], error: null };
   const supabase = getSupabaseServerClient();
-  let q = supabase
-    .from('opportunities')
-    .select('*')
-    .in('status', ['OPEN', 'SIGNAL'])
-    .or(`deadline.is.null,deadline.gte.${new Date().toISOString()}`)
-    .order('opportunity_relevance_score', { ascending: false });
-  if (category) q = q.eq('opportunity_type', category);
-  const { data, error } = await q;
+  const parts = await Promise.all(chunk(items.ids, 150).map((ids) => {
+    let q = supabase.from('opportunities').select('*').in('opportunity_id', ids)
+      .in('status', ['OPEN', 'SIGNAL'])
+      .or(`deadline.is.null,deadline.gte.${new Date().toISOString()}`);
+    if (category) q = q.eq('opportunity_type', category);
+    return q;
+  }));
+  const error = parts.find((p) => p.error)?.error ?? null;
   const cutoff = Date.now() - SIGNAL_MAX_AGE_DAYS * 86400_000;
-  const opportunities = await inScopes(((data || []) as Opportunity[]).filter(
+  const opportunities = await inScopes(((parts.flatMap((p) => p.data || [])) as Opportunity[]).filter(
     (o) => o.status !== 'SIGNAL' || o.deadline || !o.publication_date || new Date(o.publication_date).getTime() >= cutoff,
   ));
   return { opportunities, error };
@@ -139,10 +141,11 @@ export async function getActiveOpportunities(category?: string) {
  * scored — sorted by that relevance.
  */
 export async function inScopes<T extends { opportunity_id: string; opportunity_relevance_score?: number | null; bid_readiness_score?: number | null }>(rows: T[]): Promise<T[]> {
-  const items = await getScopeItems('tender');
+  const items = await getScopeItems('tender', true);
   if (!items) return rows;
   const kept = rows.filter((o) => items.relevance.has(o.opportunity_id));
-  const [{ scopes }, ctx] = await Promise.all([getViewScopes(), getContext()]);
+  const [focusPick, ctx] = await Promise.all([import('@/lib/scopeFocus').then((m) => m.focusedScope()), getContext()]);
+  const scopes = focusPick.scope ? [focusPick.scope] : [];
   const wsId = ctx?.workspace.id ?? null;
   const { data: evals } = kept.length && scopes.length
     ? await getSupabaseServerClient().from('scope_evaluations').select('opportunity_id, scope_id, workspace_id, evaluation')
@@ -164,16 +167,26 @@ export async function inScopes<T extends { opportunity_id: string; opportunity_r
 
 export async function getNews(category?: string, limit?: number) {
   await getPlatformLanguage();  // the display filter's language
+  const items = await getScopeItems('news', true);
+  if (!items || items.ids.length === 0) return { news: [] as NewsItem[], error: null };
   const supabase = getSupabaseServerClient();
-  let q = supabase.from('news_items').select('*').order('published_date', { ascending: false });
-  if (category) q = q.eq('category', category);
-  if (limit) q = q.limit(limit);
-  const { data, error } = await q;
-  // Only stories the viewer's scopes found, with the best importance they gave.
-  const items = await getScopeItems('news');
-  const news = ((data || []) as NewsItem[]).filter((n) => !items || items.relevance.has(n.news_id))
-    .map((n) => (items ? { ...n, relevance_score: items.relevance.get(n.news_id) ?? n.relevance_score } : n));
+  const parts = await Promise.all(chunk(items.ids, 150).map((ids) => {
+    let q = supabase.from('news_items').select('*').in('news_id', ids);
+    if (category) q = q.eq('category', category);
+    return q;
+  }));
+  const error = parts.find((p) => p.error)?.error ?? null;
+  let news = (parts.flatMap((p) => p.data || []) as NewsItem[])
+    .map((n) => ({ ...n, relevance_score: items.relevance.get(n.news_id) ?? n.relevance_score }))
+    .sort((a, b) => new Date(b.published_date || b.created_at || 0).getTime() - new Date(a.published_date || a.created_at || 0).getTime());
+  if (limit) news = news.slice(0, limit);
   return { news, error };
+}
+
+function chunk<T>(rows: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < rows.length; i += size) out.push(rows.slice(i, i + size));
+  return out;
 }
 
 export type ChangeEvent = {

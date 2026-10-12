@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { siteOrigin } from '@/lib/auth';
 import { pageMeta } from '@/lib/seo';
@@ -8,6 +9,9 @@ import FeedCard from '@/components/FeedCard';
 import LiveActivity from '@/components/LiveActivity';
 import { getFeedLikes, likeTarget } from '@/lib/likes';
 import { getT } from '@/lib/i18n/server';
+import { withPublicScope } from '@/lib/guestScope';
+import { resolveFocus } from '@/lib/scopeFocus';
+import { ScopeBannerSuspense } from '@/components/ScopeBannerSlot';
 
 const likeOf = (likes: { signedIn: boolean; liked: Set<string> }, href: string) => {
   const t = likeTarget(href);
@@ -30,22 +34,7 @@ const VIEW_ICONS: Record<FeedView, JSX.Element> = {
 };
 
 export default async function FeedPage({ searchParams }: { searchParams: { view?: string; n?: string } }) {
-  const now = new Date();
   const t = await getT();
-  const view = (FEED_VIEWS.find((v) => v.slug === searchParams.view)?.slug ?? 'top') as FeedView;
-  const [{ items, error }, activity] = await Promise.all([getFeed(view, now), getActivity(30)]);
-  const shown = Math.max(PAGE, Number(searchParams.n) || PAGE);
-  const likes = await getFeedLikes(items.map((i) => i.href));
-  const href = (v: FeedView, n?: number) => {
-    const p = new URLSearchParams();
-    if (v !== 'top') p.set('view', v);
-    if (n) p.set('n', String(n));
-    const q = p.toString();
-    return q ? `/?${q}` : '/';
-  };
-
-  // Grid: the sort bar sits above the feed column only, so the Live activity
-  // panel lines up with the first post card.
   const origin = siteOrigin();
   return (
     <div className="home-layout">
@@ -57,6 +46,31 @@ export default async function FeedPage({ searchParams }: { searchParams: { view?
         description: t(LEAD),
         potentialAction: { '@type': 'SearchAction', target: `${origin}/search?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
       }} />
+      <ScopeBannerSuspense />
+      <Suspense fallback={null}>
+        <HomeFeed view={searchParams.view} n={searchParams.n} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
+  const now = new Date();
+  const t = await getT();
+  const focus = await resolveFocus();
+  const view = (FEED_VIEWS.find((v) => v.slug === raw)?.slug ?? 'top') as FeedView;
+  const [{ items, error }, activity] = await Promise.all([getFeed(view, now), getActivity(30)]);
+  const shown = Math.max(PAGE, Number(n) || PAGE);
+  const likes = await getFeedLikes(items.map((i) => i.href));
+  const href = (v: FeedView, more?: number) => {
+    const p = new URLSearchParams();
+    if (v !== 'top') p.set('view', v);
+    if (more) p.set('n', String(more));
+    return withPublicScope(p.toString() ? `/?${p}` : '/', focus.publicSlug);
+  };
+
+  return (
+    <>
       <nav className="feed-sort" aria-label={t('Sort the feed')}>
         {FEED_VIEWS.map((v) => (
           <Link key={v.slug} href={href(v.slug)} className={`feed-sort-link ${v.slug === view ? 'active' : ''}`}
@@ -69,13 +83,14 @@ export default async function FeedPage({ searchParams }: { searchParams: { view?
 
       <div className="feed-page">
         {error && <div className="callout error"><strong>{t('Error loading the feed.')}</strong> {error.message}</div>}
-        {!error && items.length === 0 && <div className="callout">{t('Nothing here yet.')}</div>}
+        {focus.hold && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+        {!error && !focus.hold && items.length === 0 && <div className="callout">{t('Nothing here yet.')}</div>}
         <div className="feed">
-          {items.slice(0, shown).map((item) => (
+          {!focus.hold && items.slice(0, shown).map((item) => (
             <FeedCard key={item.key} item={item} now={now} value={view === 'relevance' ? item.score : item.combined} like={likeOf(likes, item.href)} />
           ))}
         </div>
-        {items.length > shown && (
+        {!focus.hold && items.length > shown && (
           <Link href={href(view, shown + PAGE)} scroll={false} className="feed-more">
             {t('Show more')} <span className="mono">({t('{n} left', { n: items.length - shown })})</span>
           </Link>
@@ -83,6 +98,6 @@ export default async function FeedPage({ searchParams }: { searchParams: { view?
       </div>
 
       <aside className="home-right"><LiveActivity initial={activity} /></aside>
-    </div>
+    </>
   );
 }

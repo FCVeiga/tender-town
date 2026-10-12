@@ -111,6 +111,132 @@
     "de": "Wasser und Abwasser",
     "it": "Acqua e acque reflue"
   },
+  "Choose your scope. Find your next opportunity.": {
+    "pt": "Escolha o seu âmbito. Encontre a próxima oportunidade.",
+    "es": "Elige tu ámbito. Encuentra tu próxima oportunidad.",
+    "fr": "Choisissez votre périmètre. Trouvez votre prochaine opportunité.",
+    "de": "Wähle deinen Bereich. Finde deine nächste Chance.",
+    "it": "Scegli il tuo ambito. Trova la prossima opportunità."
+  },
+  "Explore tenders, funding and news in your market. Create a custom scope to put specialised agents to work finding opportunities, analysing requirements and preparing proposal briefs.": {
+    "pt": "Explore concursos, financiamento e notícias no seu mercado. Crie um âmbito personalizado para pôr agentes especializados a encontrar oportunidades, analisar requisitos e preparar propostas.",
+    "es": "Explora licitaciones, financiación y noticias de tu mercado. Crea un ámbito a medida para que agentes especializados busquen oportunidades, analicen requisitos y preparen propuestas.",
+    "fr": "Parcourez les appels d’offres, les financements et l’actualité de votre marché. Créez un périmètre sur mesure pour que des agents spécialisés trouvent des opportunités, analysent les exigences et préparent des mémoires.",
+    "de": "Sieh dir Ausschreibungen, Förderung und Nachrichten in deinem Markt an. Lege einen eigenen Bereich an, damit spezialisierte Agenten Chancen finden, Anforderungen prüfen und Angebotsunterlagen vorbereiten.",
+    "it": "Esplora gare, finanziamenti e notizie del tuo mercato. Crea un ambito su misura perché agenti specializzati trovino opportunità, analizzino i requisiti e preparino le proposte."
+  },
+  "+ Create a scope": {
+    "pt": "+ Criar um âmbito",
+    "es": "+ Crear un ámbito",
+    "fr": "+ Créer un périmètre",
+    "de": "+ Bereich anlegen",
+    "it": "+ Crea un ambito"
+  },
+  "Your scopes": {
+    "pt": "Os seus âmbitos",
+    "es": "Tus ámbitos",
+    "fr": "Vos périmètres",
+    "de": "Deine Bereiche",
+    "it": "I tuoi ambiti"
+  },
+  "Unlock more scopes": {
+    "pt": "Desbloquear mais âmbitos",
+    "es": "Desbloquear más ámbitos",
+    "fr": "Débloquer plus de périmètres",
+    "de": "Mehr Bereiche freischalten",
+    "it": "Sblocca altri ambiti"
+  },
+  "Create your own scope": {
+    "pt": "Crie o seu próprio âmbito",
+    "es": "Crea tu propio ámbito",
+    "fr": "Créez votre propre périmètre",
+    "de": "Lege deinen eigenen Bereich an",
+    "it": "Crea il tuo ambito"
+  },
+  "Sign up and choose a plan": {
+    "pt": "Registe-se e escolha um plano",
+    "es": "Regístrate y elige un plan",
+    "fr": "Inscrivez-vous et choisissez un forfait",
+    "de": "Registriere dich und wähle einen Plan",
+    "it": "Registrati e scegli un piano"
+  },
+  "Custom scopes require a paid account.": {
+    "pt": "Os âmbitos personalizados exigem uma conta paga.",
+    "es": "Los ámbitos a medida requieren una cuenta de pago.",
+    "fr": "Les périmètres sur mesure exigent un compte payant.",
+    "de": "Eigene Bereiche brauchen ein kostenpflichtiges Konto.",
+    "it": "Gli ambiti personalizzati richiedono un account a pagamento."
+  },
+  "The Free plan includes only General.": {
+    "pt": "O plano Free inclui apenas o General.",
+    "es": "El plan Free incluye solo General.",
+    "fr": "Le forfait Free ne comprend que General.",
+    "de": "Der Free-Plan enthält nur General.",
+    "it": "Il piano Free include solo General."
+  },
+  "The Free plan does not include custom scopes.": {
+    "pt": "O plano Free não inclui âmbitos personalizados.",
+    "es": "El plan Free no incluye ámbitos a medida.",
+    "fr": "Le forfait Free ne comprend pas de périmètres sur mesure.",
+    "de": "Der Free-Plan enthält keine eigenen Bereiche.",
+    "it": "Il piano Free non include ambiti personalizzati."
+  },
+  "The {plan} plan includes 1 scope besides General. This workspace is already using {used}.": {
+    "pt": "O plano {plan} inclui 1 âmbito para além do General. Este espaço de trabalho já está a usar {used}.",
+    "es": "El plan {plan} incluye 1 ámbito además de General. Este espacio de trabajo ya está usando {used}.",
+    "fr": "Le forfait {plan} comprend 1 périmètre en plus de General. Cet espace de travail en utilise déjà {used}.",
+    "de": "Der {plan}-Plan enthält 1 Bereich neben General. Dieser Arbeitsbereich nutzt bereits {used}.",
+    "it": "Il piano {plan} include 1 ambito oltre a General. Quest’area di lavoro ne sta già usando {used}."
+  },
+  "The {plan} plan includes {n} scopes besides General. This workspace is already using {used}.": {
+    "pt": "O plano {plan} inclui {n} âmbitos para além do General. Este espaço de trabalho já está a usar {used}.",
+    "es": "El plan {plan} incluye {n} ámbitos además de General. Este espacio de trabajo ya está usando {used}.",
+    "fr": "Le forfait {plan} comprend {n} périmètres en plus de General. Cet espace de travail en utilise déjà {used}.",
+    "de": "Der {plan}-Plan enthält {n} Bereiche neben General. Dieser Arbeitsbereich nutzt bereits {used}.",
+    "it": "Il piano {plan} include {n} ambiti oltre a General. Quest’area di lavoro ne sta già usando {used}."
+  },
+  "Only a workspace administrator can create scopes. Ask them for access.": {
+    "pt": "Só um administrador do espaço de trabalho pode criar âmbitos. Peça-lhe acesso.",
+    "es": "Solo un administrador del espacio de trabajo puede crear ámbitos. Pídele acceso.",
+    "fr": "Seul un administrateur de l’espace de travail peut créer des périmètres. Demandez-lui l’accès.",
+    "de": "Nur eine Arbeitsbereichs-Admin kann Bereiche anlegen. Bitte diese Person um Zugriff.",
+    "it": "Solo un amministratore dell’area di lavoro può creare ambiti. Chiedi l’accesso."
+  },
+  "This scope is not on in your workspace. Ask a workspace administrator to turn it on.": {
+    "pt": "Este âmbito não está ativo no seu espaço de trabalho. Peça a um administrador para o ativar.",
+    "es": "Este ámbito no está activo en tu espacio de trabajo. Pide a un administrador que lo active.",
+    "fr": "Ce périmètre n’est pas actif dans votre espace de travail. Demandez à un administrateur de l’activer.",
+    "de": "Dieser Bereich ist in deinem Arbeitsbereich nicht aktiv. Bitte eine Admin, ihn einzuschalten.",
+    "it": "Questo ambito non è attivo nella tua area di lavoro. Chiedi a un amministratore di attivarlo."
+  },
+  "Scope unavailable": {
+    "pt": "Âmbito indisponível",
+    "es": "Ámbito no disponible",
+    "fr": "Périmètre indisponible",
+    "de": "Bereich nicht verfügbar",
+    "it": "Ambito non disponibile"
+  },
+  "Loading scope": {
+    "pt": "A carregar o âmbito",
+    "es": "Cargando el ámbito",
+    "fr": "Chargement du périmètre",
+    "de": "Bereich wird geladen",
+    "it": "Caricamento dell’ambito"
+  },
+  "Could not load scopes.": {
+    "pt": "Não foi possível carregar os âmbitos.",
+    "es": "No se han podido cargar los ámbitos.",
+    "fr": "Impossible de charger les périmètres.",
+    "de": "Bereiche konnten nicht geladen werden.",
+    "it": "Impossibile caricare gli ambiti."
+  },
+  "Scopes": {
+    "pt": "Âmbitos",
+    "es": "Ámbitos",
+    "fr": "Périmètres",
+    "de": "Bereiche",
+    "it": "Ambiti"
+  },
   "Open public tenders and funding calls across Europe.": {
     "pt": "Concursos públicos e avisos de financiamento abertos em toda a Europa.",
     "es": "Licitaciones públicas y convocatorias de financiación abiertas en toda Europa.",

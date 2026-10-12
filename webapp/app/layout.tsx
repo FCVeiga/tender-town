@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { Nunito, JetBrains_Mono } from 'next/font/google';
 import SearchBox from '@/components/SearchBox';
-import SideNav from '@/components/SideNav';
+import SideNav, { ScopedHomeLink, SideNavLinks } from '@/components/SideNav';
 import SourcesSidebar from '@/components/SourcesSidebar';
 import WorkingAgents from '@/components/WorkingAgents';
 import GuestPromo from '@/components/auth/GuestPromo';
@@ -20,7 +20,7 @@ import { getContext, getMyWorkspaces } from '@/lib/accounts';
 import NavActions from '@/components/social/NavActions';
 import UserAvatar from '@/components/UserAvatar';
 import { logOut } from '@/app/auth/actions';
-import { BottomNav, MenuBackdrop, MenuButton } from '@/components/MobileNav';
+import { BottomNav, BottomNavLinks, MenuBackdrop, MenuButton } from '@/components/MobileNav';
 import { isSuperAdmin } from '@/lib/admin';
 
 // Every page reads live from Supabase. Without this, Next prerenders pages
@@ -76,9 +76,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <I18nProvider lang={uiLang} messages={messagesFor(uiLang)}>
         <header className="topbar">
-          <Link href="/" className="brand" aria-label={t('Tender Town home')}>
-            <BrandLogo />
-          </Link>
+          <Suspense fallback={<Link href="/" className="brand" aria-label={t('Tender Town home')}><BrandLogo /></Link>}>
+            <ScopedHomeLink label={t('Tender Town home')}><BrandLogo /></ScopedHomeLink>
+          </Suspense>
           <Suspense fallback={<div className="search-box" />}><SearchBox /></Suspense>
           {user && <NavActions />}
           <div className={user ? 'auth-buttons' : 'auth-buttons guest'}>
@@ -98,7 +98,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {ctx && <WorkspaceSwitcher activeId={ctx.workspace.id} workspaces={mine.map((m) => ({
               id: m.workspace.id, name: m.workspace.name, role: m.role, sharedBy: m.workspace.ownerId === user?.id ? null : m.owner.username,
             }))} />}
-            <SideNav guest={!user} />
+            <Suspense fallback={<SideNavLinks guest={!user} />}>
+              <SideNav guest={!user} />
+            </Suspense>
             {!user && <GuestScopeHint />}
             {!user && (
               <nav className="sidebar-site-links" aria-label={t('More')}>
@@ -132,7 +134,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </aside>
           <main className="content">{children}</main>
         </div>
-        <BottomNav guest={!user} />
+        <Suspense fallback={<BottomNavLinks guest={!user} />}>
+          <BottomNav guest={!user} />
+        </Suspense>
         </I18nProvider>
       </body>
     </html>

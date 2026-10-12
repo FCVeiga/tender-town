@@ -1,8 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useT } from '@/lib/i18n/client';
+import { scopeQuery, withPublicScope } from '@/lib/guestScope';
+
+const SCOPED = new Set(['/', '/tenders', '/news']);
 
 export const LINKS = [
   { href: '/', label: 'Home', icon: <path d="M2.5 7.2 8 2.5l5.5 4.7V13a.5.5 0 0 1-.5.5H9.6V9.8H6.4v3.7H3a.5.5 0 0 1-.5-.5z" /> },
@@ -17,7 +20,12 @@ export const isActive = (href: string, path: string) => (href === '/' ? path ===
 
 const GUEST = new Set(['/', '/community', '/tenders', '/news']);
 
-export default function SideNav({ guest = false }: { guest?: boolean }) {
+export function ScopedHomeLink({ label, children }: { label: string; children: React.ReactNode }) {
+  const scope = scopeQuery(useSearchParams().get('scope'));
+  return <Link href={withPublicScope('/', scope)} className="brand" aria-label={label}>{children}</Link>;
+}
+
+export function SideNavLinks({ guest = false, scope = null }: { guest?: boolean; scope?: string | null }) {
   const t = useT();
   const path = usePathname() || '/';
   const links = guest ? LINKS.filter((l) => GUEST.has(l.href)) : LINKS;
@@ -25,8 +33,9 @@ export default function SideNav({ guest = false }: { guest?: boolean }) {
     <nav className="side-nav" aria-label={t('Sections')}>
       {links.map((l) => {
         const active = isActive(l.href, path);
+        const href = withPublicScope(l.href, SCOPED.has(l.href) ? scope ?? null : null);
         return (
-          <Link key={l.href} href={l.href} className={`side-link ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
+          <Link key={l.href} href={href} className={`side-link ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
             <svg viewBox="0 0 16 16" aria-hidden="true">{l.icon}</svg>
             {t(l.label)}
           </Link>
@@ -34,4 +43,8 @@ export default function SideNav({ guest = false }: { guest?: boolean }) {
       })}
     </nav>
   );
+}
+
+export default function SideNav({ guest = false }: { guest?: boolean }) {
+  return <SideNavLinks guest={guest} scope={scopeQuery(useSearchParams().get('scope'))} />;
 }

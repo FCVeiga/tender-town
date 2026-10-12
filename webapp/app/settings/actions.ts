@@ -7,7 +7,9 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { authClient, getCurrentUser, safeNext, siteOrigin } from '@/lib/auth';
 import { getPersonalAccount, isPlatformAdmin } from '@/lib/accounts';
 import { PLANS, planOf } from '@/lib/plans';
+import { cookies } from 'next/headers';
 import { billingReady, priceId, stripe, type BillingInterval } from '@/lib/billing';
+import { INTENT_COOKIE } from '@/lib/guestScope';
 import { getT, setPrefCookies } from '@/lib/i18n/server';
 import { isTheme, isUiLang } from '@/lib/i18n/languages';
 import { createMcpToken, revokeMcpToken } from '@/lib/mcpTokens';
@@ -224,7 +226,9 @@ export async function startCheckout(plan: string, interval: BillingInterval = 'm
   }
   // Already subscribed: plan changes and cancellations go through the billing portal.
   if (account.planKey !== 'free' && account.planStatus !== 'comped' && account.planStatus !== 'canceled') {
-    const portal = await s.billingPortal.sessions.create({ customer, return_url: `${siteOrigin()}/pricing` });
+    const resume = cookies().get(INTENT_COOKIE)?.value;
+    const back = resume ? `${siteOrigin()}/settings/account?billing=success` : `${siteOrigin()}/pricing`;
+    const portal = await s.billingPortal.sessions.create({ customer, return_url: back });
     redirect(portal.url);
   }
   const session = await s.checkout.sessions.create({
