@@ -517,6 +517,10 @@ def main():
     new_opps, new_news, updates = [], [], []
     generic_scopes = []
     wb_hits, wb_attempted = 0, False
+    from adapters.national_portals import french_phrase, portal_providers
+    portals = portal_providers()
+    portal_hits = {source_id: 0 for source_id, _provider, _lang in portals}
+    portal_attempted = set()
     # Following, per scope: {source_id: [scopes that follow it]}.
     follow = {}
     for r in session.execute(sql_text("select scope_id::text s, source_id from scope_sources")):
@@ -546,6 +550,26 @@ def main():
             wb_hits += len(found) - before
             wb_attempted = True
             query_count += len(wb_terms)
+        # One term per portal. English for the UK and EBRD, the French phrase
+        # for BOAMP, the Dutch term for TenderNed. Page size stays small.
+        en = ((cfg.get("wb_queries") or []) or (cfg.get("ted_phrases") or []) or [None])[0]
+        term = {
+            "en": en, "any": en,
+            "fr": french_phrase(cfg.get("ted_phrases") or []),
+            "nl": ((cfg.get("nl_queries") or []) or [None])[0],
+        }
+        for source_id, provider, lang in portals:
+            query = term.get(lang)
+            if not query:
+                continue
+            before = len(found)
+            new += run_discovery(
+                session, provider, {"web": [query]}, country_codes,
+                errors=errors, found=found, source_id=source_id,
+            )
+            portal_hits[source_id] += len(found) - before
+            portal_attempted.add(source_id)
+            query_count += 1
         if tavily:
             web_queries = rotate(cfg["web_queries"], min(2, per_run)) if cfg.get("web_queries") else tavily_queries_for_today(per_run)
             new += run_discovery(session, TavilySearchProvider(), {"web": web_queries}, country_codes, errors=errors, found=found)
@@ -561,6 +585,18 @@ def main():
             last_error = :err, number_results_last_run = :n
             where source_id = 'INTL-027'"""),
             {"err": (wb_errors[-1][:300] if wb_errors else None), "n": wb_hits})
+        session.commit()
+    for source_id, provider, _lang in portals:
+        if source_id not in portal_attempted:
+            continue
+        label = type(provider).__name__
+        bad = [e for e in errors if e.startswith(label)]
+        session.execute(sql_text("""update sources set last_checked = now(),
+            last_successful_check = case when :err is null then now() else last_successful_check end,
+            last_error = :err, number_results_last_run = :n
+            where source_id = :sid"""),
+            {"sid": source_id, "err": (bad[-1][:300] if bad else None), "n": portal_hits[source_id]})
+    if portal_attempted:
         session.commit()
 
     # Followed sources (Following sidebar): RSS feeds and domain searches on

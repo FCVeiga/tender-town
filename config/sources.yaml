@@ -117,36 +117,36 @@ eu_sources:
       api_available: true
       api_key_required: false
       priority: 2
-      note: "OCDS-format bulk data for all Italian public contracts above EUR 40,000, updated monthly. Confirmed via data.open-contracting.org/en/publication/117."
+      note: "Above-threshold Italian notices already arrive through TED. The ANAC open-data host answers anonymous calls with a WAF page, so it is not searched."
     - name: TenderNed Open Data (Netherlands)
       source_type: PROCUREMENT_PORTAL
       url: "https://www.tenderned.nl"
       api_available: true
       api_key_required: false
       priority: 2
-      note: "CC0 dataset, JSON/Excel/CSV, updated quarterly. Confirmed via data.open-contracting.org/en/publication/133."
+      note: "Public JSON search, no account. See adapters/national_portals.py. The XML API needs a password from TenderNed."
     - name: BOAMP Open Data (France)
       source_type: PROCUREMENT_PORTAL
       url: "https://www.boamp.fr"
-      api_url: "https://echanges.dila.gouv.fr/OPENDATA/BOAMP/"
+      api_url: "https://www.boamp.fr/api/explore/v2.1/catalog/datasets/boamp/records"
       api_available: true
       api_key_required: false
       priority: 2
-      note: "Open data published twice daily. Covers contracts from EUR 40,000 up to EU thresholds. eForms XML/JSON. Confirmed via data.gouv.fr."
+      note: "ODS search on the notice object. Needs a French phrase; the plain q parameter does not filter. See adapters/national_portals.py."
     - name: UK Find a Tender Service Open Data
       source_type: PROCUREMENT_PORTAL
       url: "https://www.find-tender.service.gov.uk"
       api_available: true
       api_key_required: false
       priority: 1
-      note: "Official OCDS API, no auth, no fee. Replaced TED for UK notices since 1 Jan 2021. Below-threshold contracts (>£10,000) are on the separate Contracts Finder platform."
+      note: "OCDS feed, no keyword parameter, so the pipeline keeps a recent tender-stage window and filters it. Below-threshold UK notices are Contracts Finder (POST search). Scotland is a separate OCDS API."
     - name: Denmark udbud.dk
       source_type: PROCUREMENT_PORTAL
       url: "https://www.udbud.dk"
       api_available: true
       api_key_required: false
       priority: 2
-      note: "Includes below-EU-threshold notices that never reach TED — most complete source for Danish opportunities."
+      note: "Would cover Danish notices that never reach TED. api.udbud.dk returned 503 on 2026-10-12, so it is not searched."
     - name: Switzerland simap.ch
       source_type: PROCUREMENT_PORTAL
       url: "https://www.simap.ch"
@@ -166,10 +166,15 @@ international_sources:
     source_type: DEVELOPMENT_BANK
     url: "https://www.eib.org"
     priority: 2
+    note: "EIB project procurement is published on TED. No keyless notice feed of its own."
   - name: EBRD
     source_type: DEVELOPMENT_BANK
     url: "https://www.ebrd.com"
+    api_url: "https://ecepp.ebrd.com/delta/noticeSearchResults.html"
+    api_available: true
+    api_key_required: false
     priority: 2
+    note: "Public ECEPP notice index (HTML, no JSON API). See adapters/national_portals.py."
   - name: ADB
     source_type: DEVELOPMENT_BANK
     url: "https://www.adb.org"
@@ -180,13 +185,13 @@ international_sources:
     open_data_portal: "https://data.iadb.org/dataset/project-procurement-bidding-notices-and-notification-of-contract-awards"
     api_available: false
     priority: 1
-    note: "26 borrowing countries across LatAm/Caribbean. Open data portal has downloadable datasets; no confirmed real-time query API as of this research pass."
+    note: "CKAN CSV of bidding notices. When checked on 2026-10-12 the newest publication date in the file was 2025-10-03, so it is not a live feed."
   - name: AfDB
     source_type: DEVELOPMENT_BANK
     url: "https://www.afdb.org/en/projects-and-operations/procurement"
     api_available: false
     priority: 1
-    note: "No public API found in this research pass — appears to be portal/eSourcing only (eprocurement.afdb.org). Likely needs a dedicated scraper adapter or manual monitoring."
+    note: "The procurement site answers with a Cloudflare check. No keyless feed. Not searched."
   - name: UNGM (UN Global Marketplace)
     source_type: PROCUREMENT_PORTAL
     url: "https://www.ungm.org"

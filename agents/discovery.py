@@ -27,11 +27,13 @@ def _parse_date(value):
 
 
 def run_discovery(session, search_provider, query_packs: dict, countries: list,
-                  errors: Optional[list] = None, found: Optional[set] = None):
+                  errors: Optional[list] = None, found: Optional[set] = None,
+                  source_id: Optional[str] = None):
     """Run every query in query_packs. A failing query is recorded in
     `errors` (when given) and skipped, so one bad source can't sink the run.
     `found` (when given) collects the id of every result, already known or
-    not — a scope triages what its own searches turn up."""
+    not — a scope triages what its own searches turn up. `source_id` stamps
+    new candidates with the registry row that produced them."""
     new_candidates = []
     seen = set()
     for pack_name, queries in query_packs.items():
@@ -52,7 +54,7 @@ def run_discovery(session, search_provider, query_packs: dict, countries: list,
                 seen.add(cid)
                 candidate = Candidate(
                     candidate_id=cid, discovered_at=datetime.utcnow(),
-                    source_url=r.url, title=r.title, description=r.snippet,
+                    source_id=source_id, source_url=r.url, title=r.title, description=r.snippet,
                     country=r.country, publication_date=_parse_date(r.published_date),
                     discovery_query=query, potential_categories=[pack_name],
                     processed=False,
