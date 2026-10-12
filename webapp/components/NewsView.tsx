@@ -10,6 +10,9 @@ import { getT } from '@/lib/i18n/server';
 import { withPublicScope } from '@/lib/guestScope';
 import { resolveFocus } from '@/lib/scopeFocus';
 import { ScopeBannerSuspense } from './ScopeBannerSlot';
+import ScopeView from './ScopeView';
+import ScopeStatus from './ScopeStatus';
+import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 
 
 type View = 'all' | 'signals' | (typeof NEWS_CATEGORIES)[number]['slug'];
@@ -86,24 +89,35 @@ export default async function NewsView({ view }: { view: View }) {
     { href: scope('/news/signals'), label: t('Signals'), count: signals.length },
   ];
 
+  const run = scopeRun(focus.current);
+  const hasCollected = view === 'signals' ? signals.length > 0 : view === 'all' ? all.length + signals.length > 0 : all.length > 0;
+  const kind = collectionKind(run, hasCollected, !!focus.hold);
+  const surface = view === 'signals' ? 'signals' : 'news';
+
   return (
     <div className="news-page">
       <ScopeBannerSuspense />
-      <h1 className="opps-h1">{heading ? t(heading.label) : t('EUDI News')}</h1>
+      <h1 className="opps-h1">{heading ? t(heading.label) : t('News')}</h1>
+      <ScopeView scopeId={focus.hold?.id ?? focus.current?.id ?? null}>
       <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />
 
       {error && <div className="callout error"><strong>{t('Error loading news.')}</strong> {error.message}</div>}
-      {focus.hold && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
-      {!error && !focus.hold && visible.length === 0 && (
-        <div className="callout">
-          <strong>{view === 'signals' ? t('No confirmed signals right now.') : t('No news in this section yet.')}</strong>
-        </div>
+      {kind === 'loading' && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+      {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
+        <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface={surface} signedIn={focus.signedIn} />
+      )}
+      {!error && kind === 'stale' && (
+        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface={surface} signedIn={focus.signedIn} />
+      )}
+      {!error && (kind === 'ready' || kind === 'stale') && visible.length === 0 && (
+        <div className="callout"><strong>{t('Nothing in this section right now.')}</strong></div>
       )}
 
       <div className="feed">
-        {!focus.hold && visible.map((i) => <FeedCard key={i.key} item={i} now={now}
+        {(kind === 'ready' || kind === 'stale') && visible.map((i) => <FeedCard key={i.key} item={i} now={now}
           social={{ engagement: engOf(i.href).get(likeTarget(i.href)?.[1] ?? ''), signedIn: newsEng.signedIn }} />)}
       </div>
+      </ScopeView>
     </div>
   );
 }

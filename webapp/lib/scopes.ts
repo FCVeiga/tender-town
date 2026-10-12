@@ -25,6 +25,8 @@ export type Scope = {
   catalog: boolean;
   searchScope: string | null; searchConfig: Record<string, any> | null; searchStatus: string | null; searchError: string | null;
   parsedAt: string | null; createdAt: string;
+  /** Set only when a collection finished. `last_run_at` is that same success until a newer one lands. */
+  lastSuccessAt: string | null; lastAttemptAt: string | null; lastRunError: string | null;
 };
 
 export { CATALOG_ORDER };
@@ -34,6 +36,9 @@ const toScope = (r: any): Scope => ({
   catalog: !!r.catalog,
   searchScope: r.search_scope, searchConfig: r.search_config, searchStatus: r.search_status, searchError: r.search_error,
   parsedAt: r.search_parsed_at, createdAt: r.created_at,
+  lastSuccessAt: r.last_success_at || r.last_run_at || null,
+  lastAttemptAt: r.last_attempt_at || null,
+  lastRunError: r.last_run_error || null,
 });
 
 const byCatalogOrder = (a: Scope, b: Scope) =>
@@ -155,6 +160,22 @@ export type ScopeItems = { ids: string[]; relevance: Map<string, number>; scopes
 /** Tenders or news found by the viewer's scopes, with the best relevance any of them gave.
  * `focused` is the one scope Home, Tenders and News are showing. An empty result
  * (not null) means show nothing — null still means there is no scope setup yet. */
+const loadScopeItems = cache(async (type: 'tender' | 'news', scopeKey: string): Promise<ScopeItems | null> => {
+  const ids = scopeKey ? scopeKey.split(',') : [];
+  if (!ids.length) return { ids: [], relevance: new Map(), scopesOf: new Map() };
+  const { data } = await getSupabaseServerClient().from('scope_items').select('scope_id, item_id, relevance')
+    .eq('item_type', type).in('scope_id', ids).limit(20000);
+  const relevance = new Map<string, number>();
+  const scopesOf = new Map<string, string[]>();
+  for (const r of data || []) {
+    relevance.set(r.item_id, Math.max(relevance.get(r.item_id) ?? -1, r.relevance ?? 0));
+    scopesOf.set(r.item_id, [...(scopesOf.get(r.item_id) || []), r.scope_id]);
+  }
+  return { ids: Array.from(relevance.keys()), relevance, scopesOf };
+});
+
+/** Tenders or news for these scopes. `focused` uses the scope Home, Tenders and News are showing.
+ * The scope id is part of the cache key so a later scope cannot reuse an earlier result. */
 export const getScopeItems = cache(async (type: 'tender' | 'news', focused = false): Promise<ScopeItems | null> => {
   let scopes: Scope[];
   if (focused) {
@@ -166,15 +187,7 @@ export const getScopeItems = cache(async (type: 'tender' | 'news', focused = fal
     scopes = (await getViewScopes()).scopes;
   }
   if (!scopes.length) return focused ? { ids: [], relevance: new Map(), scopesOf: new Map() } : null;
-  const { data } = await getSupabaseServerClient().from('scope_items').select('scope_id, item_id, relevance')
-    .eq('item_type', type).in('scope_id', scopes.map((s) => s.id)).limit(20000);
-  const relevance = new Map<string, number>();
-  const scopesOf = new Map<string, string[]>();
-  for (const r of data || []) {
-    relevance.set(r.item_id, Math.max(relevance.get(r.item_id) ?? -1, r.relevance ?? 0));
-    scopesOf.set(r.item_id, [...(scopesOf.get(r.item_id) || []), r.scope_id]);
-  }
-  return { ids: Array.from(relevance.keys()), relevance, scopesOf };
+  return loadScopeItems(type, scopes.map((s) => s.id).sort().join(','));
 });
 
 /** Agent switches and fine-tuning for one scope's agents (no row = on, default prompt). */

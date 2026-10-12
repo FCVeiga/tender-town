@@ -2035,5 +2035,118 @@
     "fr": "Free suit le périmètre Général. Starter ajoute un périmètre que vous configurez et 1 évaluation d'appel d'offres par mois. Pro ajoute jusqu'à cinq périmètres, 5 évaluations par mois et 50 rapports d'actualité par mois, à 89 € par mois. Teams ajoute des évaluations illimitées et des notes de proposition, pour plusieurs espaces de travail et membres, à 139 € par mois. Une année coûte onze mois.",
     "de": "Free folgt dem Bereich Allgemein. Starter ergänzt einen Bereich, den Sie einstellen, und 1 Ausschreibungsbewertung im Monat. Pro ergänzt bis zu fünf Bereiche, 5 Bewertungen im Monat und 50 Nachrichtenberichte im Monat, für 89 € im Monat. Teams ergänzt unbegrenzte Bewertungen und Angebotsbriefings, für mehrere Arbeitsbereiche und Mitglieder, für 139 € im Monat. Ein Jahr kostet elf Monate.",
     "it": "Free segue l'ambito Generale. Starter aggiunge un ambito che configuri e 1 valutazione di gara al mese. Pro aggiunge fino a cinque ambiti, 5 valutazioni al mese e 50 report sulle notizie al mese, a 89 € al mese. Teams aggiunge valutazioni illimitate e brief di offerta, per più aree di lavoro e membri, a 139 € al mese. Un anno costa undici mesi."
+  },
+
+  "No active tenders in {scopeName} right now.": {
+    "pt": "Não há concursos ativos em {scopeName} neste momento.",
+    "es": "No hay licitaciones activas en {scopeName} ahora mismo.",
+    "fr": "Aucun appel d’offres actif dans {scopeName} pour le moment.",
+    "de": "Gerade keine aktiven Ausschreibungen in {scopeName}.",
+    "it": "Nessuna gara attiva in {scopeName} in questo momento."
+  },
+  "No news in {scopeName} right now.": {
+    "pt": "Não há notícias em {scopeName} neste momento.",
+    "es": "No hay noticias en {scopeName} ahora mismo.",
+    "fr": "Aucune actualité dans {scopeName} pour le moment.",
+    "de": "Gerade keine Nachrichten in {scopeName}.",
+    "it": "Nessuna notizia in {scopeName} in questo momento."
+  },
+  "Nothing in {scopeName} right now.": {
+    "pt": "Não há nada em {scopeName} neste momento.",
+    "es": "No hay nada en {scopeName} ahora mismo.",
+    "fr": "Rien dans {scopeName} pour le moment.",
+    "de": "Gerade nichts in {scopeName}.",
+    "it": "Niente in {scopeName} in questo momento."
+  },
+  "No signals in {scopeName} right now.": {
+    "pt": "Não há sinais em {scopeName} neste momento.",
+    "es": "No hay señales en {scopeName} ahora mismo.",
+    "fr": "Aucun signal dans {scopeName} pour le moment.",
+    "de": "Gerade keine Signale in {scopeName}.",
+    "it": "Nessun segnale in {scopeName} in questo momento."
+  },
+  "Browse another scope": {
+    "pt": "Ver outro âmbito",
+    "es": "Ver otro ámbito",
+    "fr": "Voir un autre périmètre",
+    "de": "Anderen Bereich ansehen",
+    "it": "Sfoglia un altro ambito"
+  },
+  "Last collected {time}.": {
+    "pt": "Última recolha: {time}.",
+    "es": "Última recogida: {time}.",
+    "fr": "Dernière collecte : {time}.",
+    "de": "Zuletzt erfasst: {time}.",
+    "it": "Ultima raccolta: {time}."
+  },
+  "{scopeName} is preparing its first results.": {
+    "pt": "{scopeName} está a preparar os primeiros resultados.",
+    "es": "{scopeName} está preparando sus primeros resultados.",
+    "fr": "{scopeName} prépare ses premiers résultats.",
+    "de": "{scopeName} bereitet die ersten Ergebnisse vor.",
+    "it": "{scopeName} sta preparando i primi risultati."
+  },
+  "Results for {scopeName} could not be refreshed.": {
+    "pt": "Não foi possível atualizar os resultados de {scopeName}.",
+    "es": "No se han podido actualizar los resultados de {scopeName}.",
+    "fr": "Les résultats de {scopeName} n’ont pas pu être actualisés.",
+    "de": "Die Ergebnisse für {scopeName} konnten nicht aktualisiert werden.",
+    "it": "Non è stato possibile aggiornare i risultati di {scopeName}."
+  },
+  "The latest refresh failed.": {
+    "pt": "A última atualização falhou.",
+    "es": "La última actualización ha fallado.",
+    "fr": "La dernière actualisation a échoué.",
+    "de": "Die letzte Aktualisierung ist fehlgeschlagen.",
+    "it": "L’ultimo aggiornamento non è riuscito."
+  },
+  "Search scopes": {
+    "pt": "Pesquisar âmbitos",
+    "es": "Buscar ámbitos",
+    "fr": "Rechercher des périmètres",
+    "de": "Bereiche suchen",
+    "it": "Cerca ambiti"
+  },
+  "No scopes match that search.": {
+    "pt": "Nenhum âmbito corresponde a essa pesquisa.",
+    "es": "Ningún ámbito coincide con esa búsqueda.",
+    "fr": "Aucun périmètre ne correspond à cette recherche.",
+    "de": "Keine Bereiche passen zu dieser Suche.",
+    "it": "Nessun ambito corrisponde a questa ricerca."
+  },
+  "Create a scope with your own markets, company context and agent instructions to find and assess opportunities relevant to your business.": {
+    "pt": "Crie um âmbito com os seus mercados, o contexto da sua empresa e instruções para os agentes, para encontrar e avaliar oportunidades relevantes para o seu negócio.",
+    "es": "Crea un ámbito con tus mercados, el contexto de tu empresa e instrucciones para los agentes, para encontrar y valorar oportunidades relevantes para tu negocio.",
+    "fr": "Créez un périmètre avec vos marchés, le contexte de votre entreprise et des instructions pour les agents, afin de trouver et d’évaluer les opportunités utiles à votre activité.",
+    "de": "Lege einen Bereich mit deinen Märkten, dem Kontext deines Unternehmens und Anweisungen für die Agenten an, um passende Chancen zu finden und zu bewerten.",
+    "it": "Crea un ambito con i tuoi mercati, il contesto della tua azienda e istruzioni per gli agenti, per trovare e valutare opportunità rilevanti per la tua attività."
+  },
+  "Closed tenders are in": {
+    "pt": "Os concursos encerrados estão em",
+    "es": "Las licitaciones cerradas están en",
+    "fr": "Les appels d’offres clos sont dans",
+    "de": "Geschlossene Ausschreibungen sind in",
+    "it": "Le gare chiuse sono in"
+  },
+  "Loading activity": {
+    "pt": "A carregar a atividade",
+    "es": "Cargando la actividad",
+    "fr": "Chargement de l’activité",
+    "de": "Aktivität wird geladen",
+    "it": "Caricamento dell’attività"
+  },
+  "No activity yet for this scope.": {
+    "pt": "Ainda não há atividade neste âmbito.",
+    "es": "Aún no hay actividad en este ámbito.",
+    "fr": "Pas encore d’activité pour ce périmètre.",
+    "de": "Noch keine Aktivität in diesem Bereich.",
+    "it": "Ancora nessuna attività per questo ambito."
+  },
+  "Nothing in this section right now.": {
+    "pt": "Nada nesta secção neste momento.",
+    "es": "Nada en esta sección ahora mismo.",
+    "fr": "Rien dans cette section pour le moment.",
+    "de": "Gerade nichts in diesem Abschnitt.",
+    "it": "Niente in questa sezione in questo momento."
   }
 }

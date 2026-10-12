@@ -8,6 +8,9 @@ import { getT } from '@/lib/i18n/server';
 import { withPublicScope } from '@/lib/guestScope';
 import { resolveFocus } from '@/lib/scopeFocus';
 import { ScopeBannerSuspense } from './ScopeBannerSlot';
+import ScopeView from './ScopeView';
+import ScopeStatus from './ScopeStatus';
+import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 
 type View = 'all' | 'new' | (typeof OPP_CATEGORIES)[number]['slug'];
 
@@ -53,34 +56,43 @@ export default async function OpportunitiesView({ view }: { view: View }) {
 
   const activeHref = scope(view === 'all' ? '/tenders' : view === 'new' ? '/tenders/new'
     : `/tenders/${OPP_CATEGORIES.find((c) => c.slug === view)!.path}`);
+  const run = scopeRun(focus.current);
+  const kind = collectionKind(run, active.length > 0, !!focus.hold);
+  const scopeId = focus.hold?.id ?? focus.current?.id ?? null;
 
   return (
     <div>
       <ScopeBannerSuspense />
       <h1 className="opps-h1">{t(TITLES[view])}</h1>
+      <ScopeView scopeId={scopeId}>
       <SectionTabs tabs={tabs} active={activeHref} />
 
       {error && (
         <div className="callout error"><strong>{t('Error loading tenders.')}</strong> {error.message}</div>
       )}
-      {focus.hold && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
-      {!error && !focus.hold && shown.length === 0 && (
+      {kind === 'loading' && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+      {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
+        <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="tenders" signedIn={focus.signedIn} />
+      )}
+      {!error && kind === 'stale' && (
+        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="tenders" signedIn={focus.signedIn} />
+      )}
+      {!error && (kind === 'ready' || kind === 'stale') && shown.length === 0 && (
         <div className="callout">
-          <strong>{t('Nothing here right now.')}</strong>{' '}
-          {view === 'new'
-            ? t('None in the last {n} days.', { n: NEW_WINDOW_DAYS })
-            : t('Closed ones are in History.')}
+          <strong>{t('Nothing in this section right now.')}</strong>
+          {view === 'new' && <> {t('None in the last {n} days.', { n: NEW_WINDOW_DAYS })}</>}
         </div>
       )}
       <RingGradients />
       <div className="opp-rows">
-        {!focus.hold && shown.map((o) => (
+        {(kind === 'ready' || kind === 'stale') && shown.map((o) => (
           <OpportunityRow key={o.opportunity_id} o={o} copy={copy.get(o.opportunity_id)}
                           like={{ liked: likes.liked.has(o.opportunity_id), signedIn: likes.signedIn }}
                           countryName={o.country ? names.get(o.country) ?? null : null}
                           updates={updates.get(o.opportunity_id) ?? []} />
         ))}
       </div>
+      </ScopeView>
     </div>
   );
 }

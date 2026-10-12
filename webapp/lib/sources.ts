@@ -156,13 +156,14 @@ const OPPORTUNITY_KINDS = ['TENDER', 'RFI', 'GRANT', 'CONSORTIUM_CALL', 'PILOT',
  *    right now (same rule as the Opportunities page), dated from it — search
  *    results carry no publication date, so they can't be trusted to be new.
  */
-export async function getActivity(limit = 30) {
+export async function getActivity(limit = 30, scopeId?: string | null) {
   await getPlatformLanguage();  // the display filter's language
   const db = getSupabaseServerClient();
   const now = new Date();
   const cols = 'id, source_id, title, title_en, kind, url, published_at, relevant, sources!inner(name, source_type, handle, method)';
   const since = new Date(now.getTime() - FEED_MAX_AGE_DAYS * 86400_000).toISOString();
-  const followed = Array.from(await getViewSourceIds());  // only what the viewer's scopes follow
+  const followed = Array.from(scopeId ? await getFollowedSourceIds([scopeId]) : await getViewSourceIds());
+  if (!followed.length) return [];
   const [feeds, finds] = await Promise.all([
     db.from('source_activity').select(cols).neq('sources.method', 'site_search').in('source_id', followed)
       .gte('published_at', since).or('kind.is.null,kind.neq.FALSE_POSITIVE')

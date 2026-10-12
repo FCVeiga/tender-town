@@ -50,9 +50,20 @@ export type FocusModel = {
   deny: null | { kind: 'plan' | 'permission'; scopeId: string; scopeName: string };
 };
 
+/** One sentence on what the scope monitors. A leading market claim is left off. */
 const blurb = (instructions: string | null) => {
-  const line = (instructions || '').split('\n').map((s) => s.trim()).find(Boolean) || '';
-  return line.length > 160 ? `${line.slice(0, 157)}…` : line;
+  let line = (instructions || '').split('\n').map((s) => s.trim()).find(Boolean) || '';
+  const colon = line.indexOf(':');
+  let stripped = false;
+  if (colon > 0 && /\b(markets?|compet|busiest|largest|billions?)/i.test(line.slice(0, colon))) {
+    line = line.slice(colon + 1).trim();
+    stripped = true;
+  }
+  let sentence = (line.split(/(?<=\.)\s/)[0] || line).trim();
+  if (stripped && sentence) sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+  if (sentence.length <= 140) return sentence;
+  const cut = sentence.slice(0, 137).replace(/\s+\S*$/, '');
+  return `${cut}…`;
 };
 
 function matchScope(raw: string, scopes: Scope[]): Scope | null {

@@ -131,8 +131,16 @@ def _due(s) -> bool:
 
 
 def mark_ran(session, scope) -> None:
-    """Record that a scope's search and triage ran (its plan's cadence counts from here)."""
-    session.execute(text("update scopes set last_run_at = now() where id = cast(:i as uuid)"), {"i": scope.id})
+    """Record that a scope's search and triage finished (its plan's cadence counts from here)."""
+    session.execute(text("""update scopes set last_run_at = now(), last_success_at = now(),
+        last_attempt_at = now(), last_run_error = null where id = cast(:i as uuid)"""), {"i": scope.id})
+    session.commit()
+
+
+def mark_failed(session, scope, error: str) -> None:
+    """The latest collection did not finish. An earlier success, if any, stays in place."""
+    session.execute(text("""update scopes set last_attempt_at = now(), last_run_error = :e
+        where id = cast(:i as uuid)"""), {"i": scope.id, "e": (error or "Collection failed")[:300]})
     session.commit()
 
 

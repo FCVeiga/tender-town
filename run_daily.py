@@ -560,8 +560,14 @@ def main():
     for scope in generic_scopes:
         from agents import generic_scope
         followed = [sid for sid, scs in follow.items() if scope in scs]
-        g = generic_scope.run(session, scope, promote, country_names, errors,
-                              TavilySearchProvider if tavily else None, followed=followed)
+        try:
+            g = generic_scope.run(session, scope, promote, country_names, errors,
+                                  TavilySearchProvider if tavily else None, followed=followed)
+        except Exception as e:
+            errors.append(f"{scope.name}: {e}")
+            print(f"[{scope.name}] generic failed: {e}")
+            S.mark_failed(session, scope, str(e))
+            continue
         new_opps += g["tenders"]; new_news += g["news"]; updates += g["updated"]
         print(f"[{scope.name}] generic: {g['checked']} TED notices scored, {len(g['tenders'])} new tenders, "
               f"{len(g['news'])} new stories ({g['from_sources']} from followed sources)")
@@ -652,6 +658,7 @@ def main():
                     print(f"  [{scope.name}] triaged {i}/{len(to_llm)}")
         print(f"[{scope.name}] triage: {len(pending)} queued, {len(to_llm)} LLM calls")
         if aborted:
+            S.mark_failed(session, scope, errors[-1] if errors else "Collection failed")
             break
         S.mark_ran(session, scope)
     # A tender's own relevance is the best any scope gave it (cards then show the viewer's scopes').

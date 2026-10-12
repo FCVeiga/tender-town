@@ -27,10 +27,13 @@ function BannerArt() {
   );
 }
 
-export default function ScopeBanner({ model, createAction }: { model: FocusModel; createAction: (() => Promise<void>) | null }) {
+export default function ScopeBanner({ model, createAction }: {
+  model: FocusModel; createAction: (() => Promise<void>) | null;
+}) {
   const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [gate, setGate] = useState<Gate | null>(model.deny ? { action: 'switch', kind: model.deny.kind, scopeId: model.deny.scopeId } : null);
   const box = useRef<HTMLDivElement>(null);
@@ -44,8 +47,17 @@ export default function ScopeBanner({ model, createAction }: { model: FocusModel
   const current = model.hold || model.current;
   const yours = model.choices.filter((c) => c.group === 'yours');
   const published = model.choices.filter((c) => c.group === 'public');
+  const q = query.trim().toLowerCase();
+  const matches = (choice: FocusModel['choices'][number]) => !q
+    || choice.name.toLowerCase().includes(q)
+    || t(choice.name).toLowerCase().includes(q)
+    || choice.description.toLowerCase().includes(q);
+  const shownPublic = published.filter(matches);
+  const shownYours = yours.filter(matches);
+  const shown = [...shownPublic, ...shownYours];
 
   const apply = (id: string) => {
+    window.dispatchEvent(new CustomEvent('tt-scope-pending', { detail: id }));
     const mine = ++latest.current;
     const shown = model.hold ? null : model.current?.id ?? null;
     chain.current = chain.current.catch(() => undefined).then(async () => {
@@ -56,6 +68,7 @@ export default function ScopeBanner({ model, createAction }: { model: FocusModel
         return;
       }
       if ('kind' in result) {
+        window.dispatchEvent(new CustomEvent('tt-scope-cancel', { detail: id }));
         setGate({ action: 'switch', kind: result.kind, scopeId: id });
         if (model.hold) {
           const url = new URL(window.location.href);
@@ -96,6 +109,16 @@ export default function ScopeBanner({ model, createAction }: { model: FocusModel
   }, [model.signedIn, model.hold, model.deny, model.current, model.publicSlug]);
 
   useEffect(() => {
+    const openMenu = () => {
+      setQuery('');
+      setActive(0);
+      setOpen(true);
+    };
+    window.addEventListener('tt-open-scopes', openMenu);
+    return () => window.removeEventListener('tt-open-scopes', openMenu);
+  }, [current?.id]);
+
+  useEffect(() => {
     if (!open) return;
     const onPointer = (event: MouseEvent) => {
       if (!box.current?.contains(event.target as Node)) setOpen(false);
@@ -106,9 +129,15 @@ export default function ScopeBanner({ model, createAction }: { model: FocusModel
 
   useEffect(() => {
     if (!open) return;
+    list.current?.querySelector<HTMLInputElement>('input')?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
     const node = list.current?.querySelector<HTMLElement>('[data-active="true"]');
-    node?.focus();
-  }, [open, active]);
+    const focus = document.activeElement;
+    if (node && list.current?.contains(focus) && focus?.tagName !== 'INPUT') node.focus();
+  }, [active, open]);
 
   const go = (id: string, locked: null | 'plan' | 'permission') => {
     setOpen(false);
@@ -125,7 +154,7 @@ export default function ScopeBanner({ model, createAction }: { model: FocusModel
   };
 
   const onListKey = (event: React.KeyboardEvent) => {
-    const max = model.choices.length - 1;
+    const max = Math.max(0, shown.length - 1);
     if (event.key === 'Escape') {
       event.preventDefault();
       setOpen(false);
@@ -136,30 +165,35 @@ export default function ScopeBanner({ model, createAction }: { model: FocusModel
     if (event.key === 'ArrowUp') { event.preventDefault(); setActive((n) => Math.max(0, n - 1)); }
     if (event.key === 'Home') { event.preventDefault(); setActive(0); }
     if (event.key === 'End') { event.preventDefault(); setActive(max); }
+    if (event.key === 'Enter' && shown[active]) {
+      event.preventDefault();
+      go(shown[active].id, shown[active].locked);
+    }
   };
 
-  const indexOf = (id: string) => model.choices.findIndex((c) => c.id === id);
+  const shownAt = Math.max(0, shown.findIndex((c) => c.id === (current?.id || '')));
 
   return (
     <section className="scope-banner" aria-busy={!!model.hold}>
       <BannerArt />
       <div className="scope-banner-inner">
-      <div className="scope-banner-lead">
-        <p className="scope-banner-kicker">{t('Choose your scope. Find your next opportunity.')}</p>
-        <p className="scope-banner-copy">{t(COPY)}</p>
-        {!model.choices.length && <p className="form-msg err">{t('Could not load scopes.')}</p>}
-      </div>
+        <div className="scope-banner-lead">
+          <p className="scope-banner-kicker">{t('Choose your scope. Find your next opportunity.')}</p>
+          <p className="scope-banner-copy">{t(COPY)}</p>
+          {!model.choices.length && <p className="form-msg err">{t('Could not load scopes.')}</p>}
+        </div>
       <div className="scope-banner-actions">
         <div className="scope-banner-picker" ref={box}>
           <button
             ref={button} type="button" className="scope-banner-select" aria-haspopup="listbox"
             aria-expanded={open} aria-controls={listId} disabled={!model.choices.length}
-            onClick={() => { setActive(Math.max(0, indexOf(current?.id || ''))); setOpen((v) => !v); }}
+            onClick={() => { setQuery(''); setActive(shownAt); setOpen((v) => !v); }}
             onKeyDown={(event) => {
               if (event.key === 'Escape') { setOpen(false); return; }
               if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                setActive(Math.max(0, indexOf(current?.id || '')));
+                setQuery('');
+                setActive(shownAt);
                 setOpen(true);
               }
             }}>
@@ -168,13 +202,27 @@ export default function ScopeBanner({ model, createAction }: { model: FocusModel
           </button>
           {open && (
             <div ref={list} id={listId} className="scope-menu" role="listbox" aria-label={t('Scopes')} tabIndex={-1} onKeyDown={onListKey}>
-              {published.map((choice) => (
-                <Option key={choice.id} choice={choice} active={model.choices[active]?.id === choice.id} selected={choice.id === current?.id} onPick={() => go(choice.id, choice.locked)} />
+              <input
+                className="scope-search" value={query} placeholder={t('Search scopes')} aria-label={t('Search scopes')}
+                onChange={(event) => { setQuery(event.target.value); setActive(0); }}
+                onKeyDown={(event) => {
+                  if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setActive(0);
+                    list.current?.querySelector<HTMLElement>('[role="option"]')?.focus();
+                  }
+                  if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setOpen(false); button.current?.focus(); }
+                  if (event.key === 'Enter' && shown[0]) { event.preventDefault(); go(shown[0].id, shown[0].locked); }
+                }} />
+              {shownPublic.map((choice) => (
+                <Option key={choice.id} choice={choice} active={shown[active]?.id === choice.id} selected={choice.id === current?.id} onPick={() => go(choice.id, choice.locked)} />
               ))}
-              {yours.length > 0 && <p className="scope-menu-label">{t('Your scopes')}</p>}
-              {yours.map((choice) => (
-                <Option key={choice.id} choice={choice} active={model.choices[active]?.id === choice.id} selected={choice.id === current?.id} onPick={() => go(choice.id, choice.locked)} />
+              {shownYours.length > 0 && <p className="scope-menu-label">{t('Your scopes')}</p>}
+              {shownYours.map((choice) => (
+                <Option key={choice.id} choice={choice} active={shown[active]?.id === choice.id} selected={choice.id === current?.id} onPick={() => go(choice.id, choice.locked)} />
               ))}
+              {shown.length === 0 && <p className="scope-menu-empty">{t('No scopes match that search.')}</p>}
             </div>
           )}
         </div>
@@ -239,6 +287,7 @@ function GateModal({ gate, model, onClose }: { gate: Gate; model: FocusModel; on
   return (
     <Modal title={title} onClose={onClose}>
       <p className="scope-gate-copy">{body}</p>
+      {signup && <p className="scope-gate-copy">{t('Create a scope with your own markets, company context and agent instructions to find and assess opportunities relevant to your business.')}</p>}
       <div className="modal-actions">
         <button type="button" className="btn" onClick={onClose}>{t('Close')}</button>
         {signup && (

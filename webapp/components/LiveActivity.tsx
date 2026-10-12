@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { SourceActivity as Activity } from '@/lib/sourceMeta';
 import SourceIcon from './SourceIcon';
 import { useLocale, useT } from '@/lib/i18n/client';
@@ -49,28 +49,72 @@ function verb(t: T, a: Activity) {
   return t('published an article');
 }
 
-/** Moltbook-style live panel: latest activity of followed sources, polled every minute. */
-export default function LiveActivity({ initial }: { initial: Activity[] }) {
+/** Moltbook-style live panel: latest activity of the scope on screen, polled every minute. */
+export default function LiveActivity({ initial, scopeId }: { initial: Activity[]; scopeId: string | null }) {
   const t = useT();
   const locale = useLocale();
   const [items, setItems] = useState(initial);
+  const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   // Phones and tablets show the panel above the feed, collapsed until tapped (desktop: always open).
   const [open, setOpen] = useState(false);
+  const gen = useRef(0);
+  const scope = useRef(scopeId);
+  scope.current = scopeId;
+  const first = useRef(true);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    let alive = true;
+    const onPending = () => {
+      gen.current += 1;
+      setItems([]);
+      setLoading(true);
+    };
+    const onCancel = (event: Event) => {
+      const id = String((event as CustomEvent).detail || '');
+      if (!id || id === scope.current) return;
+      setRetry((n) => n + 1);
+    };
+    window.addEventListener('tt-scope-pending', onPending);
+    window.addEventListener('tt-scope-cancel', onCancel);
+    return () => {
+      window.removeEventListener('tt-scope-pending', onPending);
+      window.removeEventListener('tt-scope-cancel', onCancel);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mine = ++gen.current;
+    const ctrl = new AbortController();
+    if (!first.current) {
+      setItems([]);
+      setLoading(true);
+    }
+    first.current = false;
     const load = async () => {
+      const id = scope.current;
+      if (!id) {
+        if (mine === gen.current) { setItems([]); setLoading(false); }
+        return;
+      }
       try {
-        const res = await fetch('/api/activity', { cache: 'no-store' });
-        if (res.ok && alive) setItems((await res.json()).activity);
-      } catch { /* keep what we have */ }
-      if (alive) setNow(Date.now());
+        const res = await fetch(`/api/activity?scope=${encodeURIComponent(id)}`, { cache: 'no-store', signal: ctrl.signal });
+        if (!res.ok || mine !== gen.current) return;
+        const body = await res.json();
+        if (body.scopeId !== scope.current || mine !== gen.current) return;
+        if (body.pending) { setItems([]); setLoading(true); return; }
+        setItems(body.activity || []);
+        setLoading(false);
+        setNow(Date.now());
+      } catch (err) {
+        if ((err as Error).name === 'AbortError' || mine !== gen.current) return;
+        setLoading(false);
+      }
     };
     load();
-    const id = setInterval(load, POLL_MS);
-    return () => { alive = false; clearInterval(id); };
-  }, []);
+    const timer = setInterval(load, POLL_MS);
+    return () => { ctrl.abort(); clearInterval(timer); };
+  }, [scopeId, retry]);
 
   return (
     <div className={`live-panel ${open ? 'open' : ''}`}>
@@ -79,7 +123,8 @@ export default function LiveActivity({ initial }: { initial: Activity[] }) {
         <svg className="live-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" /></svg>
       </button>
       <ul className="live-list">
-        {items.length === 0 && <li className="side-empty">{t('No activity yet from the sources you follow.')}</li>}
+        {loading && items.length === 0 && <li className="side-empty" aria-busy="true">{t('Loading activity')}</li>}
+        {!loading && items.length === 0 && <li className="side-empty">{t('No activity yet for this scope.')}</li>}
         {items.map((a) => (
           <li key={a.id} className="la-item">
             <SourceIcon type={a.sources?.source_type ?? 'NEWS'} size={26} />

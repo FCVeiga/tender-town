@@ -12,6 +12,10 @@ import { getT } from '@/lib/i18n/server';
 import { withPublicScope } from '@/lib/guestScope';
 import { resolveFocus } from '@/lib/scopeFocus';
 import { ScopeBannerSuspense } from '@/components/ScopeBannerSlot';
+import ScopeView from '@/components/ScopeView';
+import ScopeStatus from '@/components/ScopeStatus';
+import { collectionKind, scopeRun } from '@/lib/scopeStatus';
+import { getLocale } from '@/lib/i18n/server';
 
 const likeOf = (likes: { signedIn: boolean; liked: Set<string> }, href: string) => {
   const t = likeTarget(href);
@@ -59,7 +63,16 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
   const t = await getT();
   const focus = await resolveFocus();
   const view = (FEED_VIEWS.find((v) => v.slug === raw)?.slug ?? 'top') as FeedView;
-  const [{ items, error }, activity] = await Promise.all([getFeed(view, now), getActivity(30)]);
+  const scopeId = focus.hold?.id ?? focus.current?.id ?? null;
+  const [{ items, error }, activity] = await Promise.all([
+    getFeed(view, now),
+    focus.hold || !focus.current ? Promise.resolve([]) : getActivity(30, focus.current.id),
+  ]);
+  const run = scopeRun(focus.current);
+  const kind = collectionKind(run, items.length > 0, !!focus.hold);
+  const collected = run.lastSuccessAt && !Number.isNaN(new Date(run.lastSuccessAt).getTime())
+    ? new Date(run.lastSuccessAt).toLocaleString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : null;
   const shown = Math.max(PAGE, Number(n) || PAGE);
   const likes = await getFeedLikes(items.map((i) => i.href));
   const href = (v: FeedView, more?: number) => {
@@ -82,22 +95,30 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
       </nav>
 
       <div className="feed-page">
+        <ScopeView scopeId={scopeId}>
         {error && <div className="callout error"><strong>{t('Error loading the feed.')}</strong> {error.message}</div>}
-        {focus.hold && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
-        {!error && !focus.hold && items.length === 0 && <div className="callout">{t('Nothing here yet.')}</div>}
+        {kind === 'loading' && <div className="callout" aria-busy="true">{t('Loading scope')}</div>}
+        {!error && kind === 'stale' && (
+          <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="feed" signedIn={focus.signedIn} />
+        )}
+        {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
+          <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="feed" signedIn={focus.signedIn} />
+        )}
+        {kind === 'ready' && collected && <p className="scope-collected">{t('Last collected {time}.', { time: collected })}</p>}
         <div className="feed">
-          {!focus.hold && items.slice(0, shown).map((item) => (
+          {(kind === 'ready' || kind === 'stale') && items.slice(0, shown).map((item) => (
             <FeedCard key={item.key} item={item} now={now} value={view === 'relevance' ? item.score : item.combined} like={likeOf(likes, item.href)} />
           ))}
         </div>
-        {!focus.hold && items.length > shown && (
+        {(kind === 'ready' || kind === 'stale') && items.length > shown && (
           <Link href={href(view, shown + PAGE)} scroll={false} className="feed-more">
             {t('Show more')} <span className="mono">({t('{n} left', { n: items.length - shown })})</span>
           </Link>
         )}
+        </ScopeView>
       </div>
 
-      <aside className="home-right"><LiveActivity initial={activity} /></aside>
+      <aside className="home-right"><LiveActivity initial={focus.hold ? [] : activity} scopeId={scopeId} /></aside>
     </>
   );
 }
