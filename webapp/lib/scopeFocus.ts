@@ -14,7 +14,7 @@ import {
   FOCUS_COOKIE, FOCUS_USER_COOKIE, GUEST_GENERAL, SCOPE_QUERY_HEADER, scopeSlug,
 } from '@/lib/guestScope';
 import {
-  getCatalogScopes, getGeneralScope, getViewScopes, getWorkspaceScopes, workspaceScopeUse, type Scope,
+  getCatalogScopes, getGeneralScope, getViewScopes, getWorkspaceScopes, replacesCatalogPick, workspaceScopeUse, type Scope,
 } from '@/lib/scopes';
 
 const UNLIMITED = 1000;
@@ -102,9 +102,9 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
   const used = use.custom + use.pickIds.length;
   const isAdmin = !!ctx?.isAdmin;
   const slotFree = unlimited || used < limit;
-  // A template scope uses a slot on every plan, including Free. Creating or
-  // switching on a scope of your own also needs a plan that allows it.
-  const catalogRoom = isAdmin && slotFree;
+  // A template uses a slot on every plan, including Free. On a one-slot plan the
+  // picker can replace the template already on. Creating a scope still needs a plan that allows it.
+  const catalogRoom = isAdmin && (slotFree || replacesCatalogPick(limit, use.custom, use.pickIds.length));
   const customRoom = isAdmin && !!ctx?.canCustomize && slotFree;
   const custom = own.filter((s) => !s.isDefault && !s.catalog);
   const pool = [...publics, ...custom];

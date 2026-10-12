@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { getContext, getMyWorkspaces, getPersonalAccount, getWorkspaceContext } from '@/lib/accounts';
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { SCOPE_AGENT_KEYS, getCatalogScopes, getWorkspaceScopes, workspaceScopeUse } from '@/lib/scopes';
+import { SCOPE_AGENT_KEYS, getCatalogScopes, getWorkspaceScopes, replacesCatalogPick, workspaceScopeUse } from '@/lib/scopes';
 import ScopeCard from '@/components/settings/ScopeCard';
 import { AddMemberButton, DeleteWorkspace, MemberRow, RevokeInviteButton, WorkspaceName } from '@/components/settings/WorkspaceControls';
 import { createScope, switchWorkspace } from '../actions';
@@ -93,7 +93,7 @@ export default async function WorkspaceDetailPage({ params }: { params: { id: st
         canToggle={isDefaultCard ? ctx.isAdmin && otherActive : isCatalog ? ctx.isAdmin : undefined}
         showDefaultFor={isDefaultCard ? wsId : null}
         catalogFor={isCatalog ? wsId : null}
-        atLimit={isCatalog && !s.active && slotsUsed >= limit}
+        atLimit={isCatalog && !s.active && slotsUsed >= limit && !replacesCatalogPick(limit, use.custom, use.pickIds.length)}
         upgrade={ctx.isAdmin ? { userId: user.id, admin: ctx.isPlatformAdmin, plan: viewerPlan } : null}
         scope={{ id: s.id, name: s.name, instructions: s.instructions, active: isDefaultCard ? showDefault : s.active, isDefault: s.isDefault, catalog: s.catalog, topic: s.searchConfig?.topic ?? null }}
         docs={docCount(s.id, isDefaultCard || isCatalog)} agentsOn={on} agentsTotal={SCOPE_AGENT_KEYS.length} items={count(items, s.id)} />

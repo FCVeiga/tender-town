@@ -8,7 +8,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 import { AGENTS, agentByKey } from '@/lib/agents';
 import { DOC_KINDS } from '@/lib/settings';
-import { PLATFORM_AGENT_KEYS, SCOPE_AGENT_KEYS, getEditableScope, getViewableScope, workspaceScopeUse } from '@/lib/scopes';
+import { PLATFORM_AGENT_KEYS, SCOPE_AGENT_KEYS, getEditableScope, getViewableScope, replacesCatalogPick, workspaceScopeUse } from '@/lib/scopes';
 import { getContext, getMembership, getWorkspaceContext, getMyWorkspaces, getPersonalAccount, isPlatformAdmin } from '@/lib/accounts';
 import { randomBytes } from 'crypto';
 import { siteOrigin } from '@/lib/auth';
@@ -80,8 +80,14 @@ export async function setCatalogPick(workspaceId: string, scopeId: string, on: b
     return {};
   }
   const use = await workspaceScopeUse(workspaceId);
+  if (use.pickIds.includes(scopeId)) return {};
   const limit = ctx.isDefault ? 1000 : ctx.plan.scopes;
-  if (use.custom + use.pickIds.length >= limit) return { upgrade: true };
+  const replacing = replacesCatalogPick(limit, use.custom, use.pickIds.length);
+  if (!replacing && use.custom + use.pickIds.length >= limit) return { upgrade: true };
+  if (replacing) {
+    const { error: removed } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
+    if (removed) return { error: removed.message };
+  }
   const { error } = await db().from('workspace_scope_picks').upsert(
     { workspace_id: workspaceId, scope_id: scopeId }, { onConflict: 'workspace_id,scope_id', ignoreDuplicates: true });
   if (error) return { error: error.message };

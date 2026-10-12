@@ -106,6 +106,11 @@ export async function workspaceScopeUse(workspaceId: string): Promise<{ custom: 
   return { custom: count ?? 0, pickIds: (picks || []).map((p: any) => p.scope_id) };
 }
 
+/** A one-slot plan switches its template by replacing the catalog scope already on. A custom scope still holds the slot. */
+export function replacesCatalogPick(limit: number, custom: number, picks: number): boolean {
+  return limit === 1 && custom === 0 && picks > 0;
+}
+
 /**
  * The scopes whose results this viewer sees. General is in every account (and
  * what visitors see). A workspace then turns on shared catalog scopes and its

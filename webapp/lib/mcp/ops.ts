@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getCurrentUser, siteOrigin } from '@/lib/auth';
 import { getContext, getPersonalAccount, getWorkspaceContext, getMyWorkspaces } from '@/lib/accounts';
 import {
-  SCOPE_AGENT_KEYS, getCatalogScopes, getEditableScope, getScopeAgents, getViewScopes, getViewableScope, getWorkspaceScopes, workspaceScopeUse,
+  SCOPE_AGENT_KEYS, getCatalogScopes, getEditableScope, getScopeAgents, getViewScopes, getViewableScope, getWorkspaceScopes, replacesCatalogPick, workspaceScopeUse,
 } from '@/lib/scopes';
 import { AGENTS } from '@/lib/agents';
 import { allowRequirements } from '@/lib/tenderViews';
@@ -200,9 +200,15 @@ export async function setCatalogScope(workspaceId: string, scopeId: string, enab
     return { scopeId, enabled: false };
   }
   const use = await workspaceScopeUse(workspaceId);
+  if (use.pickIds.includes(scopeId)) return { scopeId, enabled: true };
   const limit = ctx.isDefault ? 1000 : ctx.plan.scopes;
-  if (use.custom + use.pickIds.length >= limit) {
+  const replacing = replacesCatalogPick(limit, use.custom, use.pickIds.length);
+  if (!replacing && use.custom + use.pickIds.length >= limit) {
     throw new McpDenied(`The ${ctx.plan.name} plan includes ${ctx.plan.scopes} scope${ctx.plan.scopes === 1 ? '' : 's'} besides General.`);
+  }
+  if (replacing) {
+    const { error: removed } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
+    if (removed) throw new McpDenied(removed.message);
   }
   const { error } = await db().from('workspace_scope_picks').upsert(
     { workspace_id: workspaceId, scope_id: scopeId }, { onConflict: 'workspace_id,scope_id', ignoreDuplicates: true });

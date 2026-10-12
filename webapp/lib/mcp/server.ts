@@ -76,7 +76,7 @@ export function createMcpServer(origin: string) {
   }, async ({ workspace_id, scope_id, name, instructions, active }) => call(workspace_id, () => ops.updateScope(scope_id, { name, instructions, active }), 'update_scope'));
 
   server.registerTool('set_catalog_scope', {
-    description: 'Turn a shared catalog scope on or off for a workspace. It uses a scope slot.',
+    description: 'Turn a shared catalog scope on or off for a workspace. It uses a scope slot. On a one-slot plan, turning another catalog scope on replaces the one already on.',
     inputSchema: { workspace_id: z.string(), scope_id: z.string(), enabled: z.boolean() },
   }, async ({ workspace_id, scope_id, enabled }) => call(workspace_id, () => ops.setCatalogScope(workspace_id, scope_id, enabled), 'set_catalog_scope'));
 

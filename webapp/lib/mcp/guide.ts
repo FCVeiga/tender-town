@@ -84,7 +84,7 @@ export const MCP_DOC: Doc[] = [
     'Pro: 1 workspace, 5 scopes besides General, 5 evaluations a month, 50 news reports a month, requirements on every tender.',
     'Teams: unlimited workspaces, members, scopes, evaluations, proposal briefs and news reports.',
   ] },
-  { p: 'A catalog scope that is switched on uses a scope slot. General does not. Free can turn on one catalog scope and cannot create a scope. Inviting a member needs Teams, and an admin of that workspace. Creating or editing a scope needs an admin on Starter or above. A member can read.' },
+  { p: 'A catalog scope that is switched on uses a scope slot. General does not. Free can turn on one catalog scope, and choosing another replaces it. Free cannot create a scope. Inviting a member needs Teams, and an admin of that workspace. Creating or editing a scope needs an admin on Starter or above. A member can read.' },
 
   { h: 2, text: 'A normal job' },
   { ul: [
