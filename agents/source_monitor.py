@@ -4,6 +4,7 @@ what it finds into the radar.
 
 Each row of `sources` (edited from the site's Following sidebar) says how:
   ted          TED search API — handled by Discovery, skipped here
+  api          a source API (World Bank) — handled by Discovery, skipped here
   rss          RSS/Atom feed at feed_url
   site_search  web search restricted to the source's domain (Tavily) — for
                portals and government sites without a feed

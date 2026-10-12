@@ -33,6 +33,7 @@ export const SOURCE_GROUPS = [
 
 export const METHODS = {
   ted: { label: 'TED API', hint: 'Searched daily through the TED API.' },
+  api: { label: 'Procurement API', hint: 'Searched on each run through this source’s API.' },
   rss: { label: 'RSS / Atom feed', hint: 'Every new item in the feed is picked up.' },
   site_search: { label: 'Site search', hint: 'A web search limited to this site, on the schedule below. For portals and sites without a feed.' },
   off: { label: 'Off — list only', hint: 'Listed here but not monitored.' },

@@ -2120,6 +2120,20 @@
   "de": "Täglich über die TED-API durchsucht.",
   "it": "Cercata ogni giorno tramite l'API TED."
  },
+ "Procurement API": {
+  "pt": "API de contratos",
+  "es": "API de contratación",
+  "fr": "API de marchés",
+  "de": "Beschaffungs-API",
+  "it": "API di appalti"
+ },
+ "Searched on each run through this source’s API.": {
+  "pt": "Pesquisada em cada execução através da API desta fonte.",
+  "es": "Se busca en cada ejecución a través de la API de esta fuente.",
+  "fr": "Recherchée à chaque exécution via l'API de cette source.",
+  "de": "Bei jedem Lauf über die API dieser Quelle durchsucht.",
+  "it": "Cercata a ogni esecuzione tramite l'API di questa fonte."
+ },
  "RSS / Atom feed": {
   "pt": "Feed RSS / Atom",
   "es": "Feed RSS / Atom",

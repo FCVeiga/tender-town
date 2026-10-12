@@ -80,7 +80,7 @@ def load(session, search_defaults: dict = None) -> None:
                    row_number() over (partition by s.workspace_id order by s.created_at) as rank
             from scopes s left join workspaces w on w.id = s.workspace_id
             left join accounts a on a.owner_id = w.owner_id and a.kind = 'personal'
-            order by s.is_default desc, s.created_at""")).fetchall()
+            order by s.is_default desc, s.last_run_at asc nulls first, s.created_at""")).fetchall()
         # The default scope is the default whether or not it runs now (prompt and config fallbacks).
         default_row = next((s for s in scopes if s.is_default), None)
         scopes = [s for s in scopes if _due(s)]

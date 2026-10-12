@@ -37,9 +37,9 @@ export function SourceForm({ source, countries, onDone, scopeId }: { source: Sou
   const [state, action] = useFormState<SaveSourceState, FormData>(saveSource, null);
   const [type, setType] = useState<string>(source?.source_type ?? 'PROCUREMENT_PORTAL');
   const [method, setMethod] = useState<string>(source ? source.method : 'auto');
+  const fixedMethod = source?.method === 'ted' || source?.method === 'api' ? source.method : null;
   const social = type.startsWith('SOCIAL_');
   const blocked = NOT_CONNECTABLE.includes(type);
-  const isTed = source?.method === 'ted';
   const t = useT();
   const locale = useLocale();
 
@@ -92,25 +92,26 @@ export function SourceForm({ source, countries, onDone, scopeId }: { source: Sou
       <div className="field-row">
         <label className="field">
           <span>{t('Monitoring')}</span>
-          <select name="method" value={isTed ? 'ted' : blocked ? 'off' : method} onChange={(e) => setMethod(e.target.value)} disabled={isTed || blocked}>
+          <select name="method" value={fixedMethod ?? (blocked ? 'off' : method)} onChange={(e) => setMethod(e.target.value)} disabled={!!fixedMethod || blocked}>
             {!source && <option value="auto">{t('Automatic — feed if found, else site search')}</option>}
-            {isTed && <option value="ted">{t(METHODS.ted.label)}</option>}
-            {(['rss', 'site_search', 'off'] as Method[]).map((m) => <option key={m} value={m}>{t(METHODS[m].label)}</option>)}
+            {fixedMethod === 'ted' && <option value="ted">{t(METHODS.ted.label)}</option>}
+            {fixedMethod === 'api' && <option value="api">{t(METHODS.api.label)}</option>}
+            {!fixedMethod && (['rss', 'site_search', 'off'] as Method[]).map((m) => <option key={m} value={m}>{t(METHODS[m].label)}</option>)}
           </select>
-          {(isTed || blocked) && <input type="hidden" name="method" value={isTed ? 'ted' : 'off'} />}
+          {(fixedMethod || blocked) && <input type="hidden" name="method" value={fixedMethod ?? 'off'} />}
         </label>
         <label className="field">
           <span>{t('Check every')}</span>
-          <select name="check_every_days" defaultValue={String(source?.check_every_days ?? 7)} disabled={method === 'rss' || isTed || method === 'off'}>
+          <select name="check_every_days" defaultValue={String(source?.check_every_days ?? 7)} disabled={method === 'rss' || !!fixedMethod || method === 'off'}>
             {FREQUENCIES.map((d) => <option key={d} value={d}>{d === 1 ? t('day') : t('{n} days', { n: d })}</option>)}
           </select>
-          {(method === 'rss' || isTed || method === 'off') && <input type="hidden" name="check_every_days" value={String(source?.check_every_days ?? 7)} />}
+          {(method === 'rss' || !!fixedMethod || method === 'off') && <input type="hidden" name="check_every_days" value={String(source?.check_every_days ?? 7)} />}
         </label>
       </div>
       <p className="field-hint">
         {blocked ? t('Monitored once API access is set up.')
           : method === 'auto' ? t('Uses the site’s feed if it has one.')
-            : t(METHODS[(isTed ? 'ted' : method) as Method].hint)}
+            : t(METHODS[(fixedMethod ?? method) as Method].hint)}
         
       </p>
 

@@ -516,6 +516,7 @@ def main():
     per_run = int(os.environ.get("TAVILY_QUERIES_PER_RUN", 20))
     new_opps, new_news, updates = [], [], []
     generic_scopes = []
+    wb_hits, wb_attempted = 0, False
     # Following, per scope: {source_id: [scopes that follow it]}.
     follow = {}
     for r in session.execute(sql_text("select scope_id::text s, source_id from scope_sources")):
@@ -530,19 +531,37 @@ def main():
         if cfg.get("mode") == "generic":
             generic_scopes.append(scope)  # runs after the followed sources are checked
             continue
-        ted_phrases = cfg.get("ted_phrases") or TED_PHRASES
-        news_queries = cfg.get("news_queries") or NEWS_QUERIES
+        # A few phrases a day, not the whole list: ten phrases at 50 notices each
+        # filled the queue and the 30-minute job died before later scopes or any news.
+        ted_phrases = rotate(cfg.get("ted_phrases") or TED_PHRASES, 3)
+        news_queries = rotate(cfg.get("news_queries") or NEWS_QUERIES, 2)
         found = set()
-        new = run_discovery(session, TedSearchProvider(), {"ted": ted_phrases}, country_codes, errors=errors, found=found)
+        new = run_discovery(session, TedSearchProvider(limit=10, lookback_days=21), {"ted": ted_phrases}, country_codes, errors=errors, found=found)
         query_count += len(ted_phrases)
+        wb_terms = rotate(cfg.get("wb_queries") or [], 1)
+        if wb_terms:
+            from adapters.world_bank import WorldBankSearchProvider
+            before = len(found)
+            new += run_discovery(session, WorldBankSearchProvider(), {"web": wb_terms}, country_codes, errors=errors, found=found)
+            wb_hits += len(found) - before
+            wb_attempted = True
+            query_count += len(wb_terms)
         if tavily:
-            web_queries = rotate(cfg["web_queries"], per_run) if cfg.get("web_queries") else tavily_queries_for_today(per_run)
+            web_queries = rotate(cfg["web_queries"], min(2, per_run)) if cfg.get("web_queries") else tavily_queries_for_today(per_run)
             new += run_discovery(session, TavilySearchProvider(), {"web": web_queries}, country_codes, errors=errors, found=found)
             new += run_discovery(session, TavilySearchProvider(topic="news", days=30), {"news": news_queries}, country_codes, errors=errors, found=found)
             query_count += len(web_queries) + len(news_queries)
         link(found, [scope.id])
         candidates += new
         print(f"[{scope.name}] search: {len(found)} results, {len(new)} new candidates")
+    if wb_attempted:
+        wb_errors = [e for e in errors if "WorldBank" in e]
+        session.execute(sql_text("""update sources set last_checked = now(),
+            last_successful_check = case when :err is null then now() else last_successful_check end,
+            last_error = :err, number_results_last_run = :n
+            where source_id = 'INTL-027'"""),
+            {"err": (wb_errors[-1][:300] if wb_errors else None), "n": wb_hits})
+        session.commit()
 
     # Followed sources (Following sidebar): RSS feeds and domain searches on
     # their own schedules; whatever they surface joins every scope's queue.
@@ -576,7 +595,7 @@ def main():
           f"{monitored['found']} new items, {from_sources} new candidates")
 
     # --- 2. Triage (per scope, with that scope's rules) ----------------------
-    max_triage = int(os.environ.get("MAX_TRIAGE_PER_RUN", 400))
+    max_triage = int(os.environ.get("MAX_TRIAGE_PER_RUN", 640))
     llm_calls = 0
     for scope in triaged_scopes:
         if not S.enabled("triage", scope):
@@ -584,10 +603,20 @@ def main():
             S.mark_ran(session, scope)
             continue
         prompt = S.prompt_for("triage.md", open(os.path.join(os.path.dirname(__file__), "prompts", "triage.md")).read(), scope)
+        # Followed sources and news ahead of the TED backlog, or a scope that
+        # already has tenders never reaches its stories. Cap the batch so one
+        # scope cannot spend the whole run.
+        per_scope = min(40, max(24, max_triage // max(1, len(triaged_scopes))))
         pending_ids = [r.candidate_id for r in session.execute(sql_text(
             """select cs.candidate_id from candidate_scopes cs join candidates c using (candidate_id)
-               where cs.scope_id = cast(:s as uuid) and cs.processed_at is null order by c.discovered_at limit :n"""),
-            {"s": scope.id, "n": max(20, max_triage // max(1, len(triaged_scopes)))})]
+               where cs.scope_id = cast(:s as uuid) and cs.processed_at is null
+               order by case
+                 when coalesce(c.discovery_query, '') like 'followed source:%' then 0
+                 when coalesce(c.potential_categories::text, '') like '%news%' then 1
+                 else 2 end,
+                 c.discovered_at
+               limit :n"""),
+            {"s": scope.id, "n": per_scope})]
         pending = session.query(Candidate).filter(Candidate.candidate_id.in_(pending_ids)).all() if pending_ids else []
 
         def done(c, result):
