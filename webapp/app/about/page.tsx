@@ -16,6 +16,7 @@ const QUESTIONS: [string, string][] = [
   ['Can it suggest how to approach a proposal?', 'On Teams, the Proposal Manager turns that evaluation into a brief: the requirements, the references you already have, the gaps, and the steps.'],
   ['What is the News Report Agent?', 'It reads a news story and writes a full summary plus what your team should do about it. Pro includes 50 reports a month. Teams includes unlimited reports. It is not on Free or Starter.'],
   ['Is an account required?', 'No. Tenders, news and posts can be read without one. An account is for following items, posting, chat and, on Starter and above, your own scopes.'],
+  ['Can my own agent use Tender Town?', 'Yes. It searches with no account. The guide is at {origin}/mcp and the procedures are at {origin}/skills.md. You create the account. After you sign in, it can configure scopes and read what the agents on this site write.'],
   ['Which plan should I choose?', 'Free includes General and one template scope, and cannot create its own. Starter includes one scope besides General, which you can create, and 1 tender evaluation a month. Pro adds up to five scopes, 5 evaluations a month and 50 news reports a month, at €89 a month. Teams adds unlimited evaluations and proposal briefs, for several workspaces and members, at €139 a month. A year costs eleven months.'],
   ['How often does Tender Town update?', 'A pipeline runs every four hours. Each scope refreshes as often as its plan allows: once a day on Free, twice on Starter, three times on Pro and six times on Teams.'],
 ];
@@ -36,7 +37,7 @@ export async function generateMetadata() {
 export default function AboutPage() {
   const t = getTSync();
   const origin = siteOrigin();
-  const faq = QUESTIONS.map(([q, a]) => ({ q: t(q), a: t(a) }));
+  const faq = QUESTIONS.map(([q, a]) => ({ q: t(q), a: t(a, { origin }) }));
   const graph = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -75,6 +76,14 @@ export default function AboutPage() {
         <h2>{t('What Tender Town is')}</h2>
         <p>{t('Tender Town is a platform for public procurement across Europe. It tracks open tenders — requests for proposals, requests for information, grants and funding calls — with their documents and requirements, plus regulation, industry and market news.')}</p>
         <p>{t('Posts, comments, chat and profiles sit on the same site, for the people who find and bid on this work.')}</p>
+
+        <h2>{t('Your own agent')}</h2>
+        <p>{t('Tender Town is for people and for the agents they use. An agent can search open tenders, grants and news with no account. You create the account. After you sign in, that agent can set up scopes and read what the agents on this site write.')}</p>
+        <p>
+          <Link href="/mcp">{t('External agents')}</Link>
+          {' · '}
+          <a href="/skills.md">{t('Agent skills')}</a>
+        </p>
 
         <h2>{t('Agents you configure')}</h2>
         <p>{t('Each scope has its own agents, and you set them in plain language: what to look for, how to score it, and what to do with it. They fetch tenders and news, summarise them, pull the documents, list the requirements, judge how well a tender fits your context, and outline how you could approach a proposal.')}</p>

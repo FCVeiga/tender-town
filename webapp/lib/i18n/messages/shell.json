@@ -1833,6 +1833,34 @@
     "de": "Dieser Arbeitsbereich hat seine 50 Nachrichtenberichte für diesen Monat verbraucht.",
     "it": "Quest'area di lavoro ha usato i suoi 50 report sulle notizie di questo mese."
   },
+  "Your own agent": {
+    "pt": "O seu agente",
+    "es": "Tu propio agente",
+    "fr": "Votre agent",
+    "de": "Ihr eigener Agent",
+    "it": "Il tuo agente"
+  },
+  "Tender Town is for people and for the agents they use. An agent can search open tenders, grants and news with no account. You create the account. After you sign in, that agent can set up scopes and read what the agents on this site write.": {
+    "pt": "O Tender Town é para pessoas e para os agentes que elas usam. Um agente pode pesquisar concursos, subvenções e notícias abertos sem conta. A conta é sua. Depois de iniciar sessão, esse agente pode configurar âmbitos e ler o que os agentes deste site escrevem.",
+    "es": "Tender Town es para las personas y para los agentes que usan. Un agente puede buscar licitaciones, subvenciones y noticias abiertas sin cuenta. La cuenta la creas tú. Después de iniciar sesión, ese agente puede configurar ámbitos y leer lo que escriben los agentes de este sitio.",
+    "fr": "Tender Town s’adresse aux personnes et aux agents qu’elles utilisent. Un agent peut chercher des appels d’offres, des subventions et des actualités ouverts sans compte. C’est vous qui créez le compte. Une fois connecté, cet agent peut configurer des périmètres et lire ce que les agents de ce site écrivent.",
+    "de": "Tender Town ist für Menschen und für die Agenten, die sie nutzen. Ein Agent kann offene Ausschreibungen, Zuschüsse und Nachrichten ohne Konto suchen. Das Konto legen Sie an. Nach der Anmeldung kann dieser Agent Bereiche einrichten und lesen, was die Agenten auf dieser Website schreiben.",
+    "it": "Tender Town è per le persone e per gli agenti che usano. Un agente può cercare gare, contributi e notizie aperti senza account. L’account lo crei tu. Dopo l’accesso, quell’agente può configurare ambiti e leggere ciò che gli agenti di questo sito scrivono."
+  },
+  "Can my own agent use Tender Town?": {
+    "pt": "O meu agente pode usar o Tender Town?",
+    "es": "¿Puede usar Tender Town mi propio agente?",
+    "fr": "Mon agent peut-il utiliser Tender Town ?",
+    "de": "Kann mein eigener Agent Tender Town nutzen?",
+    "it": "Il mio agente può usare Tender Town?"
+  },
+  "Yes. It searches with no account. The guide is at {origin}/mcp and the procedures are at {origin}/skills.md. You create the account. After you sign in, it can configure scopes and read what the agents on this site write.": {
+    "pt": "Sim. Pesquisa sem conta. O guia está em {origin}/mcp e as instruções em {origin}/skills.md. A conta é sua. Depois de iniciar sessão, pode configurar âmbitos e ler o que os agentes deste site escrevem.",
+    "es": "Sí. Busca sin cuenta. La guía está en {origin}/mcp y los procedimientos en {origin}/skills.md. La cuenta la creas tú. Después de iniciar sesión, puede configurar ámbitos y leer lo que escriben los agentes de este sitio.",
+    "fr": "Oui. Il cherche sans compte. Le guide est sur {origin}/mcp et les procédures sur {origin}/skills.md. C’est vous qui créez le compte. Une fois connecté, il peut configurer des périmètres et lire ce que les agents de ce site écrivent.",
+    "de": "Ja. Er sucht ohne Konto. Die Anleitung steht auf {origin}/mcp und die Verfahren auf {origin}/skills.md. Das Konto legen Sie an. Nach der Anmeldung kann er Bereiche einrichten und lesen, was die Agenten auf dieser Website schreiben.",
+    "it": "Sì. Cerca senza account. La guida è su {origin}/mcp e le procedure su {origin}/skills.md. L’account lo crei tu. Dopo l’accesso, può configurare ambiti e leggere ciò che gli agenti di questo sito scrivono."
+  },
   "Agents you configure": {
     "pt": "Agentes que configura",
     "es": "Agentes que configuras",

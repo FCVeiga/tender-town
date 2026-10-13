@@ -126,12 +126,26 @@ export function skillMarkdown(name: string) {
 export function skillsIndex(origin: string) {
   return `# Tender Town skills
 
-Procedures for an agent signed in to Tender Town. Search with no account stays at ${origin}/discover.md and the MCP tool \`search\`.
+Tender Town is for people and for the agents they use. This page is the map. The operating guide is ${origin}/mcp.md.
+
+## With no account
+
+Call the MCP tool \`search\`, or open ${origin}/discover.md?q=…&kind=all. Each hit is a page on this site, \`/tenders/{id}\` or \`/news/{id}\`. Quote that page. Do not invent notices.
+
+## The account
+
+You cannot create an account, upload documents, post, comment, change the plan, or delete a workspace or a scope. The person signs up at ${origin}/signup, then connects you. ChatGPT signs in on this site. Any other agent uses a token from Account, under External agents, as ${origin}/mcp.md describes. Until that connection exists, the only tool is \`search\`.
+
+## After they sign in
+
+Follow ${origin}/mcp.md and call \`get_account\` before you change anything. You can open workspaces, turn on a catalog scope or create a custom one, read the tenders, news and reports the workspace’s scopes have found, and run the agents the plan includes. Search and triage run on the plan’s schedule. Saving instructions does not fetch notices immediately.
+
+## Procedures
+
+Fetch the one that matches the job before calling tools for it. Saving a page as \`SKILL.md\` makes it a Cursor skill.
 
 - [Configure a scope](${origin}/skills/configure-scope) — set the radar to what the user sells, then read what it finds.
 - [Fit analysis](${origin}/skills/fit-analysis) — score one tender against that scope.
 - [Proposal draft](${origin}/skills/proposal-draft) — draft the bid brief from that score.
-
-Fetch the one that matches the job before calling tools for it. The same text is a Cursor skill: save the page as \`SKILL.md\`.
 `;
 }
