@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function McpGuidePage() {
   const t = await getT();
   const origin = siteOrigin();
-  const vars = { server: `${origin}/api/mcp`, guide: `${origin}/mcp.md`, discover: `${origin}/discover.md` };
+  const vars = { server: `${origin}/api/mcp`, guide: `${origin}/mcp.md`, discover: `${origin}/discover.md`, skills: `${origin}/skills` };
   return (
     <article className="content legal">
       <h1>{t('External agents')}</h1>

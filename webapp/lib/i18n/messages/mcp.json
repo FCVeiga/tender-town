@@ -650,6 +650,41 @@
     "de": "Ein eingeschalteter Katalog-Scope belegt einen Scope-Platz. General nicht. Jemanden einzuladen braucht Teams und eine Admin-Rolle in diesem Arbeitsbereich. Scopes und Agenten zu bearbeiten braucht eine Admin-Rolle, auf einem Tarif, der Anpassen erlaubt. Ein Mitglied kann lesen.",
     "it": "Un ambito di catalogo attivo occupa un posto. General no. Invitare un membro richiede Teams e un amministratore di quell’area di lavoro. Modificare ambiti e agenti richiede un amministratore, su un piano che consente la personalizzazione. Un membro può leggere."
   },
+  "Agent skills": {
+    "pt": "Instruções para agentes",
+    "es": "Instrucciones para agentes",
+    "fr": "Instructions pour les agents",
+    "de": "Anleitungen für Agenten",
+    "it": "Istruzioni per gli agenti"
+  },
+  "Follow the skill that matches the job. Fetch it before the tools for that job.": {
+    "pt": "Siga as instruções que correspondem ao trabalho. Obtenha-as antes das ferramentas desse trabalho.",
+    "es": "Sigue las instrucciones que correspondan al trabajo. Consúltalas antes de las herramientas de ese trabajo.",
+    "fr": "Suivez les instructions qui correspondent au travail. Consultez-les avant les outils de ce travail.",
+    "de": "Folge der Anleitung, die zur Aufgabe passt. Lies sie, bevor du die Werkzeuge für diese Aufgabe aufrufst.",
+    "it": "Segui le istruzioni che corrispondono al lavoro. Consultale prima degli strumenti di quel lavoro."
+  },
+  "Configure a scope, and read what it finds: {skills}/configure-scope": {
+    "pt": "Configurar um âmbito e ler o que ele encontra: {skills}/configure-scope",
+    "es": "Configurar un ámbito y leer lo que encuentra: {skills}/configure-scope",
+    "fr": "Configurer un périmètre et lire ce qu’il trouve : {skills}/configure-scope",
+    "de": "Einen Scope einrichten und lesen, was er findet: {skills}/configure-scope",
+    "it": "Configurare un ambito e leggere cosa trova: {skills}/configure-scope"
+  },
+  "Fit analysis of one tender: {skills}/fit-analysis": {
+    "pt": "Análise de adequação de um concurso: {skills}/fit-analysis",
+    "es": "Análisis de encaje de una licitación: {skills}/fit-analysis",
+    "fr": "Analyse d’adéquation d’un marché : {skills}/fit-analysis",
+    "de": "Passungsanalyse einer Ausschreibung: {skills}/fit-analysis",
+    "it": "Analisi di idoneità di una gara: {skills}/fit-analysis"
+  },
+  "Proposal draft from that analysis: {skills}/proposal-draft": {
+    "pt": "Rascunho de proposta a partir dessa análise: {skills}/proposal-draft",
+    "es": "Borrador de propuesta a partir de ese análisis: {skills}/proposal-draft",
+    "fr": "Brouillon de proposition à partir de cette analyse : {skills}/proposal-draft",
+    "de": "Angebotsentwurf aus dieser Analyse: {skills}/proposal-draft",
+    "it": "Bozza di proposta da quell’analisi: {skills}/proposal-draft"
+  },
   "A normal job": {
     "pt": "Um trabalho habitual",
     "es": "Un trabajo habitual",

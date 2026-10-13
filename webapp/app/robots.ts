@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
   const origin = siteOrigin();
   const agents = ['*', 'GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'anthropic-ai', 'PerplexityBot', 'Google-Extended', 'Applebot-Extended'];
   return {
-    rules: agents.map((userAgent) => ({ userAgent, allow: ['/', '/llms.txt', '/discover.md', '/feed.xml', '/mcp.md'], disallow: PRIVATE })),
+    rules: agents.map((userAgent) => ({ userAgent, allow: ['/', '/llms.txt', '/discover.md', '/feed.xml', '/mcp.md', '/skills.md', '/skills/'], disallow: PRIVATE })),
     sitemap: `${origin}/sitemap.xml`,
     host: origin,
   };

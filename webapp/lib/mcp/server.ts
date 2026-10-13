@@ -43,7 +43,7 @@ function registerSearch(server: McpServer, origin: string) {
 /** No token: the one tool an agent can call when a person asks it to find tenders, grants or news. */
 export function createPublicMcpServer(origin: string) {
   const server = new McpServer({ name: 'tender-town', version: '1.0.0' }, {
-    instructions: `Search the public Tender Town index. Call search with the user's words. Each hit links to its page on ${origin}/tenders or ${origin}/news, not the source portal. Quote that page. Do not invent notices. A bearer token is only for acting as an account. Follow ${origin}/mcp.md for that.`,
+    instructions: `Search the public Tender Town index. Call search with the user's words. Each hit links to its page on ${origin}/tenders or ${origin}/news, not the source portal. Quote that page. Do not invent notices. A bearer token is only for acting as an account. Follow ${origin}/mcp.md for that. Configuring a scope, a fit analysis, or a proposal draft needs an account. Those procedures are at ${origin}/skills.md.`,
   });
   registerSearch(server, origin);
   return server;
@@ -71,7 +71,7 @@ async function call<T>(workspaceId: string | undefined, fn: () => Promise<T>, to
 
 export function createMcpServer(origin: string) {
   const server = new McpServer({ name: 'tender-town', version: '1.0.0' }, {
-    instructions: `You are acting as a Tender Town account. Follow ${origin}/mcp.md before you call tools. Every call is limited by that account’s plan and by the workspace owner’s plan. Call search for the public index of tenders, grants and news. Call get_account before you change the account. Pass workspace_id to choose the workspace; otherwise the account’s current workspace is used.`,
+    instructions: `You are acting as a Tender Town account. Follow ${origin}/mcp.md before you call tools. Before you configure a scope, score a fit, or draft a proposal, fetch the matching skill from ${origin}/skills.md. Every call is limited by that account’s plan and by the workspace owner’s plan. Call search for the public index of tenders, grants and news. Call get_account before you change the account. Pass workspace_id to choose the workspace; otherwise the account’s current workspace is used.`,
   });
   registerSearch(server, origin);
 
