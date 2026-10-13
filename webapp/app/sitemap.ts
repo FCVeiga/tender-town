@@ -1,12 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { siteOrigin } from '@/lib/auth';
+import { marketIndex } from '@/lib/discover';
 import { getSupabaseServerClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 
 const STATIC = [
-  '', '/about', '/pricing', '/privacy', '/terms', '/help', '/mcp',
+  '', '/about', '/pricing', '/privacy', '/terms', '/help', '/mcp', '/discover', '/markets',
   '/tenders', '/tenders/new', '/tenders/rfps', '/tenders/rfis', '/tenders/grants',
   '/news', '/news/regulation', '/news/industry', '/news/market', '/news/signals',
   '/community',
@@ -28,11 +29,12 @@ async function pages(table: string, columns: string, order: string) {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = siteOrigin();
   const now = new Date();
-  const [tenders, news, posts, people] = await Promise.all([
+  const [tenders, news, posts, people, markets] = await Promise.all([
     pages('opportunities', 'opportunity_id, last_change, publication_date, first_detected', 'first_detected'),
     pages('news_items', 'news_id, published_date, created_at', 'published_date'),
     pages('posts', 'id, created_at', 'created_at'),
     pages('profiles', 'username, created_at, searchable', 'created_at'),
+    marketIndex(),
   ]);
   const entry = (path: string, when?: string | null) => {
     const date = when ? new Date(when) : now;
@@ -40,6 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   };
   return [
     ...STATIC.map((path) => entry(path || '/', now.toISOString())),
+    ...markets.map((market) => entry(`/markets/${market.slug}`)),
     ...tenders.map((r) => entry(`/tenders/${r.opportunity_id}`, r.last_change || r.publication_date || r.first_detected)),
     ...news.map((r) => entry(`/news/${r.news_id}`, r.published_date || r.created_at)),
     ...posts.map((r) => entry(`/posts/${r.id}`, r.created_at)),

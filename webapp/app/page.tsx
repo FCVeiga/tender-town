@@ -51,7 +51,7 @@ export default async function FeedPage({ searchParams }: { searchParams: { view?
             name: 'Tender Town',
             url: origin,
             description: t(LEAD),
-            potentialAction: { '@type': 'SearchAction', target: `${origin}/search?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+            potentialAction: { '@type': 'SearchAction', target: `${origin}/discover?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
           },
           {
             '@type': 'SoftwareApplication',

@@ -573,12 +573,26 @@
     "de": "Der Server dieser Website ist {server}.",
     "it": "Il server di questo sito è {server}."
   },
-  "Send the header Authorization: Bearer and a token that starts with tt_. The user creates it in Account, under External agents. It is shown once. An account can keep 8 live tokens. No token, or a revoked token, is rejected with HTTP 401. Do not ask for the token where other people can see it.": {
-    "pt": "Envie o cabeçalho Authorization: Bearer e um token que começa por tt_. O utilizador cria-o na Conta, em Agentes externos. Só é mostrado uma vez. Uma conta pode ter 8 tokens ativos. Sem token, ou com um token revogado, a resposta é HTTP 401. Não peça o token onde outras pessoas o possam ver.",
-    "es": "Envía la cabecera Authorization: Bearer y un token que empiece por tt_. El usuario lo crea en Cuenta, en Agentes externos. Solo se muestra una vez. Una cuenta puede tener 8 tokens activos. Sin token, o con un token revocado, la respuesta es HTTP 401. No pidas el token donde otras personas puedan verlo.",
-    "fr": "Envoyez l’en-tête Authorization: Bearer et un jeton qui commence par tt_. L’utilisateur le crée dans Compte, sous Agents externes. Il n’est affiché qu’une fois. Un compte peut garder 8 jetons actifs. Sans jeton, ou avec un jeton révoqué, la réponse est HTTP 401. Ne demandez pas le jeton là où d’autres personnes peuvent le voir.",
-    "de": "Sende den Header Authorization: Bearer und ein Token, das mit tt_ beginnt. Die Person erstellt es unter Konto, bei Externe Agenten. Es wird nur einmal angezeigt. Ein Konto kann 8 aktive Tokens behalten. Ohne Token, oder mit einem widerrufenen Token, kommt HTTP 401. Frage nicht nach dem Token, wo andere es sehen können.",
-    "it": "Invia l’header Authorization: Bearer e un token che inizia con tt_. L’utente lo crea in Account, sotto Agenti esterni. Viene mostrato una sola volta. Un account può tenere 8 token attivi. Senza token, o con un token revocato, la risposta è HTTP 401. Non chiedere il token dove altre persone possono vederlo."
+  "Send the header Authorization: Bearer and a token that starts with tt_. The user creates it in Account, under External agents. It is shown once. An account can keep 8 live tokens. With no token, the only tool is search, which reads the public index of tenders, grants and news. A revoked or invalid token is rejected with HTTP 401. Do not ask for the token where other people can see it.": {
+    "pt": "Envie o cabeçalho Authorization: Bearer e um token que começa por tt_. O utilizador cria-o na Conta, em Agentes externos. Só é mostrado uma vez. Uma conta pode ter 8 tokens ativos. Sem token, a única ferramenta é search, que lê o índice público de concursos, subvenções e notícias. Um token revogado ou inválido recebe HTTP 401. Não peça o token onde outras pessoas o possam ver.",
+    "es": "Envía la cabecera Authorization: Bearer y un token que empiece por tt_. El usuario lo crea en Cuenta, en Agentes externos. Solo se muestra una vez. Una cuenta puede tener 8 tokens activos. Sin token, la única herramienta es search, que lee el índice público de licitaciones, subvenciones y noticias. Un token revocado o no válido recibe HTTP 401. No pidas el token donde otras personas puedan verlo.",
+    "fr": "Envoyez l’en-tête Authorization: Bearer et un jeton qui commence par tt_. L’utilisateur le crée dans Compte, sous Agents externes. Il n’est affiché qu’une fois. Un compte peut garder 8 jetons actifs. Sans jeton, le seul outil est search, qui lit l’index public des marchés, des subventions et des actualités. Un jeton révoqué ou non valide reçoit HTTP 401. Ne demandez pas le jeton là où d’autres personnes peuvent le voir.",
+    "de": "Sende den Header Authorization: Bearer und ein Token, das mit tt_ beginnt. Die Person erstellt es unter Konto, bei Externe Agenten. Es wird nur einmal angezeigt. Ein Konto kann 8 aktive Tokens behalten. Ohne Token ist search das einzige Werkzeug und liest den öffentlichen Index von Ausschreibungen, Fördermitteln und Nachrichten. Ein widerrufenes oder ungültiges Token erhält HTTP 401. Frage nicht nach dem Token, wo andere es sehen können.",
+    "it": "Invia l’header Authorization: Bearer e un token che inizia con tt_. L’utente lo crea in Account, sotto Agenti esterni. Viene mostrato una sola volta. Un account può tenere 8 token attivi. Senza token, l’unico strumento è search, che legge l’indice pubblico di gare, contributi e notizie. Un token revocato o non valido riceve HTTP 401. Non chiedere il token dove altre persone possono vederlo."
+  },
+  "Search without an account": {
+    "pt": "Pesquisar sem conta",
+    "es": "Buscar sin cuenta",
+    "fr": "Rechercher sans compte",
+    "de": "Suchen ohne Konto",
+    "it": "Cercare senza account"
+  },
+  "With no Authorization header, the server exposes one tool, search. Pass query, and optionally kind (tender, grant, news or all) and limit (1 to 20). It returns public titles, buyers, countries, deadlines and canonical URLs. The same result is at {discover}. Quote those URLs. Do not invent notices.": {
+    "pt": "Sem o cabeçalho Authorization, o servidor expõe uma única ferramenta, search. Indique query e, se quiser, kind (tender, grant, news ou all) e limit (de 1 a 20). Devolve títulos, compradores, países, prazos e URLs canónicos públicos. O mesmo resultado está em {discover}. Cite esses URLs. Não invente anúncios.",
+    "es": "Sin la cabecera Authorization, el servidor expone una sola herramienta, search. Indica query y, si quieres, kind (tender, grant, news o all) y limit (de 1 a 20). Devuelve títulos, compradores, países, plazos y URLs canónicas públicas. El mismo resultado está en {discover}. Cita esas URLs. No inventes anuncios.",
+    "fr": "Sans l’en-tête Authorization, le serveur expose un seul outil, search. Indiquez query et, si vous voulez, kind (tender, grant, news ou all) et limit (de 1 à 20). Il renvoie des titres, des acheteurs, des pays, des échéances et des URL canoniques publics. Le même résultat est à {discover}. Citez ces URL. N’inventez pas d’avis.",
+    "de": "Ohne Authorization-Header stellt der Server nur das Werkzeug search bereit. Übergib query und optional kind (tender, grant, news oder all) und limit (1 bis 20). Es liefert öffentliche Titel, Auftraggeber, Länder, Fristen und kanonische URLs. Dasselbe Ergebnis steht unter {discover}. Zitiere diese URLs. Erfinde keine Bekanntmachungen.",
+    "it": "Senza l’header Authorization, il server espone un solo strumento, search. Passa query e, se vuoi, kind (tender, grant, news o all) e limit (da 1 a 20). Restituisce titoli, acquirenti, paesi, scadenze e URL canonici pubblici. Lo stesso risultato è su {discover}. Cita quegli URL. Non inventare avvisi."
   },
   "Add a remote MCP server. In mcp.json, paste the token in place of tt_YOUR_TOKEN.": {
     "pt": "Adicione um servidor MCP remoto. Em mcp.json, cole o token no lugar de tt_YOUR_TOKEN.",
@@ -951,12 +965,12 @@
     "de": "Ein abgelehntes Tool kommt als JSON mit einem Fehlertext zurück. Sag der Person diesen Satz. Wiederhole einen Tarif- oder Kontingentfehler nicht. Erfinde keine Ids von Arbeitsbereich, Scope, Ausschreibung, Nachricht oder Beitrag: liste sie zuerst oder rufe sie ab. Sende ein Tool pro Anfrage.",
     "it": "Uno strumento rifiutato torna come JSON con una frase di errore. Di’ quella frase alla persona. Non riprovare un errore di piano o di quota. Non inventare id di area di lavoro, ambito, gara, notizia o post: elencali o recuperali prima. Invia uno strumento per richiesta."
   },
-  "HTTP 401 means the token is missing, revoked, or not sent as Authorization: Bearer tt_… . The user creates a new one in Account, under External agents.": {
-    "pt": "HTTP 401 significa que o token falta, foi revogado, ou não foi enviado como Authorization: Bearer tt_… . O utilizador cria um novo na Conta, em Agentes externos.",
-    "es": "HTTP 401 significa que falta el token, está revocado, o no se envió como Authorization: Bearer tt_… . El usuario crea uno nuevo en Cuenta, en Agentes externos.",
-    "fr": "HTTP 401 signifie que le jeton manque, est révoqué, ou n’est pas envoyé comme Authorization: Bearer tt_… . L’utilisateur en crée un nouveau dans Compte, sous Agents externes.",
-    "de": "HTTP 401 heißt, das Token fehlt, ist widerrufen oder wurde nicht als Authorization: Bearer tt_… gesendet. Die Person erstellt ein neues unter Konto, bei Externe Agenten.",
-    "it": "HTTP 401 significa che il token manca, è stato revocato o non è stato inviato come Authorization: Bearer tt_… . L’utente ne crea uno nuovo in Account, sotto Agenti esterni."
+  "HTTP 401 means a token was sent but is revoked or invalid. The user creates a new one in Account, under External agents. With no Authorization header, call search.": {
+    "pt": "HTTP 401 significa que foi enviado um token revogado ou inválido. O utilizador cria um novo na Conta, em Agentes externos. Sem o cabeçalho Authorization, chame search.",
+    "es": "HTTP 401 significa que se envió un token revocado o no válido. El usuario crea uno nuevo en Cuenta, en Agentes externos. Sin la cabecera Authorization, llama a search.",
+    "fr": "HTTP 401 signifie qu’un jeton a été envoyé, mais qu’il est révoqué ou non valide. L’utilisateur en crée un nouveau dans Compte, sous Agents externes. Sans l’en-tête Authorization, appelez search.",
+    "de": "HTTP 401 heißt, ein Token wurde gesendet, ist aber widerrufen oder ungültig. Die Person erstellt ein neues unter Konto, bei Externe Agenten. Ohne Authorization-Header rufe search auf.",
+    "it": "HTTP 401 significa che è stato inviato un token revocato o non valido. L’utente ne crea uno nuovo in Account, sotto Agenti esterni. Senza l’header Authorization, chiama search."
   },
   "A plan or quota error is final for that call. Do not retry it, and do not work around it.": {
     "pt": "Um erro de plano ou de quota é definitivo para essa chamada. Não volte a tentar, nem o contorne.",

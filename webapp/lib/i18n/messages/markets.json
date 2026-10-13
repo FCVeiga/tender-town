@@ -1,0 +1,30 @@
+{
+  "Markets": {
+    "pt": "Mercados",
+    "es": "Mercados",
+    "fr": "Marchés",
+    "de": "Märkte",
+    "it": "Mercati"
+  },
+  "Search tenders, grants and news": {
+    "pt": "Pesquise concursos, subvenções e notícias",
+    "es": "Busca licitaciones, subvenciones y noticias",
+    "fr": "Recherchez des marchés, des subventions et des actualités",
+    "de": "Suche Ausschreibungen, Fördermittel und Nachrichten",
+    "it": "Cerca gare, contributi e notizie"
+  },
+  "Nothing open in this market right now.": {
+    "pt": "Nada em aberto neste mercado neste momento.",
+    "es": "No hay nada abierto en este mercado ahora mismo.",
+    "fr": "Rien n’est ouvert sur ce marché pour le moment.",
+    "de": "In diesem Markt ist gerade nichts offen.",
+    "it": "Non c’è niente di aperto in questo mercato in questo momento."
+  },
+  "Open tenders, grants and news.": {
+    "pt": "Concursos, subvenções e notícias em aberto.",
+    "es": "Licitaciones, subvenciones y noticias abiertas.",
+    "fr": "Marchés, subventions et actualités ouverts.",
+    "de": "Offene Ausschreibungen, Fördermittel und Nachrichten.",
+    "it": "Gare, contributi e notizie aperti."
+  }
+}

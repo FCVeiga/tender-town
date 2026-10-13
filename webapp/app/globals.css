@@ -91,6 +91,9 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .search-mark .brand-img { width: 18px; height: 18px; }
 .search-box input { flex: 1; min-width: 0; border: none; background: none; font: inherit; font-size: 14px; color: var(--ink); outline: none; }
 .search-box input::placeholder { color: var(--subtle); }
+.discover-search { max-width: none; width: 100%; margin: 0 0 18px; }
+.market-section { margin-top: 22px; }
+.market-section:first-of-type { margin-top: 0; }
 .auth-buttons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .guest-menu { position: relative; }
 .guest-menu-button { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -1678,6 +1681,7 @@ a.profile-post:hover { border-color: var(--border-strong); }
 /* Navbar: compact search, centred in the bar; the account button is just the picture. */
 @media (min-width: 901px) {
   .search-box { position: absolute; left: 50%; transform: translateX(-50%); width: min(440px, calc(100vw - 720px)); min-width: 260px; max-width: 440px; margin: 0; }
+  .discover-search { position: static; left: auto; transform: none; width: 100%; max-width: none; min-width: 0; margin: 0 0 18px; }
   .auth-buttons, .nav-actions { margin-left: auto; }
   .nav-actions + .auth-buttons { margin-left: 0; }
 }

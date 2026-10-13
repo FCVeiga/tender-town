@@ -36,10 +36,13 @@ export const MCP_DOC: Doc[] = [
   { h: 3, text: 'What you read' },
   { p: 'Tenders and news are the items the workspace’s active scopes have found, highest relevance first. A tender has a summary and, while the plan has requirement views left, its requirements. Community posts and comments are the public discussion. A report is the stored writing of Tender Evaluation, the Proposal Manager or the News Report Agent. Reading a stored report does not spend a run. Asking for a new one does.' },
 
+  { h: 2, text: 'Search without an account' },
+  { p: 'With no Authorization header, the server exposes one tool, search. Pass query, and optionally kind (tender, grant, news or all) and limit (1 to 20). It returns public titles, buyers, countries, deadlines and canonical URLs. The same result is at {discover}. Quote those URLs. Do not invent notices.' },
+
   { h: 2, text: 'How to connect' },
   { p: 'The server speaks Streamable HTTP and answers with JSON. Send Accept: application/json, text/event-stream.' },
   { p: 'The server for this site is {server}.' },
-  { p: 'Send the header Authorization: Bearer and a token that starts with tt_. The user creates it in Account, under External agents. It is shown once. An account can keep 8 live tokens. No token, or a revoked token, is rejected with HTTP 401. Do not ask for the token where other people can see it.' },
+  { p: 'Send the header Authorization: Bearer and a token that starts with tt_. The user creates it in Account, under External agents. It is shown once. An account can keep 8 live tokens. With no token, the only tool is search, which reads the public index of tenders, grants and news. A revoked or invalid token is rejected with HTTP 401. Do not ask for the token where other people can see it.' },
   { h: 3, text: 'Cursor' },
   { p: 'Add a remote MCP server. In mcp.json, paste the token in place of tt_YOUR_TOKEN.' },
   { code: `{
@@ -151,14 +154,14 @@ export const MCP_DOC: Doc[] = [
   { h: 2, text: 'When something fails' },
   { p: 'A refused tool comes back as JSON with an error string. Say that sentence to the user. Do not retry a plan or quota error. Do not invent workspace, scope, tender, news or post ids: list or get them first. Send one tool per request.' },
   { ul: [
-    'HTTP 401 means the token is missing, revoked, or not sent as Authorization: Bearer tt_… . The user creates a new one in Account, under External agents.',
+    'HTTP 401 means a token was sent but is revoked or invalid. The user creates a new one in Account, under External agents. With no Authorization header, call search.',
     'A plan or quota error is final for that call. Do not retry it, and do not work around it.',
     'Saving search instructions does not fetch tenders immediately. Search and triage run on the platform’s schedule.',
   ] },
 ];
 
 function fill(s: string, origin: string) {
-  return s.replaceAll('{server}', `${origin}/api/mcp`).replaceAll('{guide}', `${origin}/mcp.md`);
+  return s.replaceAll('{server}', `${origin}/api/mcp`).replaceAll('{guide}', `${origin}/mcp.md`).replaceAll('{discover}', `${origin}/discover.md`);
 }
 
 /** The guide an external agent fetches. English is the copy the prompt points at. */

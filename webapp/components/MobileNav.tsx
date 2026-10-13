@@ -40,7 +40,7 @@ export function MenuBackdrop() {
 export function BottomNavLinks({ guest = false, scope = null }: { guest?: boolean; scope?: string | null }) {
   const t = useT();
   const path = usePathname() || '/';
-  const links = LINKS.filter((l) => l.href !== '/workspaces' && (!guest || l.href !== '/history'));
+  const links = LINKS.filter((l) => l.href !== '/workspaces' && l.href !== '/markets' && (!guest || l.href !== '/history'));
   return (
     <nav className={`bottom-nav${guest ? ' guest' : ''}`} aria-label={t('Sections')}>
       {links.map((l) => {

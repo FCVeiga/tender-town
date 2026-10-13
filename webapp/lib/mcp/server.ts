@@ -5,12 +5,41 @@ import { getActor, runAs } from '@/lib/actor';
 import { logMcpCall } from '@/lib/mcpLog';
 import { McpDenied } from '@/lib/mcp/ops';
 import * as ops from '@/lib/mcp/ops';
+import { discoverLimit, publicSearch } from '@/lib/discover';
 
 const limit = z.number().int().min(1).max(30).optional();
 const workspace = z.string().optional();
 
 function text(data: unknown, isError = false) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(data) }], isError };
+}
+
+const searchInput = {
+  query: z.string().describe('What to look for, in plain words. Words such as tender, grant or news choose the kind.'),
+  kind: z.enum(['tender', 'grant', 'news', 'all']).optional().describe('tender, grant, news, or all. Defaults to all.'),
+  limit: z.number().int().min(1).max(20).optional(),
+};
+
+function registerSearch(server: McpServer, origin: string) {
+  server.registerTool('search', {
+    description: 'Search Tender Town’s public index of open tenders, grants and news. No account and no plan limit. Returns titles, buyers, countries, deadlines and canonical URLs. Quote those URLs. Do not invent notices.',
+    inputSchema: searchInput,
+  }, async ({ query, kind, limit: n }) => {
+    const hits = await publicSearch(query, kind, discoverLimit(n));
+    return text({
+      query,
+      hits: hits.map((hit) => ({ ...hit, url: `${origin}${hit.url}` })),
+    });
+  });
+}
+
+/** No token: the one tool an agent can call when a person asks it to find tenders, grants or news. */
+export function createPublicMcpServer(origin: string) {
+  const server = new McpServer({ name: 'tender-town', version: '1.0.0' }, {
+    instructions: `Search the public Tender Town index. Call search with the user's words. Each hit has a URL on ${origin}; quote it. Do not invent notices. A bearer token is only for acting as an account. Follow ${origin}/mcp.md for that.`,
+  });
+  registerSearch(server, origin);
+  return server;
 }
 
 /** Run a tool as the token's user, in the workspace the call names (or the user's current one). */
@@ -35,8 +64,9 @@ async function call<T>(workspaceId: string | undefined, fn: () => Promise<T>, to
 
 export function createMcpServer(origin: string) {
   const server = new McpServer({ name: 'tender-town', version: '1.0.0' }, {
-    instructions: `You are acting as a Tender Town account. Follow ${origin}/mcp.md before you call tools. Every call is limited by that account’s plan and by the workspace owner’s plan. Call get_account first. Pass workspace_id to choose the workspace; otherwise the account’s current workspace is used.`,
+    instructions: `You are acting as a Tender Town account. Follow ${origin}/mcp.md before you call tools. Every call is limited by that account’s plan and by the workspace owner’s plan. Call search for the public index of tenders, grants and news. Call get_account before you change the account. Pass workspace_id to choose the workspace; otherwise the account’s current workspace is used.`,
   });
+  registerSearch(server, origin);
 
   server.registerTool('get_account', {
     description: 'The signed-in account: plan, what is left this month, and its workspaces.',

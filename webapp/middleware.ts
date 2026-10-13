@@ -15,7 +15,7 @@ import { SUPER_ADMIN_EMAIL, clientIp, isInternalClient } from '@/lib/internal';
  * and currently has results. Requests that only refresh a session skip that.
  */
 
-const SKIP_GUEST = /^\/(api|feed\.xml|sitemap\.xml|robots\.txt|llms\.txt|mcp\.md)/;
+const SKIP_GUEST = /^\/(api|feed\.xml|sitemap\.xml|robots\.txt|llms\.txt|mcp\.md|discover\.md)/;
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 const VISITOR_COOKIE = 'tt_vid';
 const STAFF_COOKIE = 'tt_staff';
