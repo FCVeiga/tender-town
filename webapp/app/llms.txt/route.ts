@@ -18,7 +18,7 @@ export async function GET() {
     '',
     'kind is tender, grant, news, or all. limit is 1 to 20. Words such as grant or news in the query choose the kind.',
     '',
-    'The same search is the MCP tool `search` at ' + `${origin}/api/mcp` + ' (Streamable HTTP). Send no Authorization header. Arguments: query (string), kind (tender | grant | news | all), limit (1–20). Quote the URLs in the result. Do not invent notices.',
+    'The same search is the MCP tool `search` at ' + `${origin}/api/mcp` + ' (Streamable HTTP). Send no Authorization header. Arguments: query (string), kind (tender | grant | news | all), limit (1–20). Each result links to its page on this site, /tenders/{id} or /news/{id}, not the notice on the source portal. Quote that page. Do not invent notices.',
     '',
     'A bearer token (Authorization: Bearer tt_…) is for acting as an account: workspaces, scopes, requirements and proposal briefs. That guide is ' + `${origin}/mcp.md` + '.',
     '',

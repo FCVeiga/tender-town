@@ -37,7 +37,7 @@ export const MCP_DOC: Doc[] = [
   { p: 'Tenders and news are the items the workspace’s active scopes have found, highest relevance first. A tender has a summary and, while the plan has requirement views left, its requirements. Community posts and comments are the public discussion. A report is the stored writing of Tender Evaluation, the Proposal Manager or the News Report Agent. Reading a stored report does not spend a run. Asking for a new one does.' },
 
   { h: 2, text: 'Search without an account' },
-  { p: 'With no Authorization header, the server exposes one tool, search. Pass query, and optionally kind (tender, grant, news or all) and limit (1 to 20). It returns public titles, buyers, countries, deadlines and canonical URLs. The same result is at {discover}. Quote those URLs. Do not invent notices.' },
+  { p: 'With no Authorization header, the server exposes one tool, search. Pass query, and optionally kind (tender, grant, news or all) and limit (1 to 20). It returns public titles, buyers, countries, deadlines and the Tender Town page for each result, at /tenders/{id} or /news/{id}. The same result is at {discover}. Quote those pages. Do not invent notices.' },
 
   { h: 2, text: 'How to connect' },
   { p: 'The server speaks Streamable HTTP and answers with JSON. Send Accept: application/json, text/event-stream.' },

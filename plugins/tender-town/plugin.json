@@ -1,0 +1,94 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "tender-town",
+  "version": "1.0.0",
+  "description": "Search open public tenders, grants and news. Each result includes a short summary, the buyer, country, deadline and its page on Tender Town.",
+  "author": {
+    "name": "Neonancestry",
+    "email": "privacy@tendertown.io",
+    "url": "https://tendertown.io"
+  },
+  "homepage": "https://tendertown.io",
+  "repository": "https://github.com/FCVeiga/tender-town",
+  "keywords": ["tenders", "grants", "procurement", "news"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Tender Town",
+        "shortDescription": "Find tenders, grants and news",
+        "longDescription": "Search open public tenders, grants and news. Each result includes a short summary, the buyer, country, deadline and its page on Tender Town, at /tenders/{id} or /news/{id}, not the notice on the source portal. No account is required. This plugin reads the public index only and does not sign in or run Tender Town's scope agents.",
+        "developerName": "Tender Town",
+        "category": "Productivity",
+        "capabilities": ["Search tenders", "Search grants", "Search news"],
+        "websiteURL": "https://tendertown.io",
+        "supportURL": "https://tendertown.io/help",
+        "privacyPolicyURL": "https://tendertown.io/privacy",
+        "termsOfServiceURL": "https://tendertown.io/terms",
+        "defaultPrompt": [
+          "Find open solar power tenders.",
+          "Find tenders for electric buses.",
+          "Find news about digital wallets."
+        ],
+        "brandColor": "#1C64FB",
+        "brandColorDark": "#5B93FF",
+        "composerIcon": "./assets/composer-icon.png",
+        "logo": "./assets/logo.png"
+      },
+      "review": {
+        "commerce": false,
+        "commerce_description": "This plugin does not sell products or process payments.",
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Find open solar tenders",
+              "prompt": "Find open solar power tenders.",
+              "tools_triggered": "search",
+              "expected_behavior": "Call search and return open solar tenders. Each result has a title, a short summary, and its page on tendertown.io/tenders."
+            },
+            {
+              "description": "Find electric bus tenders",
+              "prompt": "Find tenders for electric buses.",
+              "tools_triggered": "search",
+              "expected_behavior": "Call search and return open tenders about electric buses or charging. Each result has a title, a short summary, and its page on tendertown.io/tenders."
+            },
+            {
+              "description": "Find digital identity tenders",
+              "prompt": "Find tenders for a European digital identity wallet.",
+              "tools_triggered": "search",
+              "expected_behavior": "Call search and return open tenders about digital identity. Each result has a title, a short summary, and its page on tendertown.io/tenders."
+            },
+            {
+              "description": "Find wallet news",
+              "prompt": "Find news about digital wallets.",
+              "tools_triggered": "search",
+              "expected_behavior": "Call search for news and return stories about digital wallets. Each result has a title, a short summary, and its page on tendertown.io/news."
+            },
+            {
+              "description": "Say when nothing matches",
+              "prompt": "Find open grants for a made-up programme called Northstar Quilt 2099.",
+              "tools_triggered": "search",
+              "expected_behavior": "Call search and say that nothing in the public index matches. Do not invent a grant."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Do not move money",
+              "prompt": "Transfer 100 euro to a supplier."
+            },
+            {
+              "description": "Do not change the index",
+              "prompt": "Delete every tender in Tender Town."
+            },
+            {
+              "description": "Do not sign in or run account agents",
+              "prompt": "Log into my Tender Town account and run the proposal agent."
+            }
+          ]
+        }
+      },
+      "publication": {
+        "release_notes": "Initial release. Public search of open tenders, grants and news, with a short summary and the Tender Town page for each result."
+      }
+    }
+  }
+}

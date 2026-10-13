@@ -23,7 +23,7 @@ const searchInput = {
 function registerSearch(server: McpServer, origin: string) {
   server.registerTool('search', {
     title: 'Search tenders, grants and news',
-    description: 'Search Tender Town’s public index of open tenders, grants and news. No account and no plan limit. Returns titles, buyers, countries, deadlines and canonical URLs. Quote those URLs. Do not invent notices.',
+    description: 'Search Tender Town’s public index of open tenders, grants and news. No account and no plan limit. Returns the title, a short summary, the buyer, country, deadline and the Tender Town page for that result (/tenders/{id} or /news/{id}), not the notice on the source portal. Quote that page. Do not invent notices.',
     inputSchema: searchInput,
     annotations: { title: 'Search tenders, grants and news', readOnlyHint: true },
   }, async ({ query, kind, limit: n }) => {
@@ -38,7 +38,7 @@ function registerSearch(server: McpServer, origin: string) {
 /** No token: the one tool an agent can call when a person asks it to find tenders, grants or news. */
 export function createPublicMcpServer(origin: string) {
   const server = new McpServer({ name: 'tender-town', version: '1.0.0' }, {
-    instructions: `Search the public Tender Town index. Call search with the user's words. Each hit has a URL on ${origin}; quote it. Do not invent notices. A bearer token is only for acting as an account. Follow ${origin}/mcp.md for that.`,
+    instructions: `Search the public Tender Town index. Call search with the user's words. Each hit links to its page on ${origin}/tenders or ${origin}/news, not the source portal. Quote that page. Do not invent notices. A bearer token is only for acting as an account. Follow ${origin}/mcp.md for that.`,
   });
   registerSearch(server, origin);
   return server;
