@@ -22,8 +22,10 @@ const searchInput = {
 
 function registerSearch(server: McpServer, origin: string) {
   server.registerTool('search', {
+    title: 'Search tenders, grants and news',
     description: 'Search Tender Town’s public index of open tenders, grants and news. No account and no plan limit. Returns titles, buyers, countries, deadlines and canonical URLs. Quote those URLs. Do not invent notices.',
     inputSchema: searchInput,
+    annotations: { title: 'Search tenders, grants and news', readOnlyHint: true },
   }, async ({ query, kind, limit: n }) => {
     const hits = await publicSearch(query, kind, discoverLimit(n));
     return text({
