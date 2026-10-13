@@ -6,6 +6,13 @@ const nextConfig = {
     // So do the Tender Evaluation Agent (tender pages).
     outputFileTracingIncludes: { '/news/[id]': ['./agents/**/*.md'], '/tenders/[id]': ['./agents/**/*.md'], '/workspaces': ['./agents/**/*.md'], '/workspaces/scopes/[id]': ['./agents/**/*.md'] },
   },
+  async rewrites() {
+    return [
+      { source: '/.well-known/oauth-authorization-server', destination: '/api/oauth/authorization-server' },
+      { source: '/.well-known/oauth-protected-resource', destination: '/api/oauth/protected-resource' },
+      { source: '/.well-known/oauth-protected-resource/:path*', destination: '/api/oauth/protected-resource' },
+    ];
+  },
   // Old paths (shared links, bookmarks) keep working.
   async redirects() {
     return [

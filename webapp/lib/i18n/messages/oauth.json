@@ -1,0 +1,44 @@
+{
+  "Allow": {
+    "pt": "Permitir",
+    "es": "Permitir",
+    "fr": "Autoriser",
+    "de": "Erlauben",
+    "it": "Consenti"
+  },
+  "Allow this app": {
+    "pt": "Permitir esta aplicação",
+    "es": "Permitir esta aplicación",
+    "fr": "Autoriser cette application",
+    "de": "Diese App erlauben",
+    "it": "Consenti a questa app"
+  },
+  "This app": {
+    "pt": "Esta aplicação",
+    "es": "Esta aplicación",
+    "fr": "Cette application",
+    "de": "Diese App",
+    "it": "Questa app"
+  },
+  "This connection request is not valid.": {
+    "pt": "Este pedido de ligação não é válido.",
+    "es": "Esta solicitud de conexión no es válida.",
+    "fr": "Cette demande de connexion n’est pas valide.",
+    "de": "Diese Verbindungsanfrage ist ungültig.",
+    "it": "Questa richiesta di connessione non è valida."
+  },
+  "{name} wants to use your Tender Town account. It can search the public index, and it can use your workspaces, scopes and agents within your plan.": {
+    "pt": "{name} quer utilizar a sua conta Tender Town. Pode pesquisar o índice público e utilizar os seus espaços de trabalho, âmbitos e agentes, dentro do plano.",
+    "es": "{name} quiere usar tu cuenta de Tender Town. Puede buscar en el índice público y usar tus espacios de trabajo, ámbitos y agentes, dentro del plan.",
+    "fr": "{name} souhaite utiliser votre compte Tender Town. L’application peut interroger l’index public et utiliser vos espaces, périmètres et agents, dans la limite du forfait.",
+    "de": "{name} möchte dein Tender-Town-Konto nutzen. Die App kann den öffentlichen Index durchsuchen und deine Arbeitsbereiche, Scopes und Agenten im Rahmen des Tarifs verwenden.",
+    "it": "{name} vuole usare il tuo account Tender Town. Può cercare nell’indice pubblico e usare i tuoi spazi di lavoro, ambiti e agenti, entro il piano."
+  },
+  "ChatGPT signs in on this site instead of pasting a token. After you allow it, that connection can use the account’s workspaces, scopes and agents within the plan. Search still works if you do not sign in.": {
+    "pt": "O ChatGPT inicia sessão neste sítio em vez de colar um token. Depois de o permitir, essa ligação pode utilizar os espaços de trabalho, âmbitos e agentes da conta, dentro do plano. A pesquisa continua a funcionar sem iniciar sessão.",
+    "es": "ChatGPT inicia sesión en este sitio en lugar de pegar un token. Después de permitirlo, esa conexión puede usar los espacios de trabajo, ámbitos y agentes de la cuenta, dentro del plan. La búsqueda sigue funcionando si no inicias sesión.",
+    "fr": "ChatGPT se connecte sur ce site au lieu de coller un jeton. Après autorisation, cette connexion peut utiliser les espaces, périmètres et agents du compte, dans la limite du forfait. La recherche fonctionne aussi sans connexion.",
+    "de": "ChatGPT meldet sich auf dieser Website an, statt ein Token einzufügen. Nach dem Erlauben kann diese Verbindung die Arbeitsbereiche, Scopes und Agenten des Kontos im Rahmen des Tarifs nutzen. Die Suche funktioniert auch ohne Anmeldung.",
+    "it": "ChatGPT accede su questo sito invece di incollare un token. Dopo il consenso, quella connessione può usare gli spazi di lavoro, gli ambiti e gli agenti dell’account, entro il piano. La ricerca funziona anche senza accesso."
+  }
+}

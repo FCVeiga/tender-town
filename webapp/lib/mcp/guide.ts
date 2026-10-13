@@ -43,6 +43,7 @@ export const MCP_DOC: Doc[] = [
   { p: 'The server speaks Streamable HTTP and answers with JSON. Send Accept: application/json, text/event-stream.' },
   { p: 'The server for this site is {server}.' },
   { p: 'Send the header Authorization: Bearer and a token that starts with tt_. The user creates it in Account, under External agents. It is shown once. An account can keep 8 live tokens. With no token, the only tool is search, which reads the public index of tenders, grants and news. A revoked or invalid token is rejected with HTTP 401. Do not ask for the token where other people can see it.' },
+  { p: 'ChatGPT signs in on this site instead of pasting a token. After you allow it, that connection can use the account’s workspaces, scopes and agents within the plan. Search still works if you do not sign in.' },
   { h: 3, text: 'Cursor' },
   { p: 'Add a remote MCP server. In mcp.json, paste the token in place of tt_YOUR_TOKEN.' },
   { code: `{

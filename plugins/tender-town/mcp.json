@@ -6,7 +6,11 @@
       "url": "https://tendertown.io/api/mcp",
       "extensions": {
         "com.openai": {
-          "auth": { "type": "none" }
+          "auth": {
+            "type": "mixed",
+            "client": { "mode": "cimd" },
+            "baseScopes": ["account"]
+          }
         }
       }
     }

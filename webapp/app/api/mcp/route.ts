@@ -16,7 +16,10 @@ async function handle(req: Request) {
   if (sent && !user) {
     return new Response(JSON.stringify({ error: 'This token is revoked or not a Tender Town token.' }), {
       status: 401,
-      headers: { 'content-type': 'application/json', 'www-authenticate': 'Bearer' },
+      headers: {
+        'content-type': 'application/json',
+        'www-authenticate': `Bearer resource_metadata="${origin}/.well-known/oauth-protected-resource", error="invalid_token"`,
+      },
     });
   }
   const server = user ? createMcpServer(origin) : createPublicMcpServer(origin);

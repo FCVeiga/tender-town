@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import type { CurrentUser } from '@/lib/auth';
+import { oauthUserId } from '@/lib/oauth';
 
 const MAX_TOKENS = 8;
 
@@ -90,25 +91,35 @@ async function revealable(userId: string) {
   return out;
 }
 
-/** The account behind a bearer token, or null. */
-export async function userForToken(header: string | null): Promise<CurrentUser | null> {
-  const match = /^Bearer\s+(tt_[A-Za-z0-9_-]{20,})$/.exec(header || '');
-  if (!match) return null;
+async function accountUser(userId: string): Promise<CurrentUser | null> {
   const db = getSupabaseServerClient();
-  const { data: row } = await db.from('mcp_tokens').select('id, user_id').eq('token_hash', hash(match[1])).is('revoked_at', null).maybeSingle();
-  if (!row) return null;
   const [{ data: profile }, { data: auth }] = await Promise.all([
-    db.from('profiles').select('username, display_name, avatar_url, bio, created_at').eq('id', row.user_id).maybeSingle(),
-    db.auth.admin.getUserById(row.user_id),
+    db.from('profiles').select('username, display_name, avatar_url, bio, created_at').eq('id', userId).maybeSingle(),
+    db.auth.admin.getUserById(userId),
   ]);
   if (!profile) return null;
-  await db.from('mcp_tokens').update({ last_used_at: new Date().toISOString() }).eq('id', row.id);
   const email = auth.user?.email || '';
   const fallback = (email || profile.username || 'user').split('@')[0];
   return {
-    id: row.user_id, email, username: profile.username || fallback,
+    id: userId, email, username: profile.username || fallback,
     displayName: profile.display_name || profile.username || fallback,
     avatarUrl: profile.avatar_url || null, bio: profile.bio || null,
     createdAt: profile.created_at || auth.user?.created_at || new Date().toISOString(),
   };
+}
+
+/** The account behind a bearer token, or null. tt_ is an agent token. tto_ is a ChatGPT sign-in. */
+export async function userForToken(header: string | null): Promise<CurrentUser | null> {
+  const raw = /^Bearer\s+(\S+)$/i.exec(header || '')?.[1];
+  if (!raw) return null;
+  if (raw.startsWith('tto_')) {
+    const userId = await oauthUserId(raw);
+    return userId ? accountUser(userId) : null;
+  }
+  if (!/^tt_[A-Za-z0-9_-]{20,}$/.test(raw)) return null;
+  const db = getSupabaseServerClient();
+  const { data: row } = await db.from('mcp_tokens').select('id, user_id').eq('token_hash', hash(raw)).is('revoked_at', null).maybeSingle();
+  if (!row) return null;
+  await db.from('mcp_tokens').update({ last_used_at: new Date().toISOString() }).eq('id', row.id);
+  return accountUser(row.user_id);
 }
