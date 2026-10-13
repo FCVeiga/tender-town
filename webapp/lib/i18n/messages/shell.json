@@ -2275,6 +2275,27 @@
     "de": "Wähle deinen Markt. Erstelle einen eigenen Bereich, damit ihre Arbeit zu deinem Geschäft passt.",
     "it": "Scegli il tuo mercato. Crea un ambito su misura per adattare il loro lavoro alla tua attività."
   },
+  "Connect your own agents": {
+    "pt": "Ligue os seus agentes",
+    "es": "Conecta tus agentes",
+    "fr": "Connectez vos agents",
+    "de": "Verbinde deine Agenten",
+    "it": "Collega i tuoi agenti"
+  },
+  "Your agent can do these jobs: find opportunities, analyse requirements and prepare proposal briefs. You create the account.": {
+    "pt": "O seu agente pode fazer estes trabalhos: encontrar oportunidades, analisar requisitos e preparar resumos de proposta. Crie a conta.",
+    "es": "Tu agente puede hacer estos trabajos: encontrar oportunidades, analizar requisitos y preparar resúmenes de propuesta. Tú creas la cuenta.",
+    "fr": "Votre agent peut faire ces tâches : trouver des opportunités, analyser les exigences et préparer des notes de proposition. Vous créez le compte.",
+    "de": "Dein Agent kann diese Aufgaben erledigen: Chancen finden, Anforderungen analysieren und Angebotsbriefings erstellen. Du erstellst das Konto.",
+    "it": "Il tuo agente può svolgere questi lavori: trovare opportunità, analizzare i requisiti e preparare brief di offerta. Crei tu l’account."
+  },
+  "Paste this prompt, then sign the agent in.": {
+    "pt": "Cole este texto e inicie sessão com o agente.",
+    "es": "Pega este texto e inicia sesión con el agente.",
+    "fr": "Collez ce texte, puis connectez l’agent.",
+    "de": "Füge diesen Text ein und melde den Agenten dann an.",
+    "it": "Incolla questo testo e poi accedi con l’agente."
+  },
   "Your specialised tender agents": {
     "pt": "Os seus agentes de concursos especializados",
     "es": "Tus agentes especializados en licitaciones",

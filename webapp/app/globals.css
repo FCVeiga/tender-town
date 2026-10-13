@@ -478,9 +478,9 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .scope-banner-inner {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: flex-start; gap: 16px;
-  max-width: 640px; padding: 0 32px;
+  width: 100%; max-width: none; padding: 0 32px;
 }
-.scope-banner-lead { min-width: 0; }
+.scope-banner-lead { min-width: 0; max-width: 640px; }
 .scope-banner-kicker {
   margin: 0 0 8px; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; color: #fff;
   text-shadow: 0 1px 2px rgba(2, 18, 40, 0.28);
@@ -502,7 +502,7 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .scope-banner.compact { padding: 12px 0; }
 .scope-banner.compact .scope-banner-inner {
   flex-direction: row; align-items: center; justify-content: flex-start; flex-wrap: wrap;
-  max-width: none; width: 100%; gap: 10px 16px;
+  gap: 10px 16px;
 }
 .scope-banner-fold {
   display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0;
@@ -523,11 +523,27 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .scope-banner-select:disabled { cursor: default; opacity: 0.7; }
 .scope-banner-select span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .scope-banner .btn.primary {
-  height: 44px; padding: 0 18px; background: #fff; border-color: #fff; color: var(--brand-a);
+  height: 44px; padding: 0 18px; border-radius: 12px; background: #fff; border-color: #fff; color: var(--brand-a);
   box-shadow: 0 10px 24px -14px rgba(2, 18, 40, 0.7);
 }
 .scope-banner .btn.primary:hover { background: #f4f7ff; border-color: #f4f7ff; }
-.scope-banner-select:focus-visible, .scope-banner .btn:focus-visible { outline-color: #fff; }
+.scope-banner .modal .btn.primary {
+  height: auto; min-height: 36px; padding: 0 14px; border-radius: 999px;
+  background: var(--brand-a); border-color: var(--brand-a); color: #fff; box-shadow: none;
+}
+.scope-banner .modal .btn.primary:hover { background: #1554E0; border-color: #1554E0; }
+button.scope-banner-create {
+  height: 44px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; box-shadow: none;
+  color: rgba(255, 255, 255, 0.78); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+}
+button.scope-banner-create:hover { color: #fff; background: rgba(255, 255, 255, 0.12); }
+button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .scope-banner .btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.agent-prompt-block { display: flex; flex-direction: column; gap: 8px; }
+.agent-prompt-lead { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.35; color: var(--ink); }
+.agent-prompt {
+  margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--font-mono-stack);
+  font-size: 12.5px; line-height: 1.5; color: var(--text); background: var(--surface-2); border-radius: 10px; padding: 14px;
+}
 .scope-chevron, .scope-check, .scope-lock { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .scope-check { stroke: var(--accent); }
 .scope-menu {
@@ -567,13 +583,15 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
   .scope-banner-slot { margin-top: -16px; }
   .scope-banner { padding: 22px 0 20px; }
   .scope-banner-kicker { font-size: 22px; }
-  .scope-banner-inner { max-width: none; width: 100%; padding: 0 16px; gap: 14px; align-items: stretch; }
+  .scope-banner-inner { padding: 0 16px; gap: 14px; align-items: stretch; }
+  .scope-banner-lead { max-width: none; }
   .scope-banner-art { width: 100%; opacity: 0.55; object-position: center 62%; }
   .scope-banner-bg::after { background: var(--scope-wash-narrow); }
 }
 @media (max-width: 720px) {
   .scope-banner-actions { flex-direction: column; align-items: stretch; }
-  .scope-banner-picker, .scope-banner-select, .scope-banner-create, .scope-banner-actions form { width: 100%; }
+  .scope-banner-picker, .scope-banner-select, .scope-banner-connect { width: 100%; }
+  button.scope-banner-create { align-self: flex-start; width: auto; }
   .scope-banner-fold { align-self: flex-end; }
   .scope-banner.compact .scope-banner-inner { flex-direction: column; align-items: stretch; }
   .scope-menu { width: 100%; }

@@ -13,6 +13,16 @@ type Gate = { action: 'switch' | 'create'; kind: 'plan' | 'permission' | 'signup
 const HEADING = 'Specialised AI agents for your next tender.';
 const COPY = 'Choose your market. Create a custom scope to tailor their work to your business.';
 const NOTE = 'Your specialised tender agents';
+const CONNECT = 'Connect your own agents';
+const CONNECT_BODY = 'Your agent can do these jobs: find opportunities, analyse requirements and prepare proposal briefs. You create the account.';
+const CONNECT_LEAD = 'Paste this prompt, then sign the agent in.';
+const AGENT_PROMPT = `Use Tender Town (https://tendertown.io) for public tenders, grants and news.
+
+Read https://tendertown.io/skills.md and follow https://tendertown.io/mcp.md. Connect to https://tendertown.io/api/mcp.
+
+Search needs no account. Quote each Tender Town page (/tenders/{id} or /news/{id}). Do not invent notices.
+
+I will create the account and sign you in. After that, call get_account, set up a scope, and do the jobs the plan includes: find opportunities, analyse requirements, and write a first draft. You cannot create the account, upload documents, post, comment, change the plan, or delete a workspace or a scope.`;
 const JOBS = [
   { label: 'Find opportunities', icon: 'search' },
   { label: 'Analyse requirements', icon: 'document' },
@@ -58,6 +68,7 @@ export default function ScopeBanner({ model, createAction, compact: compactSaved
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [gate, setGate] = useState<Gate | null>(model.deny ? { action: 'switch', kind: model.deny.kind, scopeId: model.deny.scopeId } : null);
+  const [agents, setAgents] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLDivElement>(null);
@@ -261,13 +272,14 @@ export default function ScopeBanner({ model, createAction, compact: compactSaved
         </div>
         {createAction ? (
           <form action={createAction}>
-            <button type="submit" className="btn primary scope-banner-create">{t('+ Create a scope')}</button>
+            <button type="submit" className="scope-banner-create">{t('+ Create a scope')}</button>
           </form>
         ) : (
-          <button type="button" className="btn primary scope-banner-create" onClick={() => setGate({ action: 'create', kind: model.create === 'ok' ? 'plan' : model.create })}>
+          <button type="button" className="scope-banner-create" onClick={() => setGate({ action: 'create', kind: model.create === 'ok' ? 'plan' : model.create })}>
             {t('+ Create a scope')}
           </button>
         )}
+        <button type="button" className="btn primary scope-banner-connect" onClick={() => setAgents(true)}>{t(CONNECT)}</button>
         <button type="button" className="scope-banner-fold" aria-expanded={!compact} aria-label={compact ? t('Expand') : t('Collapse')} onClick={toggleCompact}>
           <Chevron up={!compact} />
         </button>
@@ -276,6 +288,7 @@ export default function ScopeBanner({ model, createAction, compact: compactSaved
       {gate && (
         <GateModal gate={gate} model={model} onClose={() => setGate(null)} />
       )}
+      {agents && <AgentModal onClose={() => setAgents(false)} />}
     </section>
   );
 }
@@ -295,6 +308,29 @@ function Option({ choice, active, selected, onPick }: {
       </span>
       {choice.locked ? <Lock /> : selected ? <Check /> : <span className="scope-option-mark" />}
     </button>
+  );
+}
+
+function AgentModal({ onClose }: { onClose: () => void }) {
+  const t = useT();
+  const [copied, setCopied] = useState(false);
+  return (
+    <Modal title={t(CONNECT)} onClose={onClose}>
+      <p className="scope-gate-copy">{t(CONNECT_BODY)}</p>
+      <div className="agent-prompt-block">
+        <p className="agent-prompt-lead">{t(CONNECT_LEAD)}</p>
+        <pre className="agent-prompt">{AGENT_PROMPT}</pre>
+      </div>
+      <div className="modal-actions">
+        <button type="button" className="btn primary" onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(AGENT_PROMPT);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1500);
+          } catch { /* the prompt stays on screen for a manual copy */ }
+        }}>{copied ? t('Copied') : t('Copy')}</button>
+      </div>
+    </Modal>
   );
 }
 
