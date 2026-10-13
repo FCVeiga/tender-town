@@ -290,9 +290,18 @@ function legacyHostRedirect(request: NextRequest) {
   return NextResponse.redirect(url, 308);
 }
 
+const OPENAI_APPS_CHALLENGE = 'O-P8dv79AOebXD_nd7QmA0xx890z02HBynnwpb0VhRE';
+
 export async function middleware(request: NextRequest) {
   const moved = legacyHostRedirect(request);
   if (moved) return moved;
+  // OpenAI reads this exact body when connecting the plugin. No page around it.
+  if (request.nextUrl.pathname === '/.well-known/openai-apps-challenge') {
+    return new NextResponse(OPENAI_APPS_CHALLENGE, {
+      status: 200,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    });
+  }
   // A leftover login verifier is not a session. Only the auth token means someone is signed in.
   const hasSession = request.cookies.getAll().some((c) => c.name.startsWith('sb-') && !c.name.includes('code-verifier'));
   const intent = request.nextUrl.searchParams.get('intent') || '';
