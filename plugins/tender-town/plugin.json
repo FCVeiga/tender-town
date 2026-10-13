@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tender-town",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Find open public tenders, grants and news for people who bid on public contracts. Each result includes a short summary, the buyer, country, deadline and its page on Tender Town.",
   "author": {
     "name": "Neonancestry",
@@ -91,7 +91,7 @@
         }
       },
       "publication": {
-        "release_notes": "Clarify that the plugin finds public tenders, grants and news for people who bid, and list it under Business and Operations."
+        "release_notes": "Add the review walkthrough and list the plugin under Business and Operations."
       }
     }
   }

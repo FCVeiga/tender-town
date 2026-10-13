@@ -25,7 +25,12 @@ function registerSearch(server: McpServer, origin: string) {
     title: 'Search tenders, grants and news',
     description: 'Search Tender Town’s public index of open tenders, grants and news. No account and no plan limit. Returns the title, a short summary, the buyer, country, deadline and the Tender Town page for that result (/tenders/{id} or /news/{id}), not the notice on the source portal. Quote that page. Do not invent notices.',
     inputSchema: searchInput,
-    annotations: { title: 'Search tenders, grants and news', readOnlyHint: true },
+    annotations: {
+      title: 'Search tenders, grants and news',
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: false,
+    },
   }, async ({ query, kind, limit: n }) => {
     const hits = await publicSearch(query, kind, discoverLimit(n));
     return text({
