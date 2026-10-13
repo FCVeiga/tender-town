@@ -119,6 +119,17 @@ async function rememberIp(url: string, key: string, ip: string) {
   } catch { /* the next visit from this address can be recorded once */ }
 }
 
+/** The previous page, without a query string. Same-site visits keep the path. */
+function cleanReferrer(raw: string | null, currentHost: string): string | null {
+  if (!raw) return null;
+  let url: URL;
+  try { url = new URL(raw); } catch { return null; }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  const path = url.pathname && url.pathname !== '/' ? url.pathname : '';
+  const value = url.hostname === currentHost ? (path || '/') : `${url.origin}${path}`;
+  return value.slice(0, 180);
+}
+
 /** Count a real page load. The visitor id is a random cookie, not an address. Internal traffic is not counted. */
 async function trackVisit(request: NextRequest, response: NextResponse, who: { signedIn: boolean; userId: string | null; scopeId: string | null; email: string | null }) {
   if (request.method !== 'GET') return response;
@@ -169,6 +180,7 @@ async function trackVisit(request: NextRequest, response: NextResponse, who: { s
           kind, visitor, path: request.nextUrl.pathname.slice(0, 180),
           country, signed_in: who.signedIn, scope_ids: scopeIds,
           user_id: who.signedIn ? who.userId : null, plan,
+          referrer: cleanReferrer(request.headers.get('referer'), request.nextUrl.hostname),
         }),
       }),
       rememberCountry

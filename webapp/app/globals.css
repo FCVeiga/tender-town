@@ -850,6 +850,12 @@ table.data-table .num { text-align: right; }
 .dash-donut-legend a, .dash-donut-legend li:not(:has(a)) { display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 14px; }
 .dash-donut-legend strong { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink); }
 .dash-donut-legend li.on a, .dash-donut-legend li.on { background: var(--fill-hover); }
+.dash-back { margin: 0 0 8px; font-size: 13px; }
+.dash-back a { color: var(--muted); text-decoration: none; }
+.dash-back a:hover { color: var(--ink); }
+.dash-entries { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
+.dash-entries a { color: var(--ink); font-size: 16px; font-weight: 700; letter-spacing: -0.02em; text-decoration: none; }
+.dash-entries a:hover { color: var(--accent); }
 .dash-section { margin-top: 28px; }
 .dash-section h2 { font-size: 16px; margin-bottom: 12px; }
 .dash-empty { color: var(--muted); font-size: 14px; padding: 10px 0 4px; }

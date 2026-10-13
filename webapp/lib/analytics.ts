@@ -72,6 +72,10 @@ export type PageBundle = Record<VisitSection, DashPage[]>;
 export type ScopeCount = { id: string; name: string; visits: number };
 export type ActiveRow = { email: string; username: string; plan: PlanKey; country: string | null; scopes: string[] };
 export type McpRow = { email: string; username: string; plan: PlanKey; country: string | null; scopes: string[]; requests: number };
+export type CreatedRow = { id: string; name: string; plan: PlanKey; country: string | null; at: string };
+export type CreatedBlock = { plans: Record<PlanKey, number>; rows: CreatedRow[] };
+export type GeoSlice = { code: string; visits: number; scopes: { name: string; visits: number }[] };
+export type ReferrerRow = { from: string; path: string; signedIn: boolean | null; plan: string | null; country: string | null; views: number };
 export type DashCountry = {
   code: string;
   visits: number;
@@ -95,6 +99,10 @@ export type DashboardReport = {
     regions: Record<RegionKey, PageBundle>;
   };
   countries: DashCountry[];
+  created: { workspaces: CreatedBlock; scopes: CreatedBlock };
+  referrers: ReferrerRow[];
+  visitGeo: { guest: GeoSlice[]; plans: Record<PlanKey, GeoSlice[]>; regions: Record<RegionKey, GeoSlice[]>; scopes: { id: string; countries: GeoSlice[] }[] };
+  scopeGeo: { all: GeoSlice[]; plans: Record<PlanKey, GeoSlice[]> };
   mcp: {
     agents: number;
     requests: number;
@@ -188,6 +196,27 @@ async function emailsById() {
   return map;
 }
 
+function geoOf<T extends { country: string | null; views: number; scopeName?: string | null }>(rows: T[], pred: (row: T) => boolean): GeoSlice[] {
+  const totals = new Map<string, number>();
+  const names = new Map<string, Map<string, number>>();
+  for (const row of rows) {
+    if (!row.country || !pred(row)) continue;
+    const views = Number(row.views) || 0;
+    if (views <= 0) continue;
+    totals.set(row.country, (totals.get(row.country) || 0) + views);
+    if (!row.scopeName) continue;
+    const bucket = names.get(row.country) || new Map();
+    bucket.set(row.scopeName, (bucket.get(row.scopeName) || 0) + views);
+    names.set(row.country, bucket);
+  }
+  return Array.from(totals, ([code, visits]) => ({
+    code,
+    visits,
+    scopes: Array.from(names.get(code) || [], ([name, count]) => ({ name, visits: count }))
+      .sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name)).slice(0, 3),
+  })).sort((a, b) => b.visits - a.visits || a.code.localeCompare(b.code));
+}
+
 function scopeTotals<T extends { scope_id: string; views: number }>(rows: T[], names: Map<string, string>, pred: (row: T) => boolean): ScopeCount[] {
   const totals = new Map<string, number>();
   for (const row of rows) {
@@ -205,7 +234,7 @@ export async function dashboardReport(range: RangeKey): Promise<DashboardReport>
   const sinceIso = spec.ms == null ? null : new Date(Date.now() - spec.ms).toISOString();
   const hour = range === '24h';
   const db = getSupabaseServerClient();
-  const [totalRes, peopleRes, profileRes, planRes, pageRes, scopePageRes, engageRes, emails, scopeNameRes, ignoredRes, activeRes, activeScopeRes, mcpRes, mcpScopeRes] = await Promise.all([
+  const [totalRes, peopleRes, profileRes, planRes, pageRes, scopePageRes, engageRes, emails, scopeNameRes, accountRes, workspaceRes, referrerRes, ignoredRes, activeRes, activeScopeRes, mcpRes, mcpScopeRes] = await Promise.all([
     db.rpc('analytics_totals', { since: sinceIso }),
     db.rpc('analytics_people', { since: sinceIso, unit: hour ? 'hour' : 'day' }),
     db.from('profiles').select('id, username, created_at, country').order('created_at', { ascending: false }).limit(500),
@@ -214,7 +243,10 @@ export async function dashboardReport(range: RangeKey): Promise<DashboardReport>
     db.rpc('analytics_page_scopes', { since: sinceIso }),
     db.rpc('analytics_engagement', { since: sinceIso }),
     emailsById(),
-    db.from('scopes').select('id, name'),
+    db.from('scopes').select('id, name, created_at, owner_id, workspace_id, catalog, is_default'),
+    db.from('accounts').select('id, plan, owner_id, kind'),
+    db.from('workspaces').select('id, name, created_at, created_by, account_id'),
+    db.rpc('analytics_referrers', { since: sinceIso }),
     db.from('analytics_ignored_users').select('user_id'),
     db.rpc('analytics_active_users', { since: sinceIso }),
     db.rpc('analytics_active_scopes', { since: sinceIso }),
@@ -440,6 +472,45 @@ export async function dashboardReport(range: RangeKey): Promise<DashboardReport>
   })).sort((a, b) => b.visits - a.visits || b.active - a.active || b.accounts - a.accounts || b.revenue - a.revenue || a.code.localeCompare(b.code));
 
   const revenueTotal = revenue.starter + revenue.pro + revenue.teams;
+  const accountById = new Map((accountRes.data || []).map((row) => [row.id as string, row]));
+  const planForAccount = (accountId: string | null | undefined) => asPlan(accountId ? accountById.get(accountId)?.plan as string | undefined : undefined);
+  const inCreated = (iso: string | null) => !!iso && (!sinceIso || iso >= sinceIso);
+  const createdBlock = (rows: CreatedRow[]): CreatedBlock => {
+    const plans = emptyPlans();
+    for (const row of rows) plans[row.plan] += 1;
+    return { plans, rows: rows.sort((a, b) => b.at.localeCompare(a.at) || a.name.localeCompare(b.name)).slice(0, 100) };
+  };
+  const workspacesCreated = ((workspaceRes.data || []) as { id: string; name: string | null; created_at: string; created_by: string | null; account_id: string }[])
+    .filter((row) => inCreated(row.created_at) && accountById.get(row.account_id)?.kind !== 'platform' && !ignored.has(row.created_by || ''))
+    .map((row) => ({
+      id: row.id,
+      name: row.name || '',
+      plan: planForAccount(row.account_id),
+      country: profileById.get(row.created_by || '')?.country || profileById.get(accountById.get(row.account_id)?.owner_id as string)?.country || null,
+      at: row.created_at,
+    }))
+    .filter((row) => row.name);
+  const scopesCreated = ((scopeNameRes.data || []) as { id: string; name: string | null; created_at: string; owner_id: string | null; workspace_id: string | null; catalog: boolean | null; is_default: boolean | null }[])
+    .filter((row) => inCreated(row.created_at) && !row.catalog && !row.is_default && !ignored.has(row.owner_id || ''))
+    .map((row) => {
+      const accountId = (workspaceRes.data || []).find((workspace) => workspace.id === row.workspace_id)?.account_id as string | undefined;
+      return {
+        id: row.id,
+        name: row.name || '',
+        plan: accountId ? planForAccount(accountId) : asPlan(planByOwner.get(row.owner_id || '')?.plan as string | undefined),
+        country: profileById.get(row.owner_id || '')?.country || null,
+        at: row.created_at,
+      };
+    })
+    .filter((row) => row.name);
+  const pageGeoRows = pageRows.map((row) => ({ country: row.country, views: Number(row.views) || 0, signed_in: row.signed_in, plan: row.plan }));
+  const scopeGeoRows = scopeRows.map((row) => ({
+    country: row.country, views: Number(row.views) || 0, plan: row.plan, scope_id: row.scope_id,
+    scopeName: names.get(row.scope_id) || null,
+  }));
+  const referrers = ((referrerRes.data || []) as { referrer: string; path: string; signed_in: boolean | null; plan: string | null; country: string | null; views: number }[])
+    .map((row) => ({ from: row.referrer, path: row.path || '', signedIn: row.signed_in, plan: row.plan, country: row.country, views: Number(row.views) || 0 }))
+    .filter((row) => row.from && row.views > 0);
   return {
     points,
     cards: {
@@ -461,6 +532,18 @@ export async function dashboardReport(range: RangeKey): Promise<DashboardReport>
       regions: Object.fromEntries(REGIONS.map((region) => [region, seal(regionRaw[region])])) as Record<RegionKey, PageBundle>,
     },
     countries,
+    created: { workspaces: createdBlock(workspacesCreated), scopes: createdBlock(scopesCreated) },
+    referrers,
+    visitGeo: {
+      guest: geoOf(pageGeoRows, (row) => row.signed_in !== true),
+      plans: Object.fromEntries(PLANS.map((plan) => [plan, geoOf(pageGeoRows, (row) => row.plan === plan)])) as Record<PlanKey, GeoSlice[]>,
+      regions: Object.fromEntries(REGIONS.map((region) => [region, geoOf(pageGeoRows, (row) => !!row.country && regionOf(row.country) === region)])) as Record<RegionKey, GeoSlice[]>,
+      scopes: scopeIds.map((id) => ({ id, countries: geoOf(scopeGeoRows, (row) => row.scope_id === id) })),
+    },
+    scopeGeo: {
+      all: geoOf(scopeGeoRows, () => true),
+      plans: Object.fromEntries(PLANS.map((plan) => [plan, geoOf(scopeGeoRows, (row) => row.plan === plan)])) as Record<PlanKey, GeoSlice[]>,
+    },
     mcp: {
       agents: perUser.size,
       requests: mcpRequests,

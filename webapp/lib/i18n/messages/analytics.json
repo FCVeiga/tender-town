@@ -306,5 +306,47 @@
     "fr": "Autres pages",
     "de": "Andere Seiten",
     "it": "Altre pagine"
+  },
+  "Workspaces created": {
+    "pt": "Espaços de trabalho criados",
+    "es": "Espacios de trabajo creados",
+    "fr": "Espaces de travail créés",
+    "de": "Erstellte Arbeitsbereiche",
+    "it": "Aree di lavoro create"
+  },
+  "Scopes created": {
+    "pt": "Âmbitos criados",
+    "es": "Ámbitos creados",
+    "fr": "Périmètres créés",
+    "de": "Erstellte Bereiche",
+    "it": "Ambiti creati"
+  },
+  "Came from": {
+    "pt": "Origem",
+    "es": "Origen",
+    "fr": "Provenance",
+    "de": "Herkunft",
+    "it": "Provenienza"
+  },
+  "Name": {
+    "pt": "Nome",
+    "es": "Nombre",
+    "fr": "Nom",
+    "de": "Name",
+    "it": "Nome"
+  },
+  "Account details": {
+    "pt": "Detalhes da conta",
+    "es": "Detalles de la cuenta",
+    "fr": "Détails du compte",
+    "de": "Kontodetails",
+    "it": "Dettagli dell'account"
+  },
+  "All plans": {
+    "pt": "Todos os planos",
+    "es": "Todos los planes",
+    "fr": "Tous les forfaits",
+    "de": "Alle Tarife",
+    "it": "Tutti i piani"
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export type DonutSlice = { key: string; label: string; display: string; value: number; color: string; href?: string };
 
@@ -10,6 +11,12 @@ const C = 2 * Math.PI * R;
 /** A distribution ring. The centre is the total; the legend is each slice's value. */
 export default function DashDonut({ slices, center }: { slices: DonutSlice[]; center: string }) {
   const [active, setActive] = useState<string | null>(null);
+  const router = useRouter();
+  const go = (href: string) => (event: React.MouseEvent) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    event.preventDefault();
+    router.push(href, { scroll: false });
+  };
   const drawn = slices.filter((slice) => slice.value > 0);
   const sum = drawn.reduce((total, slice) => total + slice.value, 0);
   let offset = 0;
@@ -31,7 +38,7 @@ export default function DashDonut({ slices, center }: { slices: DonutSlice[]; ce
                 <title>{`${slice.label} ${slice.display}`}</title>
               </circle>
             );
-            return slice.href ? <a key={slice.key} href={slice.href}>{circle}</a> : <g key={slice.key}>{circle}</g>;
+            return slice.href ? <a key={slice.key} href={slice.href} onClick={go(slice.href)}>{circle}</a> : <g key={slice.key}>{circle}</g>;
           })}
         </g>
         <text x="90" y="96" textAnchor="middle" fill="var(--ink)" fontSize="22" fontWeight="700">{center}</text>
@@ -41,7 +48,7 @@ export default function DashDonut({ slices, center }: { slices: DonutSlice[]; ce
           const body = (<><i className="dash-swatch" style={{ background: slice.color }} /><span>{slice.label}</span><strong>{slice.display}</strong></>);
           return (
             <li key={slice.key} className={active === slice.key ? 'on' : undefined} onPointerEnter={() => setActive(slice.key)} onPointerLeave={() => setActive(null)}>
-              {slice.href ? <a href={slice.href}>{body}</a> : body}
+              {slice.href ? <a href={slice.href} onClick={go(slice.href)}>{body}</a> : body}
             </li>
           );
         })}
