@@ -10,7 +10,7 @@ import { useT } from '@/lib/i18n/client';
  * under Following on their profile. Signed out, there is no heart.
  */
 export default function HeartButton({ type, id, liked: initial, signedIn, className = '', count }: {
-  type: 'tender' | 'news' | 'post' | 'comment'; id: string; liked: boolean; signedIn: boolean; className?: string;
+  type: 'tender' | 'news' | 'post' | 'comment' | 'blog'; id: string; liked: boolean; signedIn: boolean; className?: string;
   count?: number;
 }) {
   const tr = useT();
@@ -23,7 +23,8 @@ export default function HeartButton({ type, id, liked: initial, signedIn, classN
   const label = type === 'tender' ? (liked ? tr('Unlike this tender') : tr('Like this tender'))
     : type === 'post' ? (liked ? tr('Unlike this post') : tr('Like this post'))
       : type === 'comment' ? (liked ? tr('Unlike this comment') : tr('Like this comment'))
-        : (liked ? tr('Unlike this story') : tr('Like this story'));
+        : type === 'blog' ? (liked ? tr('Unlike this article') : tr('Like this article'))
+          : (liked ? tr('Unlike this story') : tr('Like this story'));
 
   return (
     <button type="button" className={`heart ${liked ? 'on' : ''} ${shown !== undefined ? 'with-count' : ''} ${className}`} aria-pressed={liked} aria-label={label} title={label}

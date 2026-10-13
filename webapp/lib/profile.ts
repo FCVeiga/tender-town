@@ -1,5 +1,6 @@
 /** Profile pages (/u/[username]): the user, their counts, and what they follow. */
 import { getSupabaseServerClient } from '@/lib/supabase';
+import { postBySlug } from '@/lib/blog';
 import { newsCategoryLabel, oppCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import type { FeedItem } from '@/lib/feed';
@@ -68,6 +69,16 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
   const now = Date.now();
   return (likes || []).flatMap((l: any): FeedItem[] => {
     const at = new Date(l.created_at);
+    if (l.item_type === 'blog') {
+      const post = postBySlug(l.item_id);
+      if (!post) return [];
+      return [{
+        key: `blog:${post.slug}`, kind: 'news', event: 'liked', href: `/blog/${post.slug}`,
+        headline: post.title, body: post.description, category: 'blog', categoryLabel: 'Blog', kindLabel: 'Blog',
+        country: null, at, score: 0, combined: 0, movement: 'same', deadline: null, isNew: false,
+        image: post.image,
+      }];
+    }
     if (l.item_type === 'tender') {
       const o = opp.get(l.item_id);
       if (!o) return [];

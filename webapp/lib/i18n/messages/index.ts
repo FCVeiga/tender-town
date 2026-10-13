@@ -14,9 +14,10 @@ import mcp from './mcp.json';
 import oauth from './oauth.json';
 import analytics from './analytics.json';
 import markets from './markets.json';
+import blog from './blog.json';
 
 // Later files win where two define the same key differently: the most visible wording last.
-const FILES: Record<string, Partial<Record<UiLang, string>>>[] = [settings, workspaces, people, tenders, news, shell, mcp, oauth, analytics, markets];
+const FILES: Record<string, Partial<Record<UiLang, string>>>[] = [settings, workspaces, people, tenders, news, shell, mcp, oauth, analytics, markets, blog];
 
 const cache = new Map<UiLang, Messages>();
 export function messagesFor(lang: UiLang): Messages {

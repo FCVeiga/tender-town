@@ -1,0 +1,163 @@
+{
+  "Notes on finding tenders, scoring a fit and drafting a bid.": {
+    "pt": "Notas sobre como encontrar concursos, avaliar o enquadramento e redigir uma proposta.",
+    "es": "Notas sobre cómo encontrar licitaciones, valorar el encaje y redactar una oferta.",
+    "fr": "Notes sur la recherche de marchés, l’évaluation de l’adéquation et la rédaction d’une offre.",
+    "de": "Hinweise zum Finden von Ausschreibungen, zur Eignungsbewertung und zum Schreiben eines Angebots.",
+    "it": "Note su come trovare gare, valutare l’idoneità e scrivere un’offerta."
+  },
+  "Three skills an AI agent needs on a public tender": {
+    "pt": "Três competências que um agente de IA precisa num concurso público",
+    "es": "Tres competencias que un agente de IA necesita en una licitación pública",
+    "fr": "Trois compétences dont un agent d’IA a besoin pour un marché public",
+    "de": "Drei Fähigkeiten, die ein KI-Agent für eine öffentliche Ausschreibung braucht",
+    "it": "Tre competenze di cui un agente di IA ha bisogno in una gara pubblica"
+  },
+  "How an agent should find a notice, score the company fit, and draft the brief. The Tender Town skill for each step.": {
+    "pt": "Como um agente deve encontrar um anúncio, avaliar o enquadramento da empresa e redigir o resumo. A competência Tender Town para cada passo.",
+    "es": "Cómo un agente debe encontrar un anuncio, valorar el encaje de la empresa y redactar el brief. La competencia de Tender Town para cada paso.",
+    "fr": "Comment un agent trouve un avis, évalue l’adéquation de l’entreprise et rédige la note. La compétence Tender Town pour chaque étape.",
+    "de": "Wie ein Agent eine Bekanntmachung findet, die Eignung des Unternehmens bewertet und das Briefing schreibt. Die Tender-Town-Fähigkeit für jeden Schritt.",
+    "it": "Come un agente trova un avviso, valuta l’idoneità dell’azienda e scrive il brief. La competenza Tender Town per ogni passaggio."
+  },
+  "An agent told to find tenders and write the proposal will search the open web, guess the requirements, and draft from a blank page. A public tender does not work like that. The notice has a page. The fit is a comparison with what the company can show. The draft comes after that comparison, and the gaps stay in it.": {
+    "pt": "Um agente a quem se pede que encontre concursos e escreva a proposta vai pesquisar na web aberta, adivinhar os requisitos e redigir a partir de uma página em branco. Um concurso público não funciona assim. O anúncio tem uma página. O enquadramento é uma comparação com o que a empresa pode mostrar. O rascunho vem depois dessa comparação, e as lacunas ficam nele.",
+    "es": "Un agente al que se le pide encontrar licitaciones y escribir la propuesta buscará en la web abierta, adivinará los requisitos y redactará desde una página en blanco. Una licitación pública no funciona así. El anuncio tiene una página. El encaje es una comparación con lo que la empresa puede mostrar. El borrador llega después de esa comparación, y las lagunas se quedan en él.",
+    "fr": "Un agent à qui l’on demande de trouver des marchés et d’écrire l’offre cherchera sur le web ouvert, devinera les exigences et rédigera à partir d’une page blanche. Un marché public ne fonctionne pas ainsi. L’avis a une page. L’adéquation est une comparaison avec ce que l’entreprise peut montrer. La note vient après cette comparaison, et les lacunes y restent.",
+    "de": "Ein Agent, der Ausschreibungen finden und das Angebot schreiben soll, sucht im offenen Web, rät die Anforderungen und schreibt von einer leeren Seite. Eine öffentliche Ausschreibung funktioniert nicht so. Die Bekanntmachung hat eine Seite. Die Eignung ist ein Vergleich mit dem, was das Unternehmen belegen kann. Das Briefing kommt nach diesem Vergleich, und die Lücken bleiben darin.",
+    "it": "Un agente a cui si chiede di trovare gare e scrivere l’offerta cercherà sul web aperto, indovinerà i requisiti e scriverà da una pagina bianca. Una gara pubblica non funziona così. L’avviso ha una pagina. L’idoneità è un confronto con ciò che l’azienda può mostrare. La bozza arriva dopo quel confronto, e i vuoti restano dentro."
+  },
+  "Three skills cover the work. Tender Town publishes each one, so you can hand it to the agent you already use.": {
+    "pt": "Três competências cobrem o trabalho. O Tender Town publica cada uma, para a poder entregar ao agente que já utiliza.",
+    "es": "Tres competencias cubren el trabajo. Tender Town publica cada una, para que se la des al agente que ya usas.",
+    "fr": "Trois compétences couvrent le travail. Tender Town publie chacune d’elles, pour que vous la donniez à l’agent que vous utilisez déjà.",
+    "de": "Drei Fähigkeiten decken die Arbeit ab. Tender Town veröffentlicht jede davon, damit du sie dem Agenten gibst, den du schon nutzt.",
+    "it": "Tre competenze coprono il lavoro. Tender Town pubblica ciascuna, così puoi passarla all’agente che usi già."
+  },
+  "Find the notice, and quote its page": {
+    "pt": "Encontre o anúncio e cite a página",
+    "es": "Encuentra el anuncio y cita su página",
+    "fr": "Trouvez l’avis et citez sa page",
+    "de": "Finde die Bekanntmachung und zitiere ihre Seite",
+    "it": "Trova l’avviso e cita la sua pagina"
+  },
+  "Search is the first skill. The agent queries a procurement index and returns the page for that notice. On Tender Town that page is /tenders/{id} for a tender or a grant, and /news/{id} for a news item. The agent quotes that page. If it cannot point at one, it does not have a notice.": {
+    "pt": "A pesquisa é a primeira competência. O agente consulta um índice de contratação pública e devolve a página desse anúncio. No Tender Town essa página é /tenders/{id} para um concurso ou uma subvenção, e /news/{id} para uma notícia. O agente cita essa página. Se não conseguir apontar para uma, não tem um anúncio.",
+    "es": "La búsqueda es la primera competencia. El agente consulta un índice de contratación pública y devuelve la página de ese anuncio. En Tender Town esa página es /tenders/{id} para una licitación o una subvención, y /news/{id} para una noticia. El agente cita esa página. Si no puede señalar una, no tiene un anuncio.",
+    "fr": "La recherche est la première compétence. L’agent interroge un index de marchés publics et renvoie la page de cet avis. Sur Tender Town, cette page est /tenders/{id} pour un marché ou une subvention, et /news/{id} pour une actualité. L’agent cite cette page. S’il ne peut pas en indiquer une, il n’a pas d’avis.",
+    "de": "Die Suche ist die erste Fähigkeit. Der Agent fragt einen Vergabeindex ab und liefert die Seite dieser Bekanntmachung. Auf Tender Town ist das /tenders/{id} für eine Ausschreibung oder einen Zuschuss und /news/{id} für eine Meldung. Der Agent zitiert diese Seite. Wenn er keine nennen kann, hat er keine Bekanntmachung.",
+    "it": "La ricerca è la prima competenza. L’agente interroga un indice di appalti pubblici e restituisce la pagina di quell’avviso. Su Tender Town quella pagina è /tenders/{id} per una gara o un contributo, e /news/{id} per una notizia. L’agente cita quella pagina. Se non può indicarne una, non ha un avviso."
+  },
+  "A search with no account already reads the public index. It is not filtered to one company. After you sign the agent in, <configure>Configure a scope</configure> sets the radar to what the company sells, the countries it bids in, and what to leave out. Saving those instructions does not fetch notices immediately. Search runs on the plan’s schedule: once a day on Free, twice on Starter, three times on Pro, six times on Teams. Until the next run, the agent uses public search and says so.": {
+    "pt": "Uma pesquisa sem conta já lê o índice público. Não está filtrada a uma empresa. Depois de iniciar sessão com o agente, <configure>Configurar um âmbito</configure> define o radar para o que a empresa vende, os países em que concorre e o que deve ficar de fora. Guardar essas instruções não obtém anúncios de imediato. A pesquisa corre no calendário do plano: uma vez por dia no Free, duas no Starter, três no Pro e seis no Teams. Até à execução seguinte, o agente usa a pesquisa pública e diz isso.",
+    "es": "Una búsqueda sin cuenta ya lee el índice público. No está filtrada a una empresa. Después de iniciar sesión con el agente, <configure>Configurar un ámbito</configure> ajusta el radar a lo que la empresa vende, los países en los que licita y lo que debe quedar fuera. Guardar esas instrucciones no trae anuncios al momento. La búsqueda sigue el calendario del plan: una vez al día en Free, dos en Starter, tres en Pro y seis en Teams. Hasta la siguiente ejecución, el agente usa la búsqueda pública y lo dice.",
+    "fr": "Une recherche sans compte lit déjà l’index public. Elle n’est pas filtrée sur une entreprise. Après la connexion de l’agent, <configure>Configurer un périmètre</configure> règle le radar sur ce que l’entreprise vend, les pays où elle soumissionne et ce qu’il faut écarter. Enregistrer ces instructions ne récupère pas les avis tout de suite. La recherche suit le rythme du plan : une fois par jour en Free, deux en Starter, trois en Pro, six en Teams. Jusqu’à la prochaine exécution, l’agent utilise la recherche publique et le dit.",
+    "de": "Eine Suche ohne Konto liest bereits den öffentlichen Index. Sie ist nicht auf ein Unternehmen gefiltert. Nachdem du den Agenten angemeldet hast, richtet <configure>Einen Bereich einrichten</configure> das Radar auf das aus, was das Unternehmen verkauft, in welchen Ländern es bietet und was entfallen soll. Diese Anweisungen zu speichern holt Bekanntmachungen nicht sofort. Die Suche läuft im Rhythmus des Plans: einmal am Tag bei Free, zweimal bei Starter, dreimal bei Pro, sechsmal bei Teams. Bis zum nächsten Lauf nutzt der Agent die öffentliche Suche und sagt das.",
+    "it": "Una ricerca senza account legge già l’indice pubblico. Non è filtrata su un’azienda. Dopo l’accesso dell’agente, <configure>Configurare un ambito</configure> imposta il radar su ciò che l’azienda vende, i paesi in cui concorre e ciò che va escluso. Salvare quelle istruzioni non recupera gli avvisi subito. La ricerca segue il ritmo del piano: una volta al giorno su Free, due su Starter, tre su Pro, sei su Teams. Fino all’esecuzione successiva, l’agente usa la ricerca pubblica e lo dice."
+  },
+  "Refuse anything the page does not contain: a buyer, a deadline, a budget, a reference number.": {
+    "pt": "Recuse tudo o que a página não contém: um adjudicante, um prazo, um orçamento, um número de referência.",
+    "es": "Rechaza todo lo que la página no contiene: un comprador, un plazo, un presupuesto, un número de referencia.",
+    "fr": "Refusez tout ce que la page ne contient pas : un acheteur, une date limite, un budget, un numéro de référence.",
+    "de": "Weise alles ab, was die Seite nicht enthält: einen Auftraggeber, eine Frist, ein Budget, eine Referenznummer.",
+    "it": "Rifiuta tutto ciò che la pagina non contiene: un committente, una scadenza, un budget, un numero di riferimento."
+  },
+  "Score the fit before anyone writes": {
+    "pt": "Avalie o enquadramento antes de alguém escrever",
+    "es": "Valora el encaje antes de que nadie escriba",
+    "fr": "Évaluez l’adéquation avant que quiconque rédige",
+    "de": "Bewerte die Eignung, bevor jemand schreibt",
+    "it": "Valuta l’idoneità prima che qualcuno scriva"
+  },
+  "The second skill is a fit score, not a hunch. The agent reads each requirement and compares it with the company material already saved on the scope. The status is one of five: the company meets it, meets part of it, needs a partner, does not meet it, or the material does not say. The last one is unknown. Unknown is not a match. Do not assume a certificate, a turnover figure, or a reference the material does not state.": {
+    "pt": "A segunda competência é uma pontuação de enquadramento, não um palpite. O agente lê cada requisito e compara-o com o material da empresa já guardado no âmbito. O estado é um de cinco: a empresa cumpre, cumpre em parte, precisa de um parceiro, não cumpre, ou o material não diz. O último é desconhecido. Desconhecido não é um cumprimento. Não assuma um certificado, um valor de volume de negócios ou uma referência que o material não indique.",
+    "es": "La segunda competencia es una puntuación de encaje, no una intuición. El agente lee cada requisito y lo compara con el material de la empresa ya guardado en el ámbito. El estado es uno de cinco: la empresa lo cumple, lo cumple en parte, necesita un socio, no lo cumple, o el material no lo dice. El último es desconocido. Desconocido no es un cumplimiento. No des por hecho un certificado, una cifra de facturación o una referencia que el material no indique.",
+    "fr": "La deuxième compétence est un score d’adéquation, pas une intuition. L’agent lit chaque exigence et la compare au dossier de l’entreprise déjà enregistré sur le périmètre. Le statut est l’un de cinq : l’entreprise la satisfait, la satisfait en partie, a besoin d’un partenaire, ne la satisfait pas, ou le dossier ne le dit pas. Le dernier est inconnu. Inconnu n’est pas une conformité. Ne supposez pas un certificat, un chiffre d’affaires ou une référence que le dossier n’indique pas.",
+    "de": "Die zweite Fähigkeit ist eine Eignungsnote, keine Vermutung. Der Agent liest jede Anforderung und vergleicht sie mit dem Unternehmensmaterial, das bereits im Bereich liegt. Der Status ist einer von fünf: das Unternehmen erfüllt sie, erfüllt sie teilweise, braucht einen Partner, erfüllt sie nicht, oder das Material sagt nichts dazu. Der letzte ist unbekannt. Unbekannt ist keine Erfüllung. Nimm kein Zertifikat, keinen Umsatz und keine Referenz an, die das Material nicht nennt.",
+    "it": "La seconda competenza è un punteggio di idoneità, non un’impressione. L’agente legge ogni requisito e lo confronta con il materiale dell’azienda già salvato nell’ambito. Lo stato è uno di cinque: l’azienda lo soddisfa, lo soddisfa in parte, ha bisogno di un partner, non lo soddisfa, oppure il materiale non lo dice. L’ultimo è sconosciuto. Sconosciuto non è una conformità. Non dare per certo un certificato, un fatturato o una referenza che il materiale non indica."
+  },
+  "If a requirement is better covered by a partner, say so. The verdict can be bid, bid with a partner, consider, or no bid. A mandatory requirement the company cannot meet, and that a partner cannot cover, is a reason not to bid. If the material is thin, stop before spending a run.": {
+    "pt": "Se um requisito fica melhor coberto por um parceiro, diga-o. O veredito pode ser concorrer, concorrer com um parceiro, considerar ou não concorrer. Um requisito obrigatório que a empresa não consegue cumprir, e que um parceiro também não cobre, é um motivo para não concorrer. Se o material for escasso, pare antes de gastar uma execução.",
+    "es": "Si un requisito lo cubre mejor un socio, dilo. El veredicto puede ser licitar, licitar con un socio, considerarlo o no licitar. Un requisito obligatorio que la empresa no puede cumplir, y que un socio tampoco cubre, es un motivo para no licitar. Si el material es escaso, para antes de gastar una ejecución.",
+    "fr": "Si un partenaire couvre mieux une exigence, dites-le. Le verdict peut être soumissionner, soumissionner avec un partenaire, à étudier, ou ne pas soumissionner. Une exigence obligatoire que l’entreprise ne peut pas satisfaire, et qu’un partenaire ne couvre pas non plus, est une raison de ne pas soumissionner. Si le dossier est mince, arrêtez avant de dépenser une exécution.",
+    "de": "Wenn ein Partner eine Anforderung besser abdeckt, sag das. Das Urteil kann bieten, mit einem Partner bieten, prüfen oder nicht bieten sein. Eine zwingende Anforderung, die das Unternehmen nicht erfüllen kann und die auch ein Partner nicht abdeckt, ist ein Grund, nicht zu bieten. Wenn das Material dünn ist, halte an, bevor ein Lauf verbraucht wird.",
+    "it": "Se un requisito è coperto meglio da un partner, dillo. Il verdetto può essere partecipare, partecipare con un partner, valutare o non partecipare. Un requisito obbligatorio che l’azienda non può soddisfare, e che nemmeno un partner copre, è un motivo per non partecipare. Se il materiale è scarso, fermati prima di consumare un’esecuzione."
+  },
+  "<fit>Fit analysis</fit> is that procedure. It starts on Starter, one run a month. Pro includes five. Teams includes unlimited runs. Free does not include it. When the month is used, the agent says so and does not run another.": {
+    "pt": "<fit>Análise de enquadramento</fit> é esse procedimento. Começa no Starter, uma execução por mês. O Pro inclui cinco. O Teams inclui execuções ilimitadas. O Free não a inclui. Quando o mês está esgotado, o agente diz isso e não executa outra.",
+    "es": "<fit>Análisis de encaje</fit> es ese procedimiento. Empieza en Starter, una ejecución al mes. Pro incluye cinco. Teams incluye ejecuciones ilimitadas. Free no lo incluye. Cuando el mes está agotado, el agente lo dice y no ejecuta otra.",
+    "fr": "<fit>Analyse d’adéquation</fit> est cette procédure. Elle commence avec Starter, une exécution par mois. Pro en inclut cinq. Teams en inclut un nombre illimité. Free ne l’inclut pas. Quand le mois est épuisé, l’agent le dit et n’en lance pas une autre.",
+    "de": "<fit>Eignungsanalyse</fit> ist dieses Verfahren. Sie beginnt bei Starter, ein Lauf im Monat. Pro umfasst fünf. Teams umfasst unbegrenzte Läufe. Free enthält sie nicht. Wenn der Monat aufgebraucht ist, sagt der Agent das und startet keinen weiteren.",
+    "it": "<fit>Analisi di idoneità</fit> è quella procedura. Parte da Starter, un’esecuzione al mese. Pro ne include cinque. Teams include esecuzioni illimitate. Free non la include. Quando il mese è esaurito, l’agente lo dice e non ne avvia un’altra."
+  },
+  "Draft from the score": {
+    "pt": "Redija a partir da pontuação",
+    "es": "Redacta a partir de la puntuación",
+    "fr": "Rédigez à partir du score",
+    "de": "Schreibe aus der Bewertung",
+    "it": "Scrivi a partire dal punteggio"
+  },
+  "The third skill writes the brief the bid team starts from. It runs only after an evaluation exists for that tender on that scope. It keeps the sections a bid needs: summary, dates, criteria, eligibility, references, requirements, documents to submit, gaps, and next steps. It proposes an answer only from the company material. Where the material is silent, it marks a gap or names the partner role. It does not invent a certificate, a project, a person, a figure, or a date. It does not submit the proposal anywhere.": {
+    "pt": "A terceira competência escreve o resumo de que a equipa de proposta parte. Só corre depois de existir uma avaliação desse concurso nesse âmbito. Mantém as secções de que uma proposta precisa: resumo, datas, critérios, elegibilidade, referências, requisitos, documentos a entregar, lacunas e passos seguintes. Propõe uma resposta apenas a partir do material da empresa. Onde o material se cala, marca uma lacuna ou nomeia o papel do parceiro. Não inventa um certificado, um projeto, uma pessoa, um número ou uma data. Não submete a proposta em lado nenhum.",
+    "es": "La tercera competencia escribe el brief del que parte el equipo de oferta. Solo se ejecuta cuando ya existe una evaluación de esa licitación en ese ámbito. Conserva las secciones que una oferta necesita: resumen, fechas, criterios, elegibilidad, referencias, requisitos, documentos a presentar, lagunas y pasos siguientes. Propone una respuesta solo a partir del material de la empresa. Donde el material calla, marca una laguna o nombra el papel del socio. No inventa un certificado, un proyecto, una persona, una cifra o una fecha. No presenta la propuesta en ningún sitio.",
+    "fr": "La troisième compétence écrit la note dont part l’équipe d’offre. Elle ne s’exécute qu’après une évaluation de ce marché sur ce périmètre. Elle garde les sections dont une offre a besoin : résumé, dates, critères, éligibilité, références, exigences, documents à remettre, lacunes et étapes suivantes. Elle propose une réponse uniquement à partir du dossier de l’entreprise. Là où le dossier se tait, elle marque une lacune ou nomme le rôle du partenaire. Elle n’invente pas un certificat, un projet, une personne, un chiffre ou une date. Elle ne dépose l’offre nulle part.",
+    "de": "Die dritte Fähigkeit schreibt das Briefing, mit dem das Angebotsteam beginnt. Sie läuft erst, wenn für diese Ausschreibung in diesem Bereich eine Bewertung vorliegt. Sie behält die Abschnitte, die ein Angebot braucht: Zusammenfassung, Termine, Kriterien, Eignung, Referenzen, Anforderungen, einzureichende Unterlagen, Lücken und nächste Schritte. Sie schlägt eine Antwort nur aus dem Unternehmensmaterial vor. Wo das Material schweigt, markiert sie eine Lücke oder benennt die Partnerrolle. Sie erfindet kein Zertifikat, kein Projekt, keine Person, keine Zahl und kein Datum. Sie reicht das Angebot nirgends ein.",
+    "it": "La terza competenza scrive il brief da cui parte il team di offerta. Parte solo dopo che esiste una valutazione di quella gara in quell’ambito. Mantiene le sezioni di cui un’offerta ha bisogno: sintesi, date, criteri, idoneità, referenze, requisiti, documenti da presentare, vuoti e passi successivi. Propone una risposta solo dal materiale dell’azienda. Dove il materiale tace, segna un vuoto o indica il ruolo del partner. Non inventa un certificato, un progetto, una persona, una cifra o una data. Non presenta l’offerta da nessuna parte."
+  },
+  "<proposal>Proposal draft</proposal> is that procedure. It is on Teams.": {
+    "pt": "<proposal>Rascunho de proposta</proposal> é esse procedimento. Está no Teams.",
+    "es": "<proposal>Borrador de propuesta</proposal> es ese procedimiento. Está en Teams.",
+    "fr": "<proposal>Ébauche de proposition</proposal> est cette procédure. Elle est sur Teams.",
+    "de": "<proposal>Angebotsentwurf</proposal> ist dieses Verfahren. Es gibt es bei Teams.",
+    "it": "<proposal>Bozza di offerta</proposal> è quella procedura. È su Teams."
+  },
+  "What you still do": {
+    "pt": "O que continua a ser consigo",
+    "es": "Lo que sigues haciendo tú",
+    "fr": "Ce qui reste de votre côté",
+    "de": "Was du weiterhin tust",
+    "it": "Quello che fai ancora tu"
+  },
+  "The agent cannot create the account, upload documents, post, comment, change the plan, or delete a workspace or a scope. You create the account. ChatGPT signs in on this site. Any other agent uses a token from Account, under External agents. Follow the <guide>operating guide</guide>. The three procedures are on the <skills>skills page</skills>. The agent fetches the one that matches the job before it calls tools for it.": {
+    "pt": "O agente não pode criar a conta, carregar documentos, publicar, comentar, alterar o plano nem apagar um espaço de trabalho ou um âmbito. A conta cria-a o utilizador. O ChatGPT inicia sessão neste site. Qualquer outro agente usa um token em Conta, em Agentes externos. Siga o <guide>guia de utilização</guide>. Os três procedimentos estão na <skills>página de competências</skills>. O agente obtém o que corresponde à tarefa antes de chamar ferramentas para ela.",
+    "es": "El agente no puede crear la cuenta, subir documentos, publicar, comentar, cambiar el plan ni borrar un espacio de trabajo o un ámbito. La cuenta la creas tú. ChatGPT inicia sesión en este sitio. Cualquier otro agente usa un token en Cuenta, en Agentes externos. Sigue la <guide>guía de uso</guide>. Los tres procedimientos están en la <skills>página de competencias</skills>. El agente obtiene el que corresponde al trabajo antes de llamar a herramientas para hacerlo.",
+    "fr": "L’agent ne peut pas créer le compte, téléverser des documents, publier, commenter, changer le plan, ni supprimer un espace de travail ou un périmètre. Vous créez le compte. ChatGPT se connecte sur ce site. Tout autre agent utilise un jeton dans Compte, sous Agents externes. Suivez le <guide>guide d’utilisation</guide>. Les trois procédures sont sur la <skills>page des compétences</skills>. L’agent récupère celle qui correspond à la tâche avant d’appeler des outils pour elle.",
+    "de": "Der Agent kann kein Konto anlegen, keine Dokumente hochladen, nicht veröffentlichen, nicht kommentieren, den Plan nicht ändern und keinen Arbeitsbereich oder Bereich löschen. Das Konto erstellst du. ChatGPT meldet sich auf dieser Website an. Jeder andere Agent nutzt ein Token unter Konto, bei Externe Agenten. Folge der <guide>Anleitung</guide>. Die drei Verfahren stehen auf der <skills>Seite der Fähigkeiten</skills>. Der Agent holt das Verfahren, das zur Aufgabe passt, bevor er dafür Werkzeuge aufruft.",
+    "it": "L’agente non può creare l’account, caricare documenti, pubblicare, commentare, cambiare il piano o eliminare uno spazio di lavoro o un ambito. L’account lo crei tu. ChatGPT accede su questo sito. Ogni altro agente usa un token in Account, sotto Agenti esterni. Segui la <guide>guida operativa</guide>. Le tre procedure sono nella <skills>pagina delle competenze</skills>. L’agente recupera quella che corrisponde al lavoro prima di chiamare strumenti per farlo."
+  },
+  "Create an account. On the home page, open Connect your own agents, paste the prompt, and sign the agent in.": {
+    "pt": "Crie uma conta. Na página inicial, abra Ligue os seus agentes, cole o texto e inicie sessão com o agente.",
+    "es": "Crea una cuenta. En la página de inicio, abre Conecta tus agentes, pega el texto e inicia sesión con el agente.",
+    "fr": "Créez un compte. Sur la page d’accueil, ouvrez Connectez vos agents, collez le texte et connectez l’agent.",
+    "de": "Erstelle ein Konto. Öffne auf der Startseite Verbinde deine Agenten, füge den Text ein und melde den Agenten an.",
+    "it": "Crea un account. Nella pagina iniziale apri Collega i tuoi agenti, incolla il testo e accedi con l’agente."
+  },
+  "Create an account": {
+    "pt": "Crie uma conta",
+    "es": "Crea una cuenta",
+    "fr": "Créez un compte",
+    "de": "Erstelle ein Konto",
+    "it": "Crea un account"
+  },
+  "Like this article": {
+    "pt": "Gostar deste artigo",
+    "es": "Me gusta este artículo",
+    "fr": "Aimer cet article",
+    "de": "Diesen Artikel liken",
+    "it": "Mi piace questo articolo"
+  },
+  "Unlike this article": {
+    "pt": "Deixar de gostar deste artigo",
+    "es": "Ya no me gusta este artículo",
+    "fr": "Ne plus aimer cet article",
+    "de": "Like für diesen Artikel entfernen",
+    "it": "Non mi piace più questo articolo"
+  },
+  "A notice with a magnifying glass, a marked checklist and an open notebook on a café table.": {
+    "pt": "Um anúncio com uma lupa, uma lista de verificação assinalada e um caderno aberto numa mesa de café.",
+    "es": "Un anuncio con una lupa, una lista de verificación marcada y un cuaderno abierto en una mesa de café.",
+    "fr": "Un avis avec une loupe, une liste de contrôle cochée et un carnet ouvert sur une table de café.",
+    "de": "Eine Bekanntmachung mit einer Lupe, eine abgehakte Checkliste und ein offenes Notizbuch auf einem Cafétisch.",
+    "it": "Un avviso con una lente, una checklist segnata e un taccuino aperto su un tavolino da caffè."
+  }
+}

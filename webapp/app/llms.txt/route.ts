@@ -1,4 +1,5 @@
 import { siteOrigin } from '@/lib/auth';
+import { posts } from '@/lib/blog';
 import { marketIndex } from '@/lib/discover';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +30,10 @@ export async function GET() {
     `- [Fit analysis](${origin}/skills/fit-analysis)`,
     `- [Proposal draft](${origin}/skills/proposal-draft)`,
     '',
+    'How-to notes for people and for agents. These are not notices. Fetch the skill that matches the job before calling tools.',
+    '',
+    ...posts.map((post) => `- [${post.title}](${origin}/blog/${post.slug}): ${post.description}`),
+    '',
     '## Markets',
     '',
     'Each market is a stable page of what that scope has open now.',
@@ -46,6 +51,7 @@ export async function GET() {
     `- [About](${origin}/about)`,
     `- [Pricing](${origin}/pricing): Free, Starter (€49/month), Pro (€89/month), Teams (€139/month). A year is eleven months.`,
     `- [Help](${origin}/help)`,
+    `- [Blog](${origin}/blog): how to find a notice, score a fit and draft a brief`,
     '',
     'Tender Town tracks open public procurement: requests for proposals, requests for information, grants and funding calls, with their documents, summaries and requirements, plus regulation, industry and market news. Visitors see the General scope. Each catalog market has its own page. A workspace can also create a custom scope so the agents work to that business.',
     '',

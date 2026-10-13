@@ -7,7 +7,7 @@ export type CommentNode = {
   author: { username: string; avatarUrl: string | null } | null; replies: CommentNode[];
 };
 
-export async function getCommentTree(itemType: 'post' | 'news' | 'tender', itemId: string, userId: string | null): Promise<{ tree: CommentNode[]; total: number }> {
+export async function getCommentTree(itemType: 'post' | 'news' | 'tender' | 'blog', itemId: string, userId: string | null): Promise<{ tree: CommentNode[]; total: number }> {
   const db = getSupabaseServerClient();
   const { data } = await db.from('comments').select('id, user_id, parent_id, body, like_count, created_at')
     .eq('item_type', itemType).eq('item_id', itemId).order('created_at', { ascending: true }).limit(1000);

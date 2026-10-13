@@ -1168,6 +1168,13 @@
     "de": "zu einer Ausschreibung",
     "it": "su una gara"
   },
+  "on an article": {
+    "pt": "num artigo",
+    "es": "en un artículo",
+    "fr": "sur un article",
+    "de": "zu einem Artikel",
+    "it": "su un articolo"
+  },
   "on “{title}”": {
     "pt": "em “{title}”",
     "es": "en “{title}”",

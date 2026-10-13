@@ -166,10 +166,10 @@ export async function deleteAccount(_prev: AuthState, form: FormData): Promise<A
 }
 
 /** Heart on a tender or news story: like / unlike. Liked items show under Following on the profile. */
-export async function toggleLike(itemType: 'tender' | 'news' | 'post' | 'comment', itemId: string) {
+export async function toggleLike(itemType: 'tender' | 'news' | 'post' | 'comment' | 'blog', itemId: string) {
   const user = await getCurrentUser();
   if (!user) return { error: 'login' as const };
-  if (!['tender', 'news', 'post', 'comment'].includes(itemType) || !/^[\w-]{6,64}$/.test(itemId)) return { error: 'invalid' as const };
+  if (!['tender', 'news', 'post', 'comment', 'blog'].includes(itemType) || !/^[\w-]{6,64}$/.test(itemId)) return { error: 'invalid' as const };
   const db = getSupabaseServerClient();
   const key = { user_id: user.id, item_type: itemType, item_id: itemId };
   const { data } = await db.from('likes').select('item_id').match(key).maybeSingle();
@@ -185,7 +185,7 @@ export async function toggleLike(itemType: 'tender' | 'news' | 'post' | 'comment
     } else if (itemType === 'comment') {
       const { data: c } = await db.from('comments').select('user_id, body, item_type, item_id, post_id').eq('id', itemId).maybeSingle();
       if (c && c.user_id !== user.id) {
-        const base = c.item_type === 'news' ? `/news/${c.item_id}` : c.item_type === 'tender' ? `/tenders/${c.item_id}` : `/posts/${c.post_id ?? c.item_id}`;
+        const base = c.item_type === 'news' ? `/news/${c.item_id}` : c.item_type === 'tender' ? `/tenders/${c.item_id}` : c.item_type === 'blog' ? `/blog/${c.item_id}` : `/posts/${c.post_id ?? c.item_id}`;
         await notify(c.user_id, { type: 'like_comment', title: `u/${user.username} liked your comment`, body: c.body.slice(0, 200), link: `${base}#c-${itemId}`, actorId: user.id, once: true });
       }
     }

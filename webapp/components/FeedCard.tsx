@@ -88,7 +88,7 @@ export default function FeedCard({ item, now, value, like, social }: {
 /** News page card (Reddit-style): tags · time, … menu, content, action bar under it. */
 function SocialFeedCard({ item, now, value, social }: { item: FeedItem; now: Date; value?: number; social: { engagement: Engagement; signedIn: boolean } }) {
   const target = likeTarget(item.href);
-  if (!target || target[0] === 'post') return null;
+  if (!target || target[0] === 'post' || target[0] === 'blog') return null;
   const [type, id] = target as ['news' | 'tender', string];
   const t = getTSync();
   const e = social.engagement;

@@ -5,7 +5,7 @@ import CommentThread, { CommentForm } from './CommentThread';
 import { getT } from '@/lib/i18n/server';
 
 /** Comments block for a post or news page. */
-export default async function CommentsSection({ itemType, itemId, loginNext }: { itemType: 'post' | 'news' | 'tender'; itemId: string; loginNext: string }) {
+export default async function CommentsSection({ itemType, itemId, loginNext }: { itemType: 'post' | 'news' | 'tender' | 'blog'; itemId: string; loginNext: string }) {
   const t = await getT();
   const user = await getCurrentUser();
   const { tree, total } = await getCommentTree(itemType, itemId, user?.id ?? null);

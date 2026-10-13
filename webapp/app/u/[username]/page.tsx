@@ -56,8 +56,8 @@ export default async function ProfilePage({ params, searchParams }: { params: { 
   } else if (tab === 'comments') {
     const comments = await getComments(profile.id);
     body = comments.length ? comments.map((c: any) => (
-      <Link key={c.id} href={`${c.item_type === 'news' ? `/news/${c.item_id}` : c.item_type === 'tender' ? `/tenders/${c.item_id}` : `/posts/${c.post_id}`}#c-${c.id}`} className="profile-post">
-        <span className="profile-meta">{c.posts?.title ? t('on “{title}”', { title: c.posts.title }) : c.item_type === 'news' ? t('on a news story') : t('on a tender')} · {fmt(c.created_at)}</span>
+      <Link key={c.id} href={`${c.item_type === 'news' ? `/news/${c.item_id}` : c.item_type === 'tender' ? `/tenders/${c.item_id}` : c.item_type === 'blog' ? `/blog/${c.item_id}` : `/posts/${c.post_id}`}#c-${c.id}`} className="profile-post">
+        <span className="profile-meta">{c.posts?.title ? t('on “{title}”', { title: c.posts.title }) : c.item_type === 'news' ? t('on a news story') : c.item_type === 'blog' ? t('on an article') : t('on a tender')} · {fmt(c.created_at)}</span>
         <p className="profile-post-body">{c.body}</p>
       </Link>
     )) : <Empty own={own} who={profile.username} what="comments" hint={t('Comments on other people’s posts will show here.')} />;

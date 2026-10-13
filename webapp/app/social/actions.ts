@@ -116,9 +116,9 @@ export async function toggleFollow(username: string) {
   return { following: !data };
 }
 
-const ITEM = /^(post|news|tender):([\w-]{6,64})$/;
+const ITEM = /^(post|news|tender|blog):([\w-]{6,64})$/;
 type ItemType = 'post' | 'news' | 'tender';
-const itemHref = (t: string, id: string) => (t === 'post' ? `/posts/${id}` : t === 'news' ? `/news/${id}` : `/tenders/${id}`);
+const itemHref = (t: string, id: string) => (t === 'post' ? `/posts/${id}` : t === 'news' ? `/news/${id}` : t === 'blog' ? `/blog/${id}` : `/tenders/${id}`);
 
 /** A comment on a post, news story or tender — or a reply to another comment. */
 export async function addComment(_prev: FormState, form: FormData): Promise<FormState> {
