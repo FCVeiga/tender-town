@@ -908,10 +908,55 @@ tr.data-row:hover td { background: #FAFBFD; }
 .detail-head h1 { font-size: 26px; font-weight: 700; max-width: 900px; }
 .original-title { margin-top: 10px; font-size: 13px; color: var(--muted); max-width: 900px; }
 .original-title span { font-family: var(--font-mono-stack); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--subtle); margin-right: 6px; }
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.tender-page { min-width: 0; }
+.tender-jump {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 22px;
+}
+.tender-jump a {
+  display: flex; align-items: center; justify-content: center; text-align: center; min-height: 44px; padding: 8px 12px;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  font-size: 13px; font-weight: 600; text-decoration: none; line-height: 1.25;
+}
+.tender-jump a:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.tender-jump a.is-primary { background: var(--brand-a); border-color: var(--brand-a); color: #fff; }
+.tender-jump a.is-primary:hover { background: #1554E0; }
+@media (min-width: 860px) {
+  .tender-jump { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.tender-page :is(#summary, #requirements, #evaluation, #proposal-brief, #documents, #history, #sources, #comments) {
+  scroll-margin-top: calc(var(--topbar-h) + 16px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.tender-page) { scroll-behavior: smooth; }
+}
+.original-notice { margin-top: 10px; max-width: 900px; }
+.original-notice summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
+.original-notice p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+.eval-scope + .eval-scope, .proposal-block + .proposal-block { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px; }
+.req-table-wrap { max-width: 100%; overflow-x: auto; }
+.req-category-title { font-size: 13px; font-weight: 600; color: var(--ink); margin: 0 0 8px; }
+.submit-docs { margin: 0; padding-left: 18px; font-size: 13.5px; }
+.submit-docs a { color: var(--accent); }
+.doc-fold { border-top: 1px solid var(--border); padding-top: 4px; }
+.doc-fold summary {
+  list-style: none; display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.doc-fold summary::-webkit-details-marker { display: none; }
+.doc-fold summary::before {
+  content: ''; width: 6px; height: 6px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted);
+  transform: rotate(-45deg); flex-shrink: 0;
+}
+.doc-fold[open] summary::before { transform: rotate(45deg); }
+.doc-revised { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--warn); }
+.history-body { min-width: 0; }
+.timeline .history-doc { display: inline-block; margin-top: 4px; font-size: 12.5px; font-weight: 600; color: var(--accent); }
+.tender-page .detail-block { min-width: 0; overflow-wrap: break-word; }
 .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; box-shadow: var(--shadow-sm); }
 .stat-label { font-family: var(--font-mono-stack); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--subtle); }
 .stat-num { font-family: var(--font-mono-stack); font-size: 26px; font-weight: 600; color: var(--ink); margin-top: 4px; letter-spacing: -0.02em; }
+.stat .countdown { display: block; margin-left: 0; margin-top: 4px; }
 .stat-num.small { font-size: 14px; margin-top: 10px; letter-spacing: 0; }
 .opp-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
 .detail-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }

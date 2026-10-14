@@ -12,20 +12,37 @@ export type Evaluation = {
 const VERDICTS: Record<string, string> = { bid: 'Bid', bid_with_partner: 'Bid with a partner', consider: 'Consider', no_bid: 'No bid' };
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 
-/** One scope's evaluation of a tender (and its proposal brief), on the tender page. */
-export default function TenderScopeEvaluation({ opportunityId, scope, row, showName, canRun, signedIn, evaluatorOn, proposerOn, ready, analysedAt, locked = null }: {
+type ScopeEvalProps = {
   opportunityId: string; scope: { id: string; name: string }; row: any; showName: boolean; canRun: boolean; signedIn: boolean;
   locked?: 'plan' | 'member' | null;
   evaluatorOn: boolean; proposerOn: boolean; ready: boolean; analysedAt: string | null;
-}) {
+  lead?: string | null;
+  archived?: boolean;
+  contextHref?: string | null;
+  /** Set on the first scope when the month still has runs. */
+  runsLeft?: number | null;
+  runsLimit?: number | null;
+  /** Monthly cap, once it is used up. */
+  quotaLimit?: number | null;
+};
+
+function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, signedIn: boolean, locked: 'plan' | 'member' | null) {
+  if (!signedIn) {
+    return <p className="muted"><Link href={`/login?next=/tenders/${opportunityId}`}>{t('Log in')}</Link> {t('and create a scope to evaluate tenders against your own context.')}</p>;
+  }
+  if (locked === 'member') return <p className="muted">{t('Run by your workspace\u2019s admins.')}</p>;
+  if (locked === 'plan') return <p className="muted"><Link href="/settings/account?plan=1">{t('Upgrade')}</Link> {t('to evaluate tenders against your own scope\u2019s context.')}</p>;
+  return null;
+}
+
+/** One scope's evaluation of a tender. The proposal brief is a separate section. */
+export default function TenderScopeEvaluation({ opportunityId, scope, row, showName, canRun, signedIn, evaluatorOn, ready, analysedAt, locked = null, lead = null, archived = false, contextHref = null, runsLeft = null, runsLimit = null, quotaLimit = null }: ScopeEvalProps) {
   const t = getTSync();
   const evaluation = (row?.evaluation ?? null) as Evaluation | null;
   const running = !!row?.evaluation_started_at && Date.now() - new Date(row.evaluation_started_at).getTime() < 5 * 60_000;
-  const proposing = !!row?.proposal_started_at && Date.now() - new Date(row.proposal_started_at).getTime() < 6 * 60_000;
-  const login = <p className="muted"><Link href={`/login?next=/tenders/${opportunityId}`}>{t('Log in')}</Link> {t('and create a scope to evaluate tenders against your own context.')}</p>;
 
   return (
-    <section className="detail-block analysis-block" id={`evaluation-${scope.id}`}>
+    <div className="eval-scope">
       <div className="agent-head">
         <AgentAvatar agent="tender_evaluation" working={running} off={!evaluatorOn} />
         <div className="agent-id">
@@ -34,7 +51,8 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, showN
         </div>
         {evaluation && <span className={`verdict eval-${evaluation.verdict}`}>{VERDICTS[evaluation.verdict] ? t(VERDICTS[evaluation.verdict]) : evaluation.verdict}</span>}
       </div>
-      {!evaluation && <p className="agent-intro">{t('Scores your fit and recommends whether to bid.')}</p>}
+      {lead && <p className="agent-intro">{lead}</p>}
+      {archived && <p className="summary-note">{t('This tender is archived.')}</p>}
       {evaluation && analysedAt && row?.evaluated_at && analysedAt > row.evaluated_at && (
         <p className="summary-note">{t('Requirements changed since this report — re-run it.')}</p>
       )}
@@ -54,28 +72,43 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, showN
           )}
         </div>
       )}
+      {contextHref && <p className="eval-note"><Link href={contextHref}>{t('Add your company information')}</Link></p>}
       {!evaluatorOn ? <p className="muted">{t('Agent off for this scope.')}</p>
-        : !canRun ? (!signedIn ? login
-          : locked === 'member' ? <p className="muted">{t('Run by your workspace’s admins.')}</p>
-          : locked === 'plan' ? <p className="muted"><Link href="/settings/account?plan=1">{t('Upgrade')}</Link> {t('to evaluate tenders against your own scope’s context.')}</p> : null)
-          : <TenderEvaluationRunner opportunityId={opportunityId} scopeId={scope.id} evaluatedAt={row?.evaluated_at ?? null} running={running}
-              ready={ready} lastError={row?.evaluation_error ?? null} />}
+        : quotaLimit != null ? (
+          <p className="muted">{t('This workspace has used its {n} tender evaluations for this month.', { n: quotaLimit })} <Link href="/settings/account?plan=1">{t('Upgrade')}</Link></p>
+        )
+        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked)
+          : (
+            <>
+              {runsLeft != null && runsLimit != null && (
+                <p className="eval-note">{t('{n} of {limit} left this month.', { n: runsLeft, limit: runsLimit })}</p>
+              )}
+              <TenderEvaluationRunner opportunityId={opportunityId} scopeId={scope.id} evaluatedAt={row?.evaluated_at ?? null} running={running}
+                ready={ready} lastError={row?.evaluation_error ?? null} />
+            </>
+          )}
+    </div>
+  );
+}
 
-      {evaluation && proposerOn && canRun && (
-        <div className="proposal-block" id={`proposal-${scope.id}`}>
-          <div className="agent-head">
-            <AgentAvatar agent="proposal_manager" size={36} working={proposing} />
-            <div className="agent-id">
-              <h3>{t('Proposal brief')}</h3>
-              <span className="agent-name">{row?.proposal_at ? t('Proposal brief from {date}', { date: fmtDate(row.proposal_at) }) : t('Next step after the evaluation')}</span>
-            </div>
-          </div>
-          <p className="agent-intro">
-            {t('Writes the proposal brief for the bid team: the tender summary, deadlines and evaluation criteria; every eligibility, reference, team, technical and project requirement with the answer the scope’s context supports (who fills each role, which references and certificates); the documents to submit; the gaps and the next steps.')}
-          </p>
-          <ProposalRunner opportunityId={opportunityId} scopeId={scope.id} proposalAt={row?.proposal_at ?? null} running={proposing} lastError={row?.proposal_error ?? null} />
+/** The proposal brief for one scope that already has an evaluation. */
+export function ProposalSlot({ opportunityId, scope, row, showName, canRun, signedIn, locked = null, proposerOn }: {
+  opportunityId: string; scope: { id: string; name: string }; row: any; showName: boolean; canRun: boolean; signedIn: boolean;
+  locked?: 'plan' | 'member' | null; proposerOn: boolean;
+}) {
+  const t = getTSync();
+  const proposing = !!row?.proposal_started_at && Date.now() - new Date(row.proposal_started_at).getTime() < 6 * 60_000;
+  return (
+    <div className="proposal-block">
+      {showName && (
+        <div className="agent-head">
+          <AgentAvatar agent="proposal_manager" size={36} working={proposing} />
+          <div className="agent-id"><h3>{scope.name}</h3></div>
         </div>
       )}
-    </section>
+      {!proposerOn ? <p className="muted">{t('Agent off for this scope.')}</p>
+        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked)
+          : <ProposalRunner opportunityId={opportunityId} scopeId={scope.id} proposalAt={row?.proposal_at ?? null} running={proposing} lastError={row?.proposal_error ?? null} />}
+    </div>
   );
 }

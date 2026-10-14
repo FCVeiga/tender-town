@@ -221,6 +221,22 @@ export function statedValue(text: string | null | undefined): { amount: number; 
   return { amount, currency };
 }
 
+const VAT_VALUE_RE = /\b(?:estimated value|contract value|total value|estimated budget|budget of)\b/i;
+const VAT_EXCL_RE = /\b(?:excl\.?|excluding|exclusive of|ex\.)\s+VAT\b|\bVAT\s+excl/i;
+const VAT_INCL_RE = /\b(?:incl\.?|including|inclusive of)\s+VAT\b|\bVAT\s+incl/i;
+
+/** VAT treatment only when it sits with the sentence that states the contract value. */
+export function vatTreatment(text: string | null | undefined): 'excl' | 'incl' | null {
+  if (!text) return null;
+  for (const hit of text.matchAll(new RegExp(VAT_VALUE_RE.source, 'ig'))) {
+    if (hit.index == null) continue;
+    const slice = text.slice(hit.index, Math.min(text.length, hit.index + 180));
+    if (VAT_EXCL_RE.test(slice)) return 'excl';
+    if (VAT_INCL_RE.test(slice)) return 'incl';
+  }
+  return null;
+}
+
 /** The interpretation to show. Empty when it contradicts the summary or the record's stage.
  * A public market drops the configured company. A custom scope may keep it. */
 export function shownWhy(summary: string | null | undefined, reason: string | null | undefined, open = true, stage?: string | null): string {

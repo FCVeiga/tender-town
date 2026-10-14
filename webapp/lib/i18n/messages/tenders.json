@@ -559,6 +559,34 @@
     "de": "Beispiel",
     "it": "Esempio"
   },
+  "This run uses Harborline Identity, a sample company. It is not your account.": {
+    "pt": "Esta execução usa a Harborline Identity, uma empresa de exemplo. Não é a sua conta.",
+    "es": "Esta ejecución usa Harborline Identity, una empresa de ejemplo. No es tu cuenta.",
+    "fr": "Cette exécution utilise Harborline Identity, une entreprise d’exemple. Ce n’est pas votre compte.",
+    "de": "Dieser Lauf nutzt Harborline Identity, ein Beispielunternehmen. Es ist nicht dein Konto.",
+    "it": "Questa esecuzione usa Harborline Identity, un’azienda di esempio. Non è il tuo account."
+  },
+  "Open the live tender": {
+    "pt": "Abrir o concurso real",
+    "es": "Abrir la licitación real",
+    "fr": "Ouvrir le marché réel",
+    "de": "Die echte Ausschreibung öffnen",
+    "it": "Apri la gara reale"
+  },
+  "Sample company": {
+    "pt": "Empresa de exemplo",
+    "es": "Empresa de ejemplo",
+    "fr": "Entreprise d’exemple",
+    "de": "Beispielunternehmen",
+    "it": "Azienda di esempio"
+  },
+  "Harborline holds ISO 27001, turns over €4.1 million a year, and has delivered two identity-wallet projects worth €3.7 million together. It has no staff in Malta, and its cyber insurance is €2 million.": {
+    "pt": "A Harborline tem ISO 27001, fatura 4,1 milhões de euros por ano e entregou dois projetos de carteira de identidade no valor conjunto de 3,7 milhões de euros. Não tem pessoal em Malta e o seguro cibernético é de 2 milhões de euros.",
+    "es": "Harborline tiene la ISO 27001, factura 4,1 millones de euros al año y ha entregado dos proyectos de cartera de identidad por 3,7 millones de euros en total. No tiene personal en Malta y su seguro cibernético es de 2 millones de euros.",
+    "fr": "Harborline détient l’ISO 27001, réalise 4,1 millions d’euros de chiffre d’affaires par an et a livré deux projets de portefeuille d’identité pour 3,7 millions d’euros au total. Elle n’a pas d’équipe à Malte, et son assurance cyber est de 2 millions d’euros.",
+    "de": "Harborline hat ISO 27001, setzt 4,1 Millionen Euro im Jahr um und hat zwei Identity-Wallet-Projekte im Gesamtwert von 3,7 Millionen Euro geliefert. Es gibt kein Personal in Malta, und die Cyberversicherung beträgt 2 Millionen Euro.",
+    "it": "Harborline ha la ISO 27001, fattura 4,1 milioni di euro l’anno e ha consegnato due progetti di portafoglio d’identità per 3,7 milioni di euro complessivi. Non ha personale a Malta e l’assicurazione cyber è di 2 milioni di euro."
+  },
   "Waste collection for Northwind City": {
     "pt": "Recolha de resíduos para Northwind City",
     "es": "Recogida de residuos para Northwind City",
@@ -1363,5 +1391,173 @@
     "fr": "L'Agent d'évaluation des appels d'offres vérifie chaque exigence par rapport à votre périmètre — environ une minute.",
     "de": "Der Agent Ausschreibungsbewertung prüft jede Anforderung anhand deines Bereichs – etwa eine Minute.",
     "it": "L'Agente di valutazione gare sta verificando ogni requisito rispetto al tuo ambito: circa un minuto."
+  },
+  "Assess my fit": {
+    "pt": "Avalie a minha adequação",
+    "es": "Valora mi encaje",
+    "fr": "Évaluez votre adéquation",
+    "de": "Bewerte meine Eignung",
+    "it": "Valuta la mia idoneità"
+  },
+  "Prepare a brief": {
+    "pt": "Prepare um briefing",
+    "es": "Prepara un informe",
+    "fr": "Préparez une note",
+    "de": "Erstelle ein Briefing",
+    "it": "Prepara una nota"
+  },
+  "Documents": {
+    "pt": "Documentos",
+    "es": "Documentos",
+    "fr": "Documents",
+    "de": "Dokumente",
+    "it": "Documenti"
+  },
+  "Documents ({n})": {
+    "pt": "Documentos ({n})",
+    "es": "Documentos ({n})",
+    "fr": "Documents ({n})",
+    "de": "Dokumente ({n})",
+    "it": "Documenti ({n})"
+  },
+  "On this page": {
+    "pt": "Nesta página",
+    "es": "En esta página",
+    "fr": "Sur cette page",
+    "de": "Auf dieser Seite",
+    "it": "In questa pagina"
+  },
+  "Not assessed": {
+    "pt": "Não avaliado",
+    "es": "Sin valorar",
+    "fr": "Non évalué",
+    "de": "Nicht bewertet",
+    "it": "Non valutato"
+  },
+  "Market relevance": {
+    "pt": "Relevância de mercado",
+    "es": "Relevancia de mercado",
+    "fr": "Pertinence pour le marché",
+    "de": "Marktrelevanz",
+    "it": "Rilevanza di mercato"
+  },
+  "Company fit": {
+    "pt": "Adequação da empresa",
+    "es": "Encaje de la empresa",
+    "fr": "Adéquation de l'entreprise",
+    "de": "Eignung des Unternehmens",
+    "it": "Idoneità dell'azienda"
+  },
+  "Original notice title": {
+    "pt": "Título original do anúncio",
+    "es": "Título original del anuncio",
+    "fr": "Titre original de l'avis",
+    "de": "Originaltitel der Bekanntmachung",
+    "it": "Titolo originale del bando"
+  },
+  "Excl. VAT": {
+    "pt": "Sem IVA",
+    "es": "Sin IVA",
+    "fr": "Hors TVA",
+    "de": "Ohne MwSt.",
+    "it": "IVA esclusa"
+  },
+  "Incl. VAT": {
+    "pt": "Com IVA",
+    "es": "Con IVA",
+    "fr": "TVA comprise",
+    "de": "Inkl. MwSt.",
+    "it": "IVA inclusa"
+  },
+  "This tender is archived.": {
+    "pt": "Este concurso está arquivado.",
+    "es": "Esta licitación está archivada.",
+    "fr": "Cet appel d'offres est archivé.",
+    "de": "Diese Ausschreibung ist archiviert.",
+    "it": "Questa gara è archiviata."
+  },
+  "Compare the tender requirements with your company evidence to identify matches, gaps and partner needs.": {
+    "pt": "Compare os requisitos do concurso com os elementos da sua empresa para identificar correspondências, lacunas e necessidades de parceiros.",
+    "es": "Compara los requisitos de la licitación con la información de tu empresa para ver coincidencias, lagunas y necesidades de socios.",
+    "fr": "Comparez les exigences de l'appel d'offres avec les éléments de votre entreprise pour repérer les correspondances, les écarts et les besoins de partenaires.",
+    "de": "Vergleiche die Anforderungen der Ausschreibung mit den Unterlagen deines Unternehmens, um Treffer, Lücken und Partnerbedarf zu sehen.",
+    "it": "Confronta i requisiti della gara con gli elementi della tua azienda per individuare corrispondenze, lacune e ruoli da coprire con un partner."
+  },
+  "Build a starting brief from your evaluation, including evidence, unresolved requirements and roles a partner needs to cover.": {
+    "pt": "Elabore um briefing inicial a partir da sua avaliação, incluindo os elementos, os requisitos em aberto e as funções que um parceiro tem de cobrir.",
+    "es": "Prepara un informe inicial a partir de tu evaluación, con las pruebas, los requisitos abiertos y las funciones que un socio tiene que cubrir.",
+    "fr": "Rédigez une note de départ à partir de votre évaluation, avec les éléments, les exigences encore ouvertes et les rôles qu'un partenaire doit couvrir.",
+    "de": "Erstelle ein erstes Briefing aus deiner Bewertung, mit Belegen, offenen Anforderungen und Rollen, die ein Partner abdecken muss.",
+    "it": "Prepara una nota di partenza dalla tua valutazione, con le prove, i requisiti aperti e i ruoli che un partner deve coprire."
+  },
+  "Assess my fit first": {
+    "pt": "Avalie primeiro a minha adequação",
+    "es": "Valora primero mi encaje",
+    "fr": "Évaluez d'abord votre adéquation",
+    "de": "Bewerte zuerst meine Eignung",
+    "it": "Valuta prima la mia idoneità"
+  },
+  "Create a free account": {
+    "pt": "Crie uma conta gratuita",
+    "es": "Crea una cuenta gratuita",
+    "fr": "Créez un compte gratuit",
+    "de": "Erstelle ein kostenloses Konto",
+    "it": "Crea un account gratuito"
+  },
+  "A free account includes requirements on {n} tenders a month.": {
+    "pt": "Uma conta gratuita inclui os requisitos de {n} concursos por mês.",
+    "es": "Una cuenta gratuita incluye los requisitos de {n} licitaciones al mes.",
+    "fr": "Un compte gratuit comprend les exigences de {n} appels d'offres par mois.",
+    "de": "Ein kostenloses Konto umfasst die Anforderungen von {n} Ausschreibungen im Monat.",
+    "it": "Un account gratuito include i requisiti di {n} gare al mese."
+  },
+  "Your plan includes requirements on {n} tenders a month.": {
+    "pt": "O seu plano inclui os requisitos de {n} concursos por mês.",
+    "es": "Tu plan incluye los requisitos de {n} licitaciones al mes.",
+    "fr": "Votre offre comprend les exigences de {n} appels d'offres par mois.",
+    "de": "Dein Tarif umfasst die Anforderungen von {n} Ausschreibungen im Monat.",
+    "it": "Il tuo piano include i requisiti di {n} gare al mese."
+  },
+  "Add your company information": {
+    "pt": "Adicione os dados da sua empresa",
+    "es": "Añade la información de tu empresa",
+    "fr": "Ajoutez les informations de votre entreprise",
+    "de": "Ergänze die Angaben zu deinem Unternehmen",
+    "it": "Aggiungi le informazioni della tua azienda"
+  },
+  "{n} of {limit} left this month.": {
+    "pt": "{n} de {limit} restantes este mês.",
+    "es": "Quedan {n} de {limit} este mes.",
+    "fr": "{n} sur {limit} restants ce mois-ci.",
+    "de": "Noch {n} von {limit} in diesem Monat.",
+    "it": "{n} di {limit} rimasti questo mese."
+  },
+  "Documents to submit": {
+    "pt": "Documentos a apresentar",
+    "es": "Documentos para presentar",
+    "fr": "Documents à remettre",
+    "de": "Einzureichende Unterlagen",
+    "it": "Documenti da presentare"
+  },
+  "Inferred": {
+    "pt": "Inferido",
+    "es": "Inferido",
+    "fr": "Déduit",
+    "de": "Abgeleitet",
+    "it": "Dedotto"
+  },
+  "Unclear": {
+    "pt": "Pouco claro",
+    "es": "No está claro",
+    "fr": "Incertain",
+    "de": "Unklar",
+    "it": "Non chiaro"
+  },
+  "Revised": {
+    "pt": "Revisto",
+    "es": "Revisado",
+    "fr": "Révisé",
+    "de": "Überarbeitet",
+    "it": "Rivisto"
   }
 }

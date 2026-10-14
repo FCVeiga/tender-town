@@ -1,0 +1,216 @@
+'use client';
+
+import { useState, type ReactNode } from 'react';
+import AgentAvatar from '@/components/AgentAvatar';
+import { EXAMPLE_EVAL, exampleBrief, exampleMatch, type ExampleMatch } from '@/lib/exampleRun';
+import { useT } from '@/lib/i18n/client';
+
+export type ExampleRequirement = {
+  id: string;
+  group: string;
+  groupLabel: string;
+  category: string;
+  text: string;
+  threshold: string;
+  evidence: string;
+  document: string;
+  mandatory: boolean;
+};
+
+const GROUPS = [
+  { key: 'ELIGIBILITY', label: 'Eligibility criteria' },
+  { key: 'REFERENCES', label: 'Project references' },
+  { key: 'HUMAN_RESOURCES', label: 'Human resource requirements' },
+  { key: 'TECHNICAL', label: 'Technical & project requirements' },
+];
+
+function matchLabel(status: ExampleMatch['status']) {
+  if (status === 'MATCH') return 'Match';
+  if (status === 'PARTIAL_MATCH') return 'Partial';
+  if (status === 'PARTNER_NEEDED') return 'Partner needed';
+  return 'No match';
+}
+function matchClass(status: ExampleMatch['status']) {
+  if (status === 'MATCH') return 'match';
+  if (status === 'NO_MATCH') return 'no_match';
+  return 'partner';
+}
+
+function briefMarkdown(deadline: string) {
+  return exampleBrief(deadline).map((section) => `## ${section.heading}\n\n${section.paragraphs.join('\n\n')}`).join('\n\n');
+}
+
+/** The same sections as a tender page. The buttons play a finished evaluation and brief for the sample company. */
+export default function ExampleWalkthrough({ requirements, deadline, archived, relevance, valueText, valueNote, jump, summary, documents, history, sources }: {
+  requirements: ExampleRequirement[];
+  deadline: string;
+  archived: boolean;
+  relevance: number | null;
+  valueText: string;
+  valueNote: string | null;
+  jump: ReactNode;
+  summary: ReactNode;
+  documents: ReactNode;
+  history: ReactNode;
+  sources: ReactNode;
+}) {
+  const t = useT();
+  const [phase, setPhase] = useState<'idle' | 'evaluating' | 'evaluated' | 'briefing' | 'briefed'>('idle');
+  const evaluated = phase === 'evaluated' || phase === 'briefing' || phase === 'briefed';
+  const groups = GROUPS.map((group) => ({ ...group, rows: requirements.filter((row) => row.group === group.key) })).filter((group) => group.rows.length);
+
+  function runEvaluation() {
+    setPhase('evaluating');
+    window.setTimeout(() => setPhase('evaluated'), 2200);
+  }
+  function runBrief() {
+    setPhase('briefing');
+    window.setTimeout(() => setPhase('briefed'), 2600);
+  }
+  function download() {
+    const file = new Blob([`# Proposal brief — Harborline Identity\n\n${briefMarkdown(deadline)}\n`], { type: 'text/markdown' });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'harborline-proposal-brief.md';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <>
+      <div className="stat-grid">
+        <div className="stat">
+          <div className="stat-label">{t('Deadline')}</div>
+          <div className="stat-num small">{deadline}</div>
+          {archived && <div className="stat-label">{t('Archived')}</div>}
+        </div>
+        <div className="stat">
+          <div className="stat-label">{t('Estimated value')}</div>
+          <div className="stat-num small">{valueText}</div>
+          {valueNote && <div className="stat-label">{valueNote}</div>}
+        </div>
+        <div className="stat">
+          <div className="stat-label">{t('Market relevance')}</div>
+          <div className={`stat-num ${relevance == null ? 'small' : ''}`}>{relevance ?? t('not scored yet')}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">{t('Company fit')}</div>
+          <div className={`stat-num ${evaluated ? '' : 'small'}`}>{evaluated ? EXAMPLE_EVAL.fit_score : t('Not assessed')}</div>
+        </div>
+      </div>
+      {jump}
+      <div className="tender-sections">
+        {summary}
+        <section className="detail-block" id="requirements">
+          <h2>{evaluated ? t('Requirements & Match Status') : t('Requirements')} {requirements.length > 0 && <span className="uc-count">{requirements.length}</span>}</h2>
+          {groups.map((group) => (
+            <div key={group.key} className="req-category-block">
+              <h3 className="req-category-title">{t(group.label)} <span className="uc-count">{group.rows.length}</span></h3>
+              <div className="req-table-wrap">
+                <table className="req-table">
+                  <thead>
+                    <tr>
+                      <th>{t('Requirement')}</th>
+                      <th>{t('Threshold')}</th>
+                      <th>{t('Mandatory')}</th>
+                      {evaluated && <th>{t('Match')}</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.rows.map((row) => {
+                      const match = exampleMatch(row);
+                      return (
+                        <tr key={row.id}>
+                          <td>
+                            {row.text}
+                            {row.evidence && <div className="req-evidence">{t('Evidence:')} {row.evidence}</div>}
+                            {row.document && <div className="req-source">{row.document}</div>}
+                          </td>
+                          <td>{row.threshold}</td>
+                          <td>{row.mandatory ? <span className="mand-yes">{t('Mandatory')}</span> : <span className="mand-no">{t('Optional')}</span>}</td>
+                          {evaluated && (
+                            <td>
+                              <span className={`badge-match ${matchClass(match.status)}`}>{t(matchLabel(match.status))}</span>
+                              <div className="req-match-note">{match.note}</div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <section className="detail-block analysis-block" id="evaluation">
+          <div className="agent-head">
+            <AgentAvatar agent="tender_evaluation" working={phase === 'evaluating'} />
+            <div className="agent-id">
+              <h2>{t('Tender Evaluation')}<span className="scope-name-chip">{t('Sample company')}</span></h2>
+            </div>
+            {evaluated && <span className={`verdict eval-${EXAMPLE_EVAL.verdict}`}>{t('Bid with a partner')}</span>}
+          </div>
+          <p className="agent-intro">{t('Compare the tender requirements with your company evidence to identify matches, gaps and partner needs.')}</p>
+          <p>{t('This run uses Harborline Identity, a sample company. It is not your account.')}</p>
+          <p>{t('Harborline holds ISO 27001, turns over €4.1 million a year, and has delivered two identity-wallet projects worth €3.7 million together. It has no staff in Malta, and its cyber insurance is €2 million.')}</p>
+          {evaluated && (
+            <div className="eval-report">
+              <div className="eval-score"><span className="eval-score-num">{EXAMPLE_EVAL.fit_score}</span><span className="eval-score-label">{t('Fit score')}</span></div>
+              <p className="analysis-take">{EXAMPLE_EVAL.take}</p>
+              <div className="eval-cols">
+                <div><h3>{t('Strengths')}</h3><ul>{EXAMPLE_EVAL.strengths.map((item) => <li key={item}>{item}</li>)}</ul></div>
+                <div><h3>{t('Gaps & to confirm')}</h3><ul>{EXAMPLE_EVAL.gaps.map((item) => <li key={item}>{item}</li>)}</ul></div>
+              </div>
+              <div><h3>{t('Partners needed')}</h3><ul>{EXAMPLE_EVAL.partners.map((item) => <li key={item.role}><strong>{item.role}</strong> — {item.why}</li>)}</ul></div>
+              <div><h3>{t('Next steps')}</h3><ul>{EXAMPLE_EVAL.next_steps.map((item) => <li key={item}>{item}</li>)}</ul></div>
+            </div>
+          )}
+          {phase === 'evaluating' ? (
+            <p className="report-progress"><span className="dots" /> {t('The Tender Evaluation Agent is checking every requirement against your scope — about a minute.')}</p>
+          ) : (
+            <div className="eval-run">
+              <button type="button" className="btn-agent" onClick={runEvaluation}>{evaluated ? t('Re-run evaluation') : t('Run Tender Evaluation Agent')}</button>
+            </div>
+          )}
+        </section>
+
+        <section className="detail-block analysis-block" id="proposal-brief">
+          <div className="agent-head">
+            <AgentAvatar agent="proposal_manager" size={36} working={phase === 'briefing'} />
+            <div className="agent-id"><h2>{t('Proposal brief')}</h2></div>
+          </div>
+          <p className="agent-intro">{t('Build a starting brief from your evaluation, including evidence, unresolved requirements and roles a partner needs to cover.')}</p>
+          {!evaluated ? (
+            <p><a className="btn" href="#evaluation">{t('Assess my fit first')}</a></p>
+          ) : phase === 'briefed' ? (
+            <>
+              {exampleBrief(deadline).map((section) => (
+                <div key={section.heading}>
+                  <h3>{section.heading}</h3>
+                  {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                </div>
+              ))}
+              <div className="eval-run">
+                <button type="button" className="btn-agent" onClick={download}>{t('Download proposal brief (.md)')}</button>
+                <button type="button" className="btn" onClick={runBrief}>{t('Regenerate')}</button>
+              </div>
+            </>
+          ) : phase === 'briefing' ? (
+            <p className="report-progress"><span className="dots" /> {t('The Proposal Manager Agent is mapping every requirement to your company material — a few minutes.')}</p>
+          ) : (
+            <div className="eval-run">
+              <button type="button" className="btn-agent" onClick={runBrief}>{t('Prepare proposal brief')}</button>
+            </div>
+          )}
+        </section>
+
+        {documents}
+        {history}
+        {sources}
+      </div>
+    </>
+  );
+}

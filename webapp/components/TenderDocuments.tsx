@@ -4,9 +4,9 @@ import { getTSync } from '@/lib/i18n/server';
 export type Doc = {
   document_id: string; name: string; name_en: string | null; document_type: string | null;
   url: string | null; publication_date: string | null; downloaded_at: string | null;
+  version?: string | null;
 };
 
-// Display order and English labels for document types.
 const GROUPS: [string, string][] = [
   ['CONTRACT_NOTICE', 'Notices'], ['CORRIGENDUM', 'Notices'],
   ['CLARIFICATION', 'Clarifications & Q&A'], ['Q_AND_A', 'Clarifications & Q&A'],
@@ -17,7 +17,6 @@ const GROUPS: [string, string][] = [
 const ORDER = Array.from(new Set(GROUPS.map(([, g]) => g)));
 const groupOf = (t: string | null) => GROUPS.find(([k]) => k === t)?.[1] ?? 'Other documents';
 
-// Buyer-portal links that download the file itself (ePPS, DTVP).
 const DIRECT = /downloadContractDocument|dtvp\.de\/Satellite\/public\/company\/project\/[^/]+\/\w+\/documents\//;
 
 function linkKind(url: string | null) {
@@ -27,31 +26,72 @@ function linkKind(url: string | null) {
   return { label: 'Open on portal', title: 'Opens the buyer portal page where this document is downloaded' };
 }
 
-/** Tender documents grouped by type, with direct downloads where the portal allows. */
+const FILE_TYPES = new Set(['PDF', 'ZIP', 'XLS', 'XLSX', 'DOC', 'DOCX', 'XML', 'CSV', 'PPT', 'PPTX', 'ODT', 'ODS', 'TXT']);
+
+function fileType(name: string): string | null {
+  const match = name.match(/\.([a-z0-9]{2,4})\b/i);
+  if (!match) return null;
+  const ext = match[1].toUpperCase();
+  return FILE_TYPES.has(ext) ? ext : null;
+}
+
+function noteNumber(name: string): number | null {
+  const match = name.match(/\b(?:note|nota|clarification)\s*(?:no\.?\s*)?(\d+)\b/i);
+  return match ? Number(match[1]) : null;
+}
+
+function revised(doc: Doc): boolean {
+  const version = (doc.version || '').trim();
+  if (version && !/^(1|1\.0|original)$/i.test(version)) return true;
+  return /\b(updated|revised|revision)\b/i.test(`${doc.name_en || ''} ${doc.name}`);
+}
+
+function ordered(group: string, items: Doc[]): Doc[] {
+  if (group !== 'Clarifications & Q&A') return items;
+  return [...items].sort((a, b) => {
+    const left = noteNumber(`${a.name_en || ''} ${a.name}`);
+    const right = noteNumber(`${b.name_en || ''} ${b.name}`);
+    if (left != null && right != null && left !== right) return left - right;
+    if (left != null && right == null) return -1;
+    if (left == null && right != null) return 1;
+    return (a.publication_date || '').localeCompare(b.publication_date || '') || a.name.localeCompare(b.name);
+  });
+}
+
+/** Tender documents grouped by type. Large groups start closed. */
 export default function TenderDocuments({ docs }: { docs: Doc[] }) {
   const t = getTSync();
-  const groups = ORDER.map((g) => ({ g, items: docs.filter((d) => groupOf(d.document_type) === g) })).filter((x) => x.items.length);
+  const groups = ORDER.map((g) => ({ g, items: ordered(g, docs.filter((d) => groupOf(d.document_type) === g)) })).filter((x) => x.items.length);
   return (
-    <div className="opp-sidebar">
-      <h3>{t('Tender Documents')}</h3>
-      <div className="sidebar-sub">{docs.length ? (docs.length === 1 ? t('{n} document', { n: docs.length }) : t('{n} documents', { n: docs.length })) : t('No documents found yet')}</div>
-      {groups.map(({ g, items }) => (
-        <div key={g} className="doc-group">
-          <div className="doc-group-label">{t(g)} <span>{items.length}</span></div>
-          {items.map((d) => {
-            const k = linkKind(d.url);
-            return (
-              <a key={d.document_id} className="doc-item" href={d.url ?? '#'} target="_blank" rel="noopener noreferrer" title={k ? t(k.title) : undefined}>
-                <span className="doc-name">{firstInLanguage(d.name_en) ?? d.name}</span>
-                {k && <span className={`doc-download ${k.label === 'Open on portal' ? 'portal' : ''}`}>{k.label === 'Download' ? t('Download ↓') : k.label === 'PDF' ? 'PDF ↓' : t('Portal ↗')}</span>}
-              </a>
-            );
-          })}
-        </div>
-      ))}
-      {docs.some((d) => !DIRECT.test(d.url ?? '') && !/ted\.europa/.test(d.url ?? '')) && (
-        <p className="sidebar-note">{t('“Portal ↗” documents download from the buyer\'s portal, which may ask you to register.')}</p>
+    <section className="detail-block" id="documents">
+      <h2>{t('Tender Documents')} {docs.length > 0 && <span className="uc-count">{docs.length}</span>}</h2>
+      {!docs.length ? <p className="muted">{t('No documents found yet')}</p> : (
+        <>
+          {groups.map(({ g, items }) => (
+            <details key={g} className="doc-fold" {...(items.length <= 8 ? { open: true } : {})}>
+              <summary>{t(g)} <span className="uc-count">{items.length}</span></summary>
+              {items.map((d) => {
+                const kind = linkKind(d.url);
+                const type = fileType(`${d.name_en || ''} ${d.name}`);
+                const showType = type && kind?.label !== 'PDF';
+                return (
+                  <a key={d.document_id} className="doc-item" href={d.url ?? '#'} target="_blank" rel="noopener noreferrer" title={kind ? t(kind.title) : undefined}>
+                    <span className="doc-name">
+                      {firstInLanguage(d.name_en) ?? d.name}
+                      {showType && <span className="doc-type"> {type}</span>}
+                      {revised(d) && <span className="doc-revised"> {t('Revised')}</span>}
+                    </span>
+                    {kind && <span className={`doc-download ${kind.label === 'Open on portal' ? 'portal' : ''}`}>{kind.label === 'Download' ? t('Download ↓') : kind.label === 'PDF' ? 'PDF ↓' : t('Portal ↗')}</span>}
+                  </a>
+                );
+              })}
+            </details>
+          ))}
+          {docs.some((d) => !DIRECT.test(d.url ?? '') && !/ted\.europa/.test(d.url ?? '')) && (
+            <p className="sidebar-note">{t('“Portal ↗” documents download from the buyer\'s portal, which may ask you to register.')}</p>
+          )}
+        </>
       )}
-    </div>
+    </section>
   );
 }
