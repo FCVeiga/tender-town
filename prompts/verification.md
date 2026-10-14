@@ -13,16 +13,18 @@ text — never assume an opportunity is open because it sounds relevant.
 - OPEN: the page shows a submission / application / response deadline on or
   after today, or explicitly says the call is currently open and is dated
   within the last 6 months.
-- CLOSED: the deadline has passed, the call is marked closed, or the page
-  describes a programme/call in the past tense (completed, concluded,
-  results announced, "was launched in 2024", etc).
+- CLOSED: a bidding opportunity that was open and has ended. The deadline
+  has passed, the call is marked closed, or the page describes a completed
+  call (concluded, results announced). A plan for a future year is not closed.
 - AWARDED: the contract/grant has been awarded or winners announced.
 - UPCOMING: a specific buyer has announced a procurement, call or funding
   that has not opened yet (planned tender, prior information notice, budget
-  approved for a named system, expected launch date).
+  approved for a named system, expected launch date). A news report that a
+  named buyer plans to tender or award a contract in a stated future period
+  is UPCOMING.
 - NOT_AN_OPPORTUNITY: the page is guidance, a best-practice page, a product
-  page, an already-running consumer service launch, or general news — nothing
-  a vendor could bid for or prepare a bid for.
+  page, an already-running consumer service launch, or general news with no
+  named future procurement — nothing a vendor could bid for or prepare for.
 - UNKNOWN: the page text does not let you tell.
 
 ## Output (JSON only)

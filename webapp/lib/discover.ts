@@ -8,7 +8,7 @@ import { searchWords } from '@/lib/search';
 import { buyerOf, opportunityPath, titleOf, type Opportunity, type NewsItem } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicText, shownWhy } from '@/lib/publication';
+import { publicText, shownWhy, stageOf } from '@/lib/publication';
 import { getPlatformLanguage } from '@/lib/language';
 import { getCatalogScopes } from '@/lib/scopes';
 import { scopeSlug } from '@/lib/guestScope';
@@ -160,14 +160,14 @@ export async function marketBySlug(slug: string) {
   const now = new Date();
   const whyOf = new Map((tenderLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
   const newsWhy = new Map((newsLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
-  const withWhy = (hit: DiscoverHit, reason: string | null | undefined) => {
-    const why = shownWhy(hit.summary, plainText(reason || ''));
+  const withWhy = (hit: DiscoverHit, reason: string | null | undefined, stage?: string | null) => {
+    const why = shownWhy(hit.summary, plainText(reason || ''), true, stage);
     return { ...hit, why: why && why !== hit.summary ? why : null };
   };
   const ranked = ((oppRows.data || []) as Opportunity[]).map((row) => {
     const live = (row.status === 'OPEN' || row.status === 'SIGNAL') && (!row.deadline || new Date(row.deadline) >= now);
     const upcoming = live && (row.status === 'SIGNAL' || row.opportunity_type === 'signal');
-    return withWhy({ ...oppHit(row), closed: !live, upcoming }, whyOf.get(row.opportunity_id));
+    return withWhy({ ...oppHit(row), closed: !live, upcoming }, whyOf.get(row.opportunity_id), stageOf(row));
   });
   const open = ranked.filter((hit) => !hit.closed && !hit.upcoming).slice(0, 20);
   const upcoming = ranked.filter((hit) => hit.upcoming).slice(0, 20);

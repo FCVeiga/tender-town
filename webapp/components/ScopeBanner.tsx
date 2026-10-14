@@ -280,6 +280,7 @@ export default function ScopeBanner({ model, createAction, compact: compactSaved
           </button>
         )}
         <button type="button" className="btn primary scope-banner-connect" onClick={() => setAgents(true)}>{t(CONNECT)}</button>
+        <Link href="/example" className="scope-banner-create">{t('See an example')}</Link>
         <button type="button" className="scope-banner-fold" aria-expanded={!compact} aria-label={compact ? t('Expand') : t('Collapse')} onClick={toggleCompact}>
           <Chevron up={!compact} />
         </button>

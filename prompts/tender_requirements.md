@@ -73,12 +73,21 @@ plan), return an empty list and say in the summary what is still to come.
 Each criterion with its weight in percent and what is assessed, in {language}.
 
 ## Output (JSON only, text in {language})
+Only fill estimated_value, currency and deadline from an explicit statement in
+the sources. estimated_value is the contract or estimated contract value, never
+a reference-turnover threshold or a price for one line. deadline is the date
+bids must be submitted (YYYY-MM-DD), never a project year or a contract end.
+Use null when the source does not state them.
+
 ```json
 {
   "summary": "paragraphs separated by \n\n",
   "buyer": "official name of the contracting authority from the source, or null",
   "buyer_en": "that name in {language} when the official name is not, else the same name, or null",
   "country": "ISO 3166-1 alpha-2 of the buyer's country from the source, or null. Never guess.",
+  "estimated_value": null,
+  "currency": "EUR | USD | GBP | null",
+  "deadline": "YYYY-MM-DD or null",
   "requirements": [
     {"group": "ELIGIBILITY", "category": "CERTIFICATION",
      "text": "Valid ISO 27001 certification of the bidder or equivalent",

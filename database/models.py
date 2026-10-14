@@ -343,6 +343,7 @@ class Opportunity(Base):
     deadline = Column(DateTime)
     estimated_value = Column(Float, nullable=True)
     currency = Column(String(8))
+    value_source = Column(String(16))  # summary, when the figure was read from the written record
     duration_months = Column(Integer, nullable=True)
     funding_rate = Column(Float, nullable=True)
     official_url = Column(String(1024))

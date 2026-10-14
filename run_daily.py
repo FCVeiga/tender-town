@@ -474,6 +474,13 @@ def main():
     session = get_session(engine)
     errors = []
 
+    # A bid deadline that has passed is a closed tender, on every market.
+    session.execute(sql_text("""
+        update opportunities set status = 'CLOSED'
+        where status = 'OPEN' and deadline is not null and deadline < now()
+    """))
+    session.commit()
+
     run_id = f"RUN-{uuid.uuid4().hex[:10]}"
     agent_run = AgentRun(run_id=run_id, agent_name="daily_orchestrator",
                          started_at=datetime.utcnow(), status="RUNNING")
@@ -708,9 +715,10 @@ def main():
                     is_news = kind in ("news", "unchanged_news")
                     item_id = row.news_id if is_news else row.opportunity_id
                     score = int(result.get("importance") or 0) if is_news else int(result.get("relevance") or 0)
-                    from services.publication import publish_reason
+                    from services.publication import publish_reason, stage_of
                     public = bool(getattr(scope, "catalog", False) or getattr(scope, "is_default", False))
-                    why = publish_reason(getattr(row, "summary", None) or result.get("summary") or "", result.get("reason") or "", public=public)[:500]
+                    stage = None if is_news else stage_of(getattr(row, "status", None), getattr(row, "opportunity_type", None), getattr(row, "deadline", None))
+                    why = publish_reason(getattr(row, "summary", None) or result.get("summary") or "", result.get("reason") or "", public=public, stage=stage)[:500]
                     session.execute(sql_text("""insert into scope_items (scope_id, item_type, item_id, relevance, candidate_type, reason)
                             values (cast(:s as uuid), :t, :i, :r, :ct, :why)
                             on conflict (scope_id, item_type, item_id) do update set relevance = excluded.relevance, reason = excluded.reason"""),

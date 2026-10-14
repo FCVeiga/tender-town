@@ -148,11 +148,84 @@ export function publicText(text: string): string {
   return kept.join(' ').trim();
 }
 
-/** The interpretation to show. Empty when it contradicts the summary.
+const LIVE_RE = /\b(?:open tender|currently open|still open|live tender|active tender|live procurement|active procurement|open procurement|bids are open|open for bids|bidding is open|remains open|openly tendering|is tendering)\b|\blive\b(?:\s+\w+){0,6}\s+tender\b|\bactive\b(?:\s+\w+){0,6}\s+tender\b/i;
+const SHUT_RE = /\b(?:bidding has closed|deadline has passed|no longer open|tender is closed|tender has closed|expired tender)\b/i;
+const ADDS_RE = /\b(?:suggests?|could|might|may|watch|monitor|renewal|a later|partner|roles?)\b/i;
+const MONEY_RE = /(?:estimated\s+(?:contract\s+)?value|contract\s+value|total\s+value|estimated\s+budget|budget\s+of)\s*(?:of|is|:)?\s*(?:approximately\s+|approx\.?\s+)?(€|EUR|euro|USD|\$|GBP|£)?\s*(\d{1,3}(?:[ .,\u00a0]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)\s*(€|EUR|euro|USD|\$|GBP|£)?(?:\s*(million|mio|billion|bn))?/i;
+
+export type Stage = 'open' | 'closed' | 'signal' | 'uncertain';
+
+/** The stage the page shows, from the record — not from the written interpretation. */
+export function stageOf(row: { status?: string | null; opportunity_type?: string | null; deadline?: string | Date | null } | null | undefined): Stage {
+  if (!row) return 'uncertain';
+  const state = (row.status || '').toUpperCase();
+  const kind = (row.opportunity_type || '').toLowerCase();
+  if (state === 'UNVERIFIED') return 'uncertain';
+  if (state === 'SIGNAL' || kind === 'signal') return 'signal';
+  if (state === 'CLOSED' || state === 'AWARDED' || state === 'REJECTED') return 'closed';
+  if (row.deadline) {
+    const when = row.deadline instanceof Date ? row.deadline : new Date(row.deadline);
+    if (!Number.isNaN(when.getTime()) && when.getTime() < Date.now()) return 'closed';
+  }
+  if (state === 'OPEN') return 'open';
+  return 'uncertain';
+}
+
+function lifecycleConflict(stage: string | null | undefined, reason: string): boolean {
+  if (!stage || !reason) return false;
+  const live = stated(LIVE_RE, reason);
+  const shut = stated(SHUT_RE, reason);
+  if (stage === 'closed') return live;
+  if (stage === 'open') return shut;
+  if (stage === 'signal' || stage === 'uncertain') return live || shut;
+  return false;
+}
+
+function restates(summary: string, reason: string): boolean {
+  if (!reason || ADDS_RE.test(reason)) return false;
+  const words = (text: string) => new Set((text.toLowerCase().match(/[a-z0-9]{5,}/g) || []).filter((word) => !['about', 'after', 'which', 'their', 'there', 'these', 'those', 'would', 'other'].includes(word)));
+  const found = words(reason);
+  if (found.size < 8) return false;
+  const known = words(summary);
+  let shared = 0;
+  found.forEach((word) => { if (known.has(word)) shared += 1; });
+  return shared / found.size >= 0.8;
+}
+
+function amountOf(raw: string): number | null {
+  let text = raw.replace(/\u00a0/g, '').replace(/ /g, '');
+  if (text.includes(',') && text.includes('.')) {
+    text = text.lastIndexOf(',') > text.lastIndexOf('.') ? text.replace(/\./g, '').replace(',', '.') : text.replace(/,/g, '');
+  } else if (text.includes(',')) {
+    const parts = text.split(',');
+    text = parts[parts.length - 1].length === 3 ? text.replace(/,/g, '') : text.replace(',', '.');
+  } else if ((text.match(/\./g) || []).length > 1) {
+    text = text.replace(/\./g, '');
+  }
+  const value = Number(text);
+  return Number.isFinite(value) ? value : null;
+}
+
+/** A value the summary itself calls the contract or estimated value. */
+export function statedValue(text: string | null | undefined): { amount: number; currency: string } | null {
+  const hit = MONEY_RE.exec(text || '');
+  MONEY_RE.lastIndex = 0;
+  if (!hit) return null;
+  let amount = amountOf(hit[2]);
+  if (amount == null || amount <= 0) return null;
+  const scale = (hit[4] || '').toLowerCase();
+  if (scale === 'million' || scale === 'mio') amount *= 1_000_000;
+  else if (scale === 'billion' || scale === 'bn') amount *= 1_000_000_000;
+  const mark = (hit[1] || hit[3] || 'EUR').toUpperCase();
+  const currency = ({ '€': 'EUR', EUR: 'EUR', EURO: 'EUR', '$': 'USD', USD: 'USD', '£': 'GBP', GBP: 'GBP' } as Record<string, string>)[mark] || 'EUR';
+  return { amount, currency };
+}
+
+/** The interpretation to show. Empty when it contradicts the summary or the record's stage.
  * A public market drops the configured company. A custom scope may keep it. */
-export function shownWhy(summary: string | null | undefined, reason: string | null | undefined, open = true): string {
+export function shownWhy(summary: string | null | undefined, reason: string | null | undefined, open = true, stage?: string | null): string {
   const facts = publicText(summary || '');
   const text = open ? publicText(reason || '') : (reason || '').trim();
-  if (!text || contradicts(facts, text)) return '';
+  if (!text || contradicts(facts, text) || restates(facts, text) || lifecycleConflict(stage, text)) return '';
   return text;
 }

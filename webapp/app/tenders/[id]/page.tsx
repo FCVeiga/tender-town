@@ -5,7 +5,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { Opportunity, buyerOf, oppCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy } from '@/lib/publication';
+import { publicScope, publicText, shownWhy, stageOf, statedValue } from '@/lib/publication';
 import { focusedScope } from '@/lib/scopeFocus';
 import { DeadlineText, StatusTags } from '@/components/OpportunityCard';
 import UpdateComment, { UpdateEvent } from '@/components/UpdateComment';
@@ -151,7 +151,19 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   const summaryText = publicText(plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? ''));
   const summary = summaryText.split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
   const { scope: reading } = await focusedScope();
-  const why = shownWhy(summaryText, plainText(scopeItems?.reason.get(params.id) || ''), publicScope(reading));
+  const stage = stageOf(o);
+  const stated = o.estimated_value ? null : statedValue(summaryText);
+  const amount = o.estimated_value ?? stated?.amount ?? null;
+  const valueCurrency = o.estimated_value ? o.currency : stated?.currency ?? null;
+  const estimated = (!o.estimated_value && !!stated) || o.value_source === 'summary';
+  const shownStatus = stage === 'closed' && (o.status === 'OPEN' || !o.status) ? 'CLOSED'
+    : stage === 'uncertain' && !o.status ? 'UNVERIFIED'
+    : o.status === 'AWARDED' ? 'AWARDED'
+    : stage === 'closed' ? 'CLOSED'
+    : stage === 'signal' ? 'SIGNAL'
+    : stage === 'uncertain' ? 'UNVERIFIED'
+    : o.status || 'OPEN';
+  const why = shownWhy(summaryText, plainText(scopeItems?.reason.get(params.id) || ''), publicScope(reading), stage);
   const [{ data: countryRow }, likes, agentFlags] = await Promise.all([
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
     getLikes('tender', [o.opportunity_id]),
@@ -191,7 +203,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
       <div className="stat-grid">
         <div className="stat"><div className="stat-label">{t('Relevance')}</div><div className="stat-num">{relevance ?? '—'}</div></div>
         <div className="stat"><div className="stat-label">{t('Fit')}</div><div className="stat-num">{fits.length ? Math.max(...fits) : '—'}</div></div>
-        <div className="stat"><div className="stat-label">{t('Value')}</div><div className="stat-num small">{o.estimated_value ? `${o.currency || ''} ${o.estimated_value.toLocaleString(getLocale())}` : t('Not disclosed')}</div></div>
+        <div className="stat"><div className="stat-label">{estimated ? t('Estimated value') : t('Value')}</div><div className="stat-num small">{amount ? `${valueCurrency || ''} ${amount.toLocaleString(getLocale())}` : t('Not disclosed')}</div>{estimated && amount ? <div className="stat-label">{t('From the summary')}</div> : null}</div>
         <div className="stat"><div className="stat-label">{t('Deadline')}</div><div className="stat-num small"><DeadlineText deadline={o.deadline} /></div></div>
       </div>
 
@@ -245,7 +257,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                   <h2>{t('Tender Evaluation')}</h2>
                 </div>
               </div>
-              <UpgradeReport signedIn={!!user} note={t('This agent reads the full tender documents and scores your fit from your company information.')} />
+              <UpgradeReport signedIn={!!user} title={t('Add your company information to assess your fit')} note={t('This reads the tender and scores your fit. It needs an account, your company information, and a plan that includes evaluations.')} />
             </section>
           )}
           {!proposalsAllowed && (
@@ -256,7 +268,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                   <h2>{t('Proposal brief')}</h2>
                 </div>
               </div>
-              <UpgradeReport signedIn={!!user} note={t('This agent writes the bid brief from the fit score: which requirements you can answer, which stay open, and which a partner has to cover.')} />
+              <UpgradeReport signedIn={!!user} title={t('The brief is written after an evaluation')} note={t('It lists what you can answer, what stays open, and what a partner covers. It needs an evaluation first, and a plan that includes proposal briefs.')} />
             </section>
           )}
           {changes && changes.length > 0 && (
@@ -269,7 +281,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
           )}
           <div className="detail-block">
             <h2>{t('Status')}</h2>
-            <p>{t(oppCategoryLabel(o.opportunity_type))} — {o.status && t(o.status)}</p>
+            <p>{t(oppCategoryLabel(o.opportunity_type))} — {t(shownStatus)}</p>
+            {stage === 'uncertain' && <p className="muted">{t('The bidding status is not confirmed.')}</p>}
             {o.status_evidence && <p className="evidence">{o.status_evidence}</p>}
             {o.verified_at && (
               <p className="news-meta">{t('Checked against the source on {date}', { date: new Date(o.verified_at).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) })}</p>
@@ -303,7 +316,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
 
           <div className="detail-block" id="requirements">
             <h2>{evaluatedScopes.length && showRequirements ? t('Requirements & Match Status') : t('Requirements')} {showRequirements && reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
-            {!showRequirements ? <UpgradeReport signedIn={!!user} /> : reqs.length === 0 ? (
+            {!showRequirements ? <UpgradeReport signedIn={!!user} title={user ? t('A higher plan includes requirements on more tenders') : t('An account lets you read the requirements')} note={t('A free account includes a few tenders a month.')} /> : reqs.length === 0 ? (
               <p className="muted">
                 {o.tender_analysed_at
                   ? t('None published yet.')

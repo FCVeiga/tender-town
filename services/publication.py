@@ -115,6 +115,116 @@ def _stated(pattern: re.Pattern, text: str) -> bool:
     return False
 
 
+_LIVE = re.compile(
+    r"\b(?:open tender|currently open|still open|live tender|active tender|live procurement|"
+    r"active procurement|open procurement|bids are open|open for bids|bidding is open|remains open|"
+    r"openly tendering|is tendering)\b"
+    r"|\blive\b(?:\s+\w+){0,6}\s+tender\b"
+    r"|\bactive\b(?:\s+\w+){0,6}\s+tender\b",
+    re.I,
+)
+_SHUT = re.compile(
+    r"\b(?:bidding has closed|deadline has passed|no longer open|tender is closed|tender has closed|expired tender)\b",
+    re.I,
+)
+_ADDS = re.compile(
+    r"\b(?:suggests?|could|might|may|watch|monitor|renewal|a later|partner|roles?)\b",
+    re.I,
+)
+_MONEY = re.compile(
+    r"(?:estimated\s+(?:contract\s+)?value|contract\s+value|total\s+value|estimated\s+budget|budget\s+of)"
+    r"\s*(?:of|is|:)?\s*(?:approximately\s+|approx\.?\s+)?"
+    r"(?P<cur>€|EUR|euro|USD|\$|GBP|£)?\s*"
+    r"(?P<num>\d{1,3}(?:[ .,\u00a0]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)"
+    r"\s*(?P<cur2>€|EUR|euro|USD|\$|GBP|£)?"
+    r"(?:\s*(?P<scale>million|mio|billion|bn))?",
+    re.I,
+)
+
+
+def stage_of(status: str | None, opportunity_type: str | None = None, deadline=None, today: date | None = None) -> str:
+    """open, closed, signal, or uncertain — the same stage the page shows."""
+    today = today or date.today()
+    kind = (opportunity_type or "").lower()
+    state = (status or "").upper()
+    if state == "UNVERIFIED":
+        return "uncertain"
+    if state == "SIGNAL" or kind == "signal":
+        return "signal"
+    if state in ("CLOSED", "AWARDED", "REJECTED"):
+        return "closed"
+    when = deadline.date() if hasattr(deadline, "date") else deadline
+    if isinstance(when, date) and when < today:
+        return "closed"
+    if state == "OPEN":
+        return "open"
+    return "uncertain"
+
+
+def lifecycle_conflict(stage: str | None, reason: str) -> bool:
+    """The interpretation claims a bidding state the record does not have."""
+    if not stage or not reason:
+        return False
+    live, shut = _stated(_LIVE, reason), _stated(_SHUT, reason)
+    if stage == "closed":
+        return live
+    if stage == "open":
+        return shut
+    if stage == "signal":
+        return live or shut
+    if stage == "uncertain":
+        return live or shut
+    return False
+
+
+def restates(summary: str, reason: str) -> bool:
+    """True when the interpretation mostly repeats the summary and adds no decision."""
+    if not reason or _ADDS.search(reason):
+        return False
+    stop = {"about", "after", "which", "their", "there", "these", "those", "would", "could", "other"}
+    words = {w for w in re.findall(r"[a-z0-9]{5,}", reason.lower()) if w not in stop}
+    if len(words) < 8:
+        return False
+    known = {w for w in re.findall(r"[a-z0-9]{5,}", (summary or "").lower())}
+    return len(words & known) / len(words) >= 0.8
+
+
+def _amount(raw: str) -> float | None:
+    text = raw.replace("\u00a0", " ").replace(" ", "")
+    if "," in text and "." in text:
+        if text.rfind(",") > text.rfind("."):
+            text = text.replace(".", "").replace(",", ".")
+        else:
+            text = text.replace(",", "")
+    elif "," in text:
+        parts = text.split(",")
+        text = text.replace(",", "") if len(parts[-1]) == 3 else text.replace(",", ".")
+    elif text.count(".") > 1:
+        text = text.replace(".", "")
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def stated_value(text: str) -> tuple[float, str] | None:
+    """A value the summary itself calls the contract or estimated value."""
+    hit = _MONEY.search(text or "")
+    if not hit:
+        return None
+    amount = _amount(hit.group("num"))
+    if amount is None or amount <= 0:
+        return None
+    scale = (hit.group("scale") or "").lower()
+    if scale in ("million", "mio"):
+        amount *= 1_000_000
+    elif scale in ("billion", "bn"):
+        amount *= 1_000_000_000
+    mark = (hit.group("cur") or hit.group("cur2") or "EUR").upper()
+    currency = {"€": "EUR", "EUR": "EUR", "EURO": "EUR", "$": "USD", "USD": "USD", "£": "GBP", "GBP": "GBP"}.get(mark, "EUR")
+    return amount, currency
+
+
 def contradicts(summary: str, reason: str) -> bool:
     """True when the interpretation disagrees with the summary."""
     summary, reason = summary or "", reason or ""
@@ -171,10 +281,11 @@ def neutralize(text: str, names: set[str] | None = None) -> str:
     return " ".join(kept).strip()
 
 
-def publish_reason(summary: str, reason: str, public: bool = True) -> str:
-    """The interpretation to store. Empty when it contradicts the summary."""
+def publish_reason(summary: str, reason: str, public: bool = True, stage: str | None = None) -> str:
+    """The interpretation to store. Empty when it contradicts the summary or the record's stage."""
     text = neutralize(reason) if public else (reason or "").strip()
-    if contradicts(neutralize(summary), text):
+    facts = neutralize(summary)
+    if contradicts(facts, text) or restates(facts, text) or lifecycle_conflict(stage, text):
         return ""
     return text.strip()
 
@@ -205,3 +316,15 @@ def self_check() -> None:
         "This is not a procurement opportunity for an outside supplier.",
     )
     assert contradicts("The buyer is Brno University Hospital.", "The buyer is the Ministry of Defence.")
+    assert publish_reason("Bids closed on 1 March 2026.", "This is an open tender for waste collection.", stage="closed") == ""
+    assert publish_reason("The deadline passed in 2024.", "This is a live framework contract tender for waste collection.", stage="closed") == ""
+    assert lifecycle_conflict("closed", "This is not a live tender.") is False
+    kept = publish_reason(
+        "The buyer awarded a waste-collection contract in 2024.",
+        "The award shows what this buyer has purchased. A renewal could follow the contract term.",
+        stage="closed",
+    )
+    assert "renewal" in kept
+    assert stated_value("The estimated value is €15,659,714.03 excluding VAT.") == (15659714.03, "EUR")
+    assert stated_value("an indicative budget of EUR 194.92 million") == (194_920_000.0, "EUR")
+    assert stated_value("References must each be worth EUR 200,000.") is None

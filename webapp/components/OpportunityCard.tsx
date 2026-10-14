@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
+import { stageOf } from '@/lib/publication';
 
 export function DeadlineText({ deadline }: { deadline: string | null }) {
   const t = getTSync();
@@ -24,6 +25,8 @@ export function StatusTags({ o }: { o: Opportunity }) {
       {isNew(o) && <span className="tag new">{t('New')}</span>}
       {!isNew(o) && isUpdated(o) && <span className="tag updated">{t('Updated')}</span>}
       {o.opportunity_type && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
+      {stageOf(o) === 'closed' && <span className="tag closed">{t('Closed')}</span>}
+      {stageOf(o) === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
     </>
   );
 }

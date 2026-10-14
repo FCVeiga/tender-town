@@ -3,7 +3,7 @@ import HeartButton from './HeartButton';
 import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicText, shownWhy } from '@/lib/publication';
+import { publicText, shownWhy, stageOf } from '@/lib/publication';
 import UpdateComment, { UpdateEvent } from './UpdateComment';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 
@@ -59,9 +59,10 @@ export default function OpportunityRow({ o, countryName, updates = [], like, why
   open?: boolean;
 }) {
   const days = daysUntil(o.deadline);
+  const stage = stageOf(o);
   const value = money(o.estimated_value, o.currency);
   const description = publicText(plainText(firstInLanguage(o.summary) || ''));
-  const note = shownWhy(description, plainText(why || ''), open);
+  const note = shownWhy(description, plainText(why || ''), open, stage);
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
   const t = getTSync();
@@ -78,7 +79,8 @@ export default function OpportunityRow({ o, countryName, updates = [], like, why
         <div className="opp-tags">
           {isNew(o) && <span className="tag new">{t('New')}</span>}
           {!isNew(o) && isUpdated(o) && <span className="tag updated">{t('Updated')}</span>}
-          {archived && <span className="tag closed">{t('Closed')}</span>}
+          {stage === 'closed' && <span className="tag closed">{t('Closed')}</span>}
+          {stage === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
           {o.opportunity_type && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
           {o.duration_months ? <span className="opp-chip">{o.duration_months >= 24 ? t('{n} years', { n: +(o.duration_months / 12).toFixed(1) }) : t('{n} months', { n: o.duration_months })}</span> : null}
         </div>
@@ -95,20 +97,25 @@ export default function OpportunityRow({ o, countryName, updates = [], like, why
           <span className={`metric-big ${value ? 'shine' : 'muted'}`}>{value ?? t('n/d')}</span>
           <span className="metric-label">{t('Value')}</span>
         </div>
-        <div className={`metric deadline ${urgent && !archived ? 'urgent' : ''}`}>
-          {archived ? (
+        <div className={`metric deadline ${urgent && stage !== 'closed' ? 'urgent' : ''}`}>
+          {stage === 'closed' ? (
             <>
               <span className="metric-big muted">{t('Closed')}</span>
               <span className="metric-label">{o.deadline ? new Date(o.deadline).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : t('No deadline')}</span>
             </>
-          ) : days != null ? (
+          ) : days != null && days >= 0 ? (
             <>
               <span className={`metric-big ${urgent ? 'shine-warm' : 'shine-ink'}`}>{days <= 0 ? t('Today') : t('{n}d', { n: days })}</span>
               <span className="metric-label">{new Date(o.deadline!).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             </>
+          ) : stage === 'uncertain' ? (
+            <>
+              <span className="metric-big muted">{t('Unverified')}</span>
+              <span className="metric-label">{t('No deadline')}</span>
+            </>
           ) : (
             <>
-              <span className="metric-big muted">{o.opportunity_type === 'signal' ? t('Soon') : t('Open')}</span>
+              <span className="metric-big muted">{stage === 'signal' ? t('Soon') : t('Open')}</span>
               <span className="metric-label">{t('No deadline')}</span>
             </>
           )}

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Tender analysis — what a tender asks for, for the opportunity pages.
 
@@ -255,6 +257,32 @@ def plain_summary(value: str) -> str:
     return text_value.strip()
 
 
+def _stated_contract(out: dict, summary: str) -> tuple:
+    """The contract value, from the analysis, or from one explicit sentence in the summary."""
+    raw = out.get("estimated_value")
+    try:
+        value = float(raw) if raw not in (None, "") else None
+    except (TypeError, ValueError):
+        value = None
+    currency = (out.get("currency") or "").strip().upper()[:8] or None
+    if value is None or value <= 0:
+        from services.publication import stated_value
+        parsed = stated_value(summary)
+        if not parsed:
+            return None, None
+        value, currency = parsed
+    if currency not in ("EUR", "USD", "GBP"):
+        currency = "EUR"
+    return value, currency
+
+
+def _stated_deadline(raw) -> str | None:
+    text_value = (raw or "").strip()[:10]
+    if len(text_value) == 10 and text_value[4] == "-" and text_value[7] == "-":
+        return text_value
+    return None
+
+
 def analyse_tenders(session, errors: list, limit: int = 40) -> dict:
     """Award criteria for every tracked TED notice; summary + requirements (LLM)
     for every active opportunity not analysed yet, or with new clarifications /
@@ -337,13 +365,21 @@ def analyse_tenders(session, errors: list, limit: int = 40) -> dict:
         country = (out.get("country") or "").strip().upper()
         if not (len(country) == 2 and country.isalpha()):
             country = None
-        from services.publication import neutralize
+        from services.publication import neutralize, stated_value
+        summary = neutralize(plain_summary(out.get("summary") or "")) or None
+        value, currency = _stated_contract(out, summary or "")
+        deadline = _stated_deadline(out.get("deadline"))
         session.execute(text("""update opportunities set tender_summary = :s, tender_analysed_at = now(),
                 authority = coalesce(authority, :buyer), authority_en = coalesce(authority_en, :buyer_en),
-                country = coalesce(country, :country)
+                country = coalesce(country, :country),
+                estimated_value = coalesce(estimated_value, :value),
+                currency = coalesce(currency, :currency),
+                deadline = coalesce(deadline, cast(:deadline as timestamptz)),
+                value_source = case when estimated_value is null and :value is not null then 'summary' else value_source end
                 where opportunity_id = :o"""),
-                        {"s": neutralize(plain_summary(out.get("summary") or "")) or None, "o": o.opportunity_id,
-                         "buyer": buyer, "buyer_en": buyer_en, "country": country})
+                        {"s": summary, "o": o.opportunity_id,
+                         "buyer": buyer, "buyer_en": buyer_en, "country": country,
+                         "value": value, "currency": currency, "deadline": deadline})
         session.commit()
         done["requirements"] += 1
     return done

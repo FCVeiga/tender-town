@@ -5,7 +5,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { buyerOf, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy } from '@/lib/publication';
+import { publicScope, publicText, shownWhy, stageOf } from '@/lib/publication';
 import HeartButton from '@/components/HeartButton';
 import CommentsSection from '@/components/social/CommentsSection';
 import { getLikes } from '@/lib/likes';
@@ -113,7 +113,7 @@ export default async function SignalPage({ params }: { params: { id: string } })
           : <p className="muted">{t('No English summary yet.')}</p>}
         {summaryAllowed ? (notes || []).map((note) => {
           const scope = viewScopes.find((sc) => sc.id === note.scope_id);
-          const why = shownWhy(summary, plainText(note.reason), publicScope(scope));
+          const why = shownWhy(summary, plainText(note.reason), publicScope(scope), stageOf(o));
           if (!why) return null;
           return (
             <p key={note.scope_id} className="feed-why">
@@ -121,7 +121,7 @@ export default async function SignalPage({ params }: { params: { id: string } })
               {why}
             </p>
           );
-        }) : (notes || []).some((note) => shownWhy(summary, plainText(note.reason), publicScope(viewScopes.find((sc) => sc.id === note.scope_id)))) ? (
+        }) : (notes || []).some((note) => shownWhy(summary, plainText(note.reason), publicScope(viewScopes.find((sc) => sc.id === note.scope_id)), stageOf(o))) ? (
           <UpgradeReport signedIn={!!user} title={t('See what might follow, which roles could matter, and what to watch.')} />
         ) : null}
         <ItemSources type="tender" id={o.opportunity_id} skip={o.official_url} />

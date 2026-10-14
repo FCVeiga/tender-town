@@ -825,6 +825,13 @@
     "de": "Warum das zählt",
     "it": "Perché conta"
   },
+  "Also covered": {
+    "pt": "Também coberto",
+    "es": "También cubierto",
+    "fr": "Aussi traité",
+    "de": "Auch behandelt",
+    "it": "Trattato anche"
+  },
   "Why this matters to {scope}": {
     "pt": "Porque isto importa para {scope}",
     "es": "Por qué importa para {scope}",

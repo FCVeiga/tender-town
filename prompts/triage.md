@@ -87,15 +87,26 @@ point out. An interpretation that contradicts the summary is discarded.
 Do not name a company the radar is configured for, and do not write "for
 {company}". The summary is public on every market.
 
+Match the reason to the record's stage. The stage comes from the deadline and
+the notice, not from how interesting the story is:
+- Open tender, with a bid deadline still ahead: the current bidding opportunity.
+- Upcoming signal: a plan, study or prior notice with no bid open yet. Say what
+  may follow and what to monitor. Do not call it an open tender or a closed tender.
+- Closed or awarded, or a bid deadline already past: the historical value, what
+  the buyer has purchased, or a possible renewal. Do not call it live, active or open.
+- Status not confirmed: say the bidding status is not confirmed. Do not state
+  that bidding is open or closed.
+
 When the item is only background, with no buyer preparing a purchase, write
 one sentence on what it is. Do not force it into procurement language.
 
-Otherwise write three short sentences:
+Otherwise write three short sentences, and do not repeat the summary:
 - Commercial implication: what work might follow, marked as an inference
   ("This suggests", "A later contract could"). Do not state an inference as a fact.
 - Relevant capabilities: which supplier or partner roles could matter. Name
   roles, not companies.
-- Next step: the announcement, consultation or procurement channel to monitor.
+- Next step: the announcement, consultation or procurement channel to monitor,
+  or the evidence that is still missing.
 
 ## Languages
 The input may be in any language (procurement notices usually are in the

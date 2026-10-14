@@ -482,6 +482,153 @@
     "de": "Angebotsbriefing",
     "it": "Brief dell'offerta"
   },
+  "Add your company information to assess your fit": {
+    "pt": "Adicione a informação da sua empresa para avaliar o enquadramento",
+    "es": "Añade la información de tu empresa para valorar tu encaje",
+    "fr": "Ajoutez les informations de votre entreprise pour évaluer votre adéquation",
+    "de": "Füge die Informationen deines Unternehmens hinzu, um deine Eignung zu bewerten",
+    "it": "Aggiungi le informazioni della tua azienda per valutare l'idoneità"
+  },
+  "This reads the tender and scores your fit. It needs an account, your company information, and a plan that includes evaluations.": {
+    "pt": "Lê o concurso e avalia o enquadramento. Precisa de uma conta, da informação da sua empresa e de um plano que inclua avaliações.",
+    "es": "Lee la licitación y valora tu encaje. Necesita una cuenta, la información de tu empresa y un plan que incluya evaluaciones.",
+    "fr": "Lit le marché et évalue votre adéquation. Il faut un compte, les informations de votre entreprise et un plan qui inclut les évaluations.",
+    "de": "Liest die Ausschreibung und bewertet deine Eignung. Dafür brauchst du ein Konto, die Informationen deines Unternehmens und einen Plan mit Bewertungen.",
+    "it": "Legge la gara e valuta l'idoneità. Serve un account, le informazioni della tua azienda e un piano che include le valutazioni."
+  },
+  "The brief is written after an evaluation": {
+    "pt": "O resumo é escrito depois de uma avaliação",
+    "es": "El resumen se escribe después de una evaluación",
+    "fr": "La note est écrite après une évaluation",
+    "de": "Das Briefing entsteht nach einer Bewertung",
+    "it": "Il brief si scrive dopo una valutazione"
+  },
+  "It lists what you can answer, what stays open, and what a partner covers. It needs an evaluation first, and a plan that includes proposal briefs.": {
+    "pt": "Lista o que consegue responder, o que fica em aberto e o que um parceiro cobre. Precisa primeiro de uma avaliação e de um plano que inclua resumos de proposta.",
+    "es": "Lista lo que puedes responder, lo que queda abierto y lo que cubre un socio. Necesita primero una evaluación y un plan que incluya resúmenes de propuesta.",
+    "fr": "Il liste ce que vous pouvez répondre, ce qui reste ouvert et ce qu’un partenaire couvre. Il faut d’abord une évaluation, et un plan qui inclut les notes de proposition.",
+    "de": "Es listet, was du beantworten kannst, was offen bleibt und was ein Partner abdeckt. Dafür brauchst du zuerst eine Bewertung und einen Plan mit Angebotsbriefings.",
+    "it": "Elenca cosa puoi rispondere, cosa resta aperto e cosa copre un partner. Serve prima una valutazione e un piano che include i brief di offerta."
+  },
+  "An account lets you read the requirements": {
+    "pt": "Uma conta permite ler os requisitos",
+    "es": "Una cuenta te permite leer los requisitos",
+    "fr": "Un compte permet de lire les exigences",
+    "de": "Ein Konto lässt dich die Anforderungen lesen",
+    "it": "Un account ti permette di leggere i requisiti"
+  },
+  "A higher plan includes requirements on more tenders": {
+    "pt": "Um plano superior inclui requisitos em mais concursos",
+    "es": "Un plan superior incluye requisitos en más licitaciones",
+    "fr": "Un plan supérieur inclut les exigences sur plus de marchés",
+    "de": "Ein höherer Plan umfasst Anforderungen zu mehr Ausschreibungen",
+    "it": "Un piano superiore include i requisiti su più gare"
+  },
+  "A free account includes a few tenders a month.": {
+    "pt": "Uma conta gratuita inclui alguns concursos por mês.",
+    "es": "Una cuenta gratuita incluye algunas licitaciones al mes.",
+    "fr": "Un compte gratuit inclut quelques marchés par mois.",
+    "de": "Ein kostenloses Konto umfasst einige Ausschreibungen im Monat.",
+    "it": "Un account gratuito include alcune gare al mese."
+  },
+  "Estimated value": {
+    "pt": "Valor estimado",
+    "es": "Valor estimado",
+    "fr": "Valeur estimée",
+    "de": "Geschätzter Wert",
+    "it": "Valore stimato"
+  },
+  "From the summary": {
+    "pt": "A partir do resumo",
+    "es": "A partir del resumen",
+    "fr": "D’après le résumé",
+    "de": "Aus der Zusammenfassung",
+    "it": "Dal riepilogo"
+  },
+  "The bidding status is not confirmed.": {
+    "pt": "O estado da proposta não está confirmado.",
+    "es": "El estado de la licitación no está confirmado.",
+    "fr": "Le statut de l’appel d’offres n’est pas confirmé.",
+    "de": "Der Vergabestatus ist nicht bestätigt.",
+    "it": "Lo stato della gara non è confermato."
+  },
+  "Example": {
+    "pt": "Exemplo",
+    "es": "Ejemplo",
+    "fr": "Exemple",
+    "de": "Beispiel",
+    "it": "Esempio"
+  },
+  "Waste collection for Northwind City": {
+    "pt": "Recolha de resíduos para Northwind City",
+    "es": "Recogida de residuos para Northwind City",
+    "fr": "Collecte des déchets pour Northwind City",
+    "de": "Abfallsammlung für Northwind City",
+    "it": "Raccolta rifiuti per Northwind City"
+  },
+  "This page is an example. It is not a real notice.": {
+    "pt": "Esta página é um exemplo. Não é um anúncio real.",
+    "es": "Esta página es un ejemplo. No es un anuncio real.",
+    "fr": "Cette page est un exemple. Ce n’est pas un avis réel.",
+    "de": "Diese Seite ist ein Beispiel. Es ist keine echte Bekanntmachung.",
+    "it": "Questa pagina è un esempio. Non è un avviso reale."
+  },
+  "Three waste-collection contracts in the last five years, each at least €2 million. Evidence: signed references.": {
+    "pt": "Três contratos de recolha de resíduos nos últimos cinco anos, cada um de pelo menos 2 milhões de euros. Prova: referências assinadas.",
+    "es": "Tres contratos de recogida de residuos en los últimos cinco años, cada uno de al menos 2 millones de euros. Prueba: referencias firmadas.",
+    "fr": "Trois contrats de collecte des déchets au cours des cinq dernières années, chacun d’au moins 2 millions d’euros. Preuve : références signées.",
+    "de": "Drei Abfallsammelverträge in den letzten fünf Jahren, jeder mindestens 2 Millionen Euro. Nachweis: unterzeichnete Referenzen.",
+    "it": "Tre contratti di raccolta rifiuti negli ultimi cinque anni, ciascuno di almeno 2 milioni di euro. Prova: referenze firmate."
+  },
+  "A licensed treatment site within 80 km, or a named partner who has one.": {
+    "pt": "Uma instalação de tratamento licenciada num raio de 80 km, ou um parceiro nomeado que a tenha.",
+    "es": "Una planta de tratamiento autorizada en un radio de 80 km, o un socio nombrado que la tenga.",
+    "fr": "Un site de traitement agréé dans un rayon de 80 km, ou un partenaire nommé qui en dispose.",
+    "de": "Eine zugelassene Behandlungsanlage im Umkreis von 80 km, oder ein genannter Partner, der eine hat.",
+    "it": "Un impianto di trattamento autorizzato entro 80 km, o un partner indicato che ne abbia uno."
+  },
+  "Company evidence": {
+    "pt": "Prova da empresa",
+    "es": "Prueba de la empresa",
+    "fr": "Preuves de l’entreprise",
+    "de": "Unternehmensnachweise",
+    "it": "Prove dell'azienda"
+  },
+  "Two collection contracts. The largest is €1.4 million. Partial match on the reference value.": {
+    "pt": "Dois contratos de recolha. O maior é de 1,4 milhões de euros. Correspondência parcial no valor da referência.",
+    "es": "Dos contratos de recogida. El mayor es de 1,4 millones de euros. Encaje parcial en el valor de la referencia.",
+    "fr": "Deux contrats de collecte. Le plus important est de 1,4 million d’euros. Correspondance partielle sur la valeur de référence.",
+    "de": "Zwei Sammelverträge. Der größte liegt bei 1,4 Millionen Euro. Teilweise erfüllt beim Referenzwert.",
+    "it": "Due contratti di raccolta. Il più grande è di 1,4 milioni di euro. Corrispondenza parziale sul valore della referenza."
+  },
+  "No licensed treatment site on the company record.": {
+    "pt": "Nenhuma instalação de tratamento licenciada no registo da empresa.",
+    "es": "Ninguna planta de tratamiento autorizada en el registro de la empresa.",
+    "fr": "Aucun site de traitement agréé dans le dossier de l’entreprise.",
+    "de": "Keine zugelassene Behandlungsanlage in den Unternehmensdaten.",
+    "it": "Nessun impianto di trattamento autorizzato nei dati dell'azienda."
+  },
+  "Partner gap": {
+    "pt": "Lacuna de parceiro",
+    "es": "Hueco de socio",
+    "fr": "Lacune de partenaire",
+    "de": "Partnerlücke",
+    "it": "Lacune di partner"
+  },
+  "A treatment operator within 80 km of the city. The fit names the role. It does not pick a company.": {
+    "pt": "Um operador de tratamento num raio de 80 km da cidade. O enquadramento nomeia o papel. Não escolhe uma empresa.",
+    "es": "Un operador de tratamiento en un radio de 80 km de la ciudad. El encaje nombra el papel. No elige una empresa.",
+    "fr": "Un opérateur de traitement dans un rayon de 80 km de la ville. L’adéquation nomme le rôle. Elle ne choisit pas une entreprise.",
+    "de": "Ein Behandlungsbetreiber im Umkreis von 80 km um die Stadt. Die Eignung nennt die Rolle. Sie wählt kein Unternehmen.",
+    "it": "Un operatore di trattamento entro 80 km dalla città. L'idoneità indica il ruolo. Non sceglie un'azienda."
+  },
+  "Lead with the two collection references. Name the treatment partner before the method statement. The brief is written after the evaluation.": {
+    "pt": "Comece pelas duas referências de recolha. Nomeie o parceiro de tratamento antes da memória descritiva. O resumo é escrito depois da avaliação.",
+    "es": "Empieza por las dos referencias de recogida. Nombra al socio de tratamiento antes de la memoria técnica. El resumen se escribe después de la evaluación.",
+    "fr": "Commencez par les deux références de collecte. Nommez le partenaire de traitement avant la note méthodologique. La note est écrite après l’évaluation.",
+    "de": "Beginne mit den zwei Sammelreferenzen. Nenne den Behandlungspartner vor der Methodenbeschreibung. Das Briefing entsteht nach der Bewertung.",
+    "it": "Parti dalle due referenze di raccolta. Indica il partner di trattamento prima della relazione metodologica. Il brief si scrive dopo la valutazione."
+  },
   "This agent reads the full tender documents and scores your fit from your company information.": {
     "pt": "Este agente lê a documentação completa do concurso e avalia o enquadramento a partir da informação da sua empresa.",
     "es": "Este agente lee la documentación completa de la licitación y valora tu encaje a partir de la información de tu empresa.",

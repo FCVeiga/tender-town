@@ -46,6 +46,7 @@ export type Opportunity = {
   reference: string | null;
   estimated_value: number | null;
   currency: string | null;
+  value_source?: string | null;
   duration_months: number | null;
   official_url: string | null;
   opportunity_relevance_score: number | null;

@@ -15,7 +15,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy } from '@/lib/publication';
+import { publicScope, publicText, shownWhy, stageOf } from '@/lib/publication';
 import { focusedScope } from '@/lib/scopeFocus';
 import { getScopeItems } from '@/lib/scopes';
 import { getPlatformLanguage } from '@/lib/language';
@@ -64,6 +64,7 @@ export type FeedItem = {
   newsId?: string | null;
   statusLabel?: string | null;   // e.g. "Closed" / "Awarded" in search results
   image?: string | null;         // news: the publisher's share image
+  related?: { href: string; headline: string }[];
 };
 
 /**
@@ -75,6 +76,55 @@ export function newsScore(score: number, at: Date, now = new Date()) {
   const halfLife = 2 + 6 * (Math.max(0, Math.min(100, score)) / 100);
   const ageDays = Math.max(0, (now.getTime() - at.getTime()) / 86400_000);
   return score * Math.pow(0.5, ageDays / halfLife);
+}
+
+const COVERAGE_STOP = new Set('about after which their there these those would other tender tenders public digital wallet service services system market news european europe identity national member states state'.split(' '));
+const MONTH = '(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)';
+
+function coverageWords(text: string): Set<string> {
+  return new Set(text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').filter((word) => word.length > 4 && !COVERAGE_STOP.has(word)));
+}
+
+function eventMonth(text: string): string | null {
+  const hit = text.toLowerCase().match(new RegExp(`\\b(?:${MONTH})\\s+20\\d{2}\\b`));
+  if (!hit) return null;
+  const [month, year] = hit[0].split(/\s+/);
+  const full: Record<string, string> = { jan: 'january', feb: 'february', mar: 'march', apr: 'april', jun: 'june', jul: 'july', aug: 'august', sep: 'september', sept: 'september', oct: 'october', nov: 'november', dec: 'december' };
+  return `${full[month] || month} ${year}`;
+}
+
+function sameEvent(a: FeedItem, b: FeedItem): boolean {
+  const aText = `${a.headline} ${a.body || ''}`;
+  const bText = `${b.headline} ${b.body || ''}`;
+  const aWords = coverageWords(aText);
+  const bWords = coverageWords(bText);
+  let shared = 0;
+  aWords.forEach((word) => { if (bWords.has(word)) shared += 1; });
+  const month = eventMonth(aText);
+  if (month && month === eventMonth(bText) && shared >= 2) return true;
+  const union = aWords.size + bWords.size - shared;
+  return shared >= 3 && union > 0 && shared / union >= 0.45;
+}
+
+/** Stories about the same event sit under the strongest one, as related sources. */
+export function groupCoverage(items: FeedItem[]): FeedItem[] {
+  const stories = items.filter((item) => item.kind === 'news' && item.event !== 'signal');
+  const ranked = [...stories].sort((a, b) => b.score - a.score);
+  const folded = new Set<string>();
+  const related = new Map<string, { href: string; headline: string }[]>();
+  for (let i = 0; i < ranked.length; i++) {
+    const lead = ranked[i];
+    if (folded.has(lead.key)) continue;
+    const matches: { href: string; headline: string }[] = [];
+    for (let j = i + 1; j < ranked.length && matches.length < 3; j++) {
+      const other = ranked[j];
+      if (folded.has(other.key) || !sameEvent(lead, other)) continue;
+      matches.push({ href: other.href, headline: other.headline });
+      folded.add(other.key);
+    }
+    if (matches.length) related.set(lead.key, matches);
+  }
+  return items.filter((item) => !folded.has(item.key)).map((item) => related.has(item.key) ? { ...item, related: related.get(item.key) } : item);
 }
 
 const decay = (at: Date, now: Date) =>
@@ -169,7 +219,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
     view === 'new' ? unique.sort((a, b) => band(a) - band(b) || b.at.getTime() - a.at.getTime())
       : view === 'relevance' ? unique.sort((a, b) => band(a) - band(b) || b.score - a.score || b.at.getTime() - a.at.getTime())
         : unique.sort((a, b) => band(a) - band(b) || hot(b) - hot(a));
-  return { items: sorted, error };
+  return { items: groupCoverage(sorted), error };
 }
 
 /** The card title and summary are the published record. The scope's note stays separate. */
@@ -182,7 +232,7 @@ async function publishedCopy(items: FeedItem[]) {
     getScopeItems('news', true),
     getScopeItems('tender', true),
     newsIds.length ? db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, category').in('news_id', newsIds) : Promise.resolve({ data: [] as any[] }),
-    oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
+    oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary, status, deadline, opportunity_type').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
   ]);
   const news = new Map((newsRows.data || []).map((row: any) => [row.news_id, row]));
   const opps = new Map((oppRows.data || []).map((row: any) => [row.opportunity_id, row]));
@@ -192,7 +242,7 @@ async function publishedCopy(items: FeedItem[]) {
     const row = story || opp;
     if (!row) continue;
     const summary = publicText(plainText(firstInLanguage(row.summary, row.excerpt) || ''));
-    const why = shownWhy(summary, plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || ''), publicScope(scope));
+    const why = shownWhy(summary, plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || ''), publicScope(scope), story ? null : stageOf(opp));
     item.headline = titleOf(row);
     item.body = summary || null;
     item.why = why && why !== summary ? why : null;

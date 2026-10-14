@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 
 const STATIC = [
-  '', '/about', '/pricing', '/privacy', '/terms', '/help', '/blog', '/mcp', '/discover', '/markets',
+  '', '/about', '/pricing', '/privacy', '/terms', '/help', '/blog', '/example', '/mcp', '/discover', '/markets',
   '/tenders', '/tenders/new', '/tenders/rfps', '/tenders/rfis', '/tenders/grants',
   '/news', '/news/regulation', '/news/industry', '/news/market', '/news/signals',
   '/community',

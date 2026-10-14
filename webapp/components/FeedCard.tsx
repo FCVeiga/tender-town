@@ -36,6 +36,17 @@ function Votes({ item, value }: { item: FeedItem; value: number }) {
   );
 }
 
+function Related({ item }: { item: FeedItem }) {
+  const t = getTSync();
+  if (!item.related?.length) return null;
+  return (
+    <p className="feed-related">
+      <span>{t('Also covered')}</span>
+      {item.related.map((story) => <Link key={story.href} href={story.href}>{story.headline}</Link>)}
+    </p>
+  );
+}
+
 function Deadline({ deadline, now }: { deadline: string; now: Date }) {
   const t = getTSync();
   const d = daysUntil(deadline, now)!;
@@ -76,11 +87,12 @@ export default function FeedCard({ item, now, value, like, social }: {
       </div>
     </Link>
   );
-  if (!target || !like) return card;
+  const withRelated = item.related?.length ? <div className="feed-stack">{card}<Related item={item} /></div> : card;
+  if (!target || !like) return withRelated;
   // The heart sits beside the link (a button can't live inside a link).
   return (
     <div className="likeable">
-      {card}
+      {withRelated}
       <HeartButton type={target[0]} id={target[1]} liked={like.liked} signedIn={like.signedIn} className="card-heart" />
     </div>
   );
@@ -112,6 +124,7 @@ function SocialFeedCard({ item, now, value, social }: { item: FeedItem; now: Dat
           {item.why && <p className="feed-why"><span>{t('Why this matters')}</span> {item.why}</p>}
           {item.deadline && <Deadline deadline={item.deadline} now={now} />}
         </Link>
+        <Related item={item} />
         <CardActions type={type} id={id} href={item.href} title={item.headline} signedIn={social.signedIn}
           likes={e.likes} liked={e.liked} comments={e.comments} reposts={e.reposts} reposted={e.reposted} />
       </div>
