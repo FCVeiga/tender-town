@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { siteOrigin } from '@/lib/auth';
-import { posts } from '@/lib/blog';
+import { posts as blogPosts } from '@/lib/blog';
 import { marketIndex } from '@/lib/discover';
 import { getSupabaseServerClient } from '@/lib/supabase';
 
@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   };
   return [
     ...STATIC.map((path) => entry(path || '/', now.toISOString())),
-    ...posts.map((post) => entry(`/blog/${post.slug}`, post.date)),
+    ...blogPosts.map((post) => entry(`/blog/${post.slug}`, post.date)),
     ...markets.map((market) => entry(`/markets/${market.slug}`)),
     ...tenders.map((r) => entry(`/tenders/${r.opportunity_id}`, r.last_change || r.publication_date || r.first_detected)),
     ...news.map((r) => entry(`/news/${r.news_id}`, r.published_date || r.created_at)),
