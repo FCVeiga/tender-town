@@ -3,6 +3,7 @@ import HeartButton from './HeartButton';
 import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { publicText, shownWhy } from '@/lib/publication';
 import UpdateComment, { UpdateEvent } from './UpdateComment';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 
@@ -57,8 +58,8 @@ export default function OpportunityRow({ o, countryName, updates = [], like, why
 }) {
   const days = daysUntil(o.deadline);
   const value = money(o.estimated_value, o.currency);
-  const description = plainText(firstInLanguage(o.summary) || '');
-  const note = plainText(why || '');
+  const description = publicText(plainText(firstInLanguage(o.summary) || ''));
+  const note = shownWhy(description, plainText(why || ''));
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
   const t = getTSync();

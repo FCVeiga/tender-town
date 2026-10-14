@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { newsCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { publicText, shownWhy } from '@/lib/publication';
 import NewsImage from '@/components/NewsImage';
 import NewsReportRunner from '@/components/NewsReport';
 import AgentAvatar from '@/components/AgentAvatar';
@@ -69,7 +70,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
     );
   }
 
-  const paragraphs = plainText(firstInLanguage(n.summary_long, n.summary, n.excerpt) || '')
+  const paragraphs = publicText(plainText(firstInLanguage(n.summary_long, n.summary, n.excerpt) || ''))
     .split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
   const facts: string[] = Array.isArray(n.key_facts) ? n.key_facts.filter((f: string) => firstInLanguage(f)) : [];
   // One report per scope the viewer looks through (their active scopes, or the default scope).
@@ -131,7 +132,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
         {paragraphs.length ? paragraphs.map((p: string, i: number) => <p key={i}>{p}</p>)
           : <p className="muted">{t('No English summary yet.')}</p>}
         {(notes || []).map((note) => {
-          const why = plainText(note.reason);
+          const why = shownWhy(paragraphs.join('\n\n'), plainText(note.reason));
           if (!why) return null;
           const scope = viewScopes.find((sc) => sc.id === note.scope_id);
           return (

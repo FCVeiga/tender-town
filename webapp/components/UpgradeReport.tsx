@@ -18,7 +18,7 @@ export function UpgradeReport({ note, title, signedIn = true }: { note?: string;
         </>
       ) : (
         <>
-          <p className="profile-empty-title">{t('Create an account to see this')}</p>
+          <p className="profile-empty-title">{t(title || 'Create an account to see this')}</p>
           <Link href={`/signup?next=${encodeURIComponent(path || '/')}`} className="btn primary profile-empty-cta">{t('Create an account')}</Link>
         </>
       )}

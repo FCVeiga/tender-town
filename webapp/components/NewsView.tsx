@@ -2,6 +2,7 @@ import { NEWS_CATEGORIES, getActiveOpportunities, getNews, newsCategoryLabel, ti
 import { FeedItem, newsScore } from '@/lib/feed';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { publicText, shownWhy } from '@/lib/publication';
 import { getScopeItems } from '@/lib/scopes';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import FeedCard from './FeedCard';
@@ -60,8 +61,8 @@ async function NewsBody({ view }: { view: View }) {
   const signalPost = new Map<string, any>();
   for (const p of signalPosts || []) if (!signalPost.has(p.opportunity_id)) signalPost.set(p.opportunity_id, p);
   const aside = (summary: string | null, why: string | null) => {
-    const note = plainText(why || '');
-    const facts = plainText(summary || '');
+    const facts = publicText(plainText(summary || ''));
+    const note = shownWhy(facts, plainText(why || ''));
     return { body: facts || null, why: note && note !== facts ? note : null };
   };
   const signalItems: FeedItem[] = signals.map((o): FeedItem => {

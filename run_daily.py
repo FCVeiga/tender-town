@@ -285,7 +285,9 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
     ctype = (t.get("type") or "").upper()
     relevance = int(t.get("relevance") or 0)
     country = (t.get("country") or "").upper()[:2] or None
-    summary = correct_known_facts(t.get("summary") or t.get("reason") or "")
+    from services.publication import neutralize, publish_reason
+    summary = neutralize(correct_known_facts(t.get("summary") or ""))
+    interpretation = publish_reason(summary, t.get("reason") or "")
 
     category, awarded = classify_opportunity(candidate, t)
     if category and relevance >= PROMOTE_THRESHOLD:
@@ -398,7 +400,7 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
             source_name=urlparse(candidate.source_url or "").netloc,
             source_url=candidate.source_url,
             excerpt=(candidate.description or "")[:400], summary=summary,
-            impact_note=t.get("reason") or "",
+            impact_note=interpretation,
             relevance_score=int(t.get("importance") or 0) or None,
             lang=_written_lang({"title_en": t.get("title_en"), "summary": summary}),
         )
@@ -706,11 +708,14 @@ def main():
                     is_news = kind in ("news", "unchanged_news")
                     item_id = row.news_id if is_news else row.opportunity_id
                     score = int(result.get("importance") or 0) if is_news else int(result.get("relevance") or 0)
+                    from services.publication import publish_reason
+                    public = bool(getattr(scope, "catalog", False) or getattr(scope, "is_default", False))
+                    why = publish_reason(getattr(row, "summary", None) or result.get("summary") or "", result.get("reason") or "", public=public)[:500]
                     session.execute(sql_text("""insert into scope_items (scope_id, item_type, item_id, relevance, candidate_type, reason)
                             values (cast(:s as uuid), :t, :i, :r, :ct, :why)
                             on conflict (scope_id, item_type, item_id) do update set relevance = excluded.relevance, reason = excluded.reason"""),
                                     {"s": scope.id, "t": "news" if is_news else "tender", "i": item_id, "r": score,
-                                     "ct": result.get("type"), "why": (result.get("reason") or "")[:500]})
+                                     "ct": result.get("type"), "why": why})
                     if kind == "opportunity":
                         new_opps.append(row)
                     elif kind == "updated":

@@ -15,6 +15,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { publicText, shownWhy } from '@/lib/publication';
 import { getScopeItems } from '@/lib/scopes';
 import { getPlatformLanguage } from '@/lib/language';
 
@@ -188,8 +189,8 @@ async function publishedCopy(items: FeedItem[]) {
     const opp = item.opportunityId ? opps.get(item.opportunityId) : null;
     const row = story || opp;
     if (!row) continue;
-    const summary = plainText(firstInLanguage(row.summary, row.excerpt) || '');
-    const why = plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || '');
+    const summary = publicText(plainText(firstInLanguage(row.summary, row.excerpt) || ''));
+    const why = shownWhy(summary, plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || ''));
     item.headline = titleOf(row);
     item.body = summary || null;
     item.why = why && why !== summary ? why : null;

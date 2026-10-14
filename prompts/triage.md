@@ -61,7 +61,7 @@ opportunity relevance, job postings.
   "eudi_relevance": "DIRECT | ADJACENT | STRATEGIC | LOW | NONE",
   "commercial_relevance": "HIGH | MEDIUM | LOW | NONE",
   "type": "TENDER | RFI | GRANT | CONSORTIUM_CALL | PILOT | PIPELINE_SIGNAL | NEWS_ONLY | FALSE_POSITIVE",
-  "reason": "why this matters to the scope. For news, name who might buy, what changed, what could follow, and what to watch when the source supports it. If it is only background, say that in one sentence. Do not repeat the summary.",
+  "reason": "the public interpretation. See Reason below. Do not repeat the summary.",
   "deep_analysis_required": true,
   "country": "ISO 3166-1 alpha-2 code of the buying/issuing country, or null if multi-country/unclear",
   "authority": "contracting authority / funder / organisation name, or null",
@@ -76,6 +76,26 @@ opportunity relevance, job postings.
 
 Only fill `country`, `authority` and `deadline` from what the input actually
 says — never guess. Use null when unknown.
+
+## Reason
+The summary states the facts. The reason is a separate interpretation, shown
+to readers as why the item matters. It must not contradict the summary on a
+date, on whether something is still planned or already done, on whether a
+procurement is open, or on who the buyer is. If you are unsure, leave that
+point out. An interpretation that contradicts the summary is discarded.
+
+Do not name a company the radar is configured for, and do not write "for
+{company}". The summary is public on every market.
+
+When the item is only background, with no buyer preparing a purchase, write
+one sentence on what it is. Do not force it into procurement language.
+
+Otherwise write three short sentences:
+- Commercial implication: what work might follow, marked as an inference
+  ("This suggests", "A later contract could"). Do not state an inference as a fact.
+- Relevant capabilities: which supplier or partner roles could matter. Name
+  roles, not companies.
+- Next step: the announcement, consultation or procurement channel to monitor.
 
 ## Languages
 The input may be in any language (procurement notices usually are in the

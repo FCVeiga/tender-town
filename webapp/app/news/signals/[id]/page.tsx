@@ -5,6 +5,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { buyerOf, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { publicText, shownWhy } from '@/lib/publication';
 import HeartButton from '@/components/HeartButton';
 import CommentsSection from '@/components/social/CommentsSection';
 import { getLikes } from '@/lib/likes';
@@ -25,15 +26,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     .eq('opportunity_id', params.id).maybeSingle();
   if (!data || data.opportunity_type !== 'signal') return { title: 'Not found — Tender Town', robots: { index: false, follow: false } };
   const title = titleOf(data);
-  const user = await getCurrentUser();
-  const [ctx, account] = await Promise.all([
-    getContext(),
-    user ? getPersonalAccount(user.id) : Promise.resolve(null),
-  ]);
-  const plan = ctx?.plan ?? account?.plan ?? PLANS[0];
   return pageMeta({
     title: `${title} — Tender Town`,
-    description: plan.evaluationsPerMonth !== 0 ? clip(firstInLanguage(data.tender_summary, data.summary) || title) : title,
+    description: clip(publicText(firstInLanguage(data.tender_summary, data.summary) || '') || title),
     path: `/news/signals/${params.id}`,
     type: 'article',
   });
@@ -57,8 +52,8 @@ export default async function SignalPage({ params }: { params: { id: string } })
   }
   if (o.opportunity_type !== 'signal') permanentRedirect(`/tenders/${o.opportunity_id}`);
 
-  const paragraphs = plainText(firstInLanguage(o.tender_summary, o.summary) || '')
-    .split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
+  const summary = publicText(plainText(firstInLanguage(o.tender_summary, o.summary) || ''));
+  const paragraphs = summary.split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
   const user = await getCurrentUser();
   const [{ scopes: viewScopes }, ctx, account] = await Promise.all([
     getViewScopes(),
@@ -87,7 +82,7 @@ export default async function SignalPage({ params }: { params: { id: string } })
         '@context': 'https://schema.org',
         '@type': 'NewsArticle',
         headline,
-        description: summaryAllowed ? clip(firstInLanguage(o.tender_summary, o.summary) || headline, 300) : headline,
+        description: clip(summary || headline, 300),
         datePublished: when,
         author: { '@type': 'Organization', name: buyerOf(o) || 'Tender Town' },
         publisher: { '@type': 'Organization', name: 'Tender Town', url: origin },
@@ -114,25 +109,21 @@ export default async function SignalPage({ params }: { params: { id: string } })
             </a>
           )}
         </div>
-        {summaryAllowed ? (
-          <>
-            {paragraphs.length ? paragraphs.map((p: string, i: number) => <p key={i}>{p}</p>)
-              : <p className="muted">{t('No English summary yet.')}</p>}
-            {(notes || []).map((note) => {
-              const why = plainText(note.reason);
-              if (!why) return null;
-              const scope = viewScopes.find((sc) => sc.id === note.scope_id);
-              return (
-                <p key={note.scope_id} className="feed-why">
-                  <span>{viewScopes.length > 1 ? t('Why this matters to {scope}', { scope: scope?.name || '' }) : t('Why this matters')}</span>
-                  {why}
-                </p>
-              );
-            })}
-          </>
-        ) : (
-          <UpgradeReport signedIn={!!user} note={t('This summary reads the notice and what the buyer is preparing.')} />
-        )}
+        {paragraphs.length ? paragraphs.map((p: string, i: number) => <p key={i}>{p}</p>)
+          : <p className="muted">{t('No English summary yet.')}</p>}
+        {summaryAllowed ? (notes || []).map((note) => {
+          const why = shownWhy(summary, plainText(note.reason));
+          if (!why) return null;
+          const scope = viewScopes.find((sc) => sc.id === note.scope_id);
+          return (
+            <p key={note.scope_id} className="feed-why">
+              <span>{viewScopes.length > 1 ? t('Why this matters to {scope}', { scope: scope?.name || '' }) : t('Why this matters')}</span>
+              {why}
+            </p>
+          );
+        }) : (notes || []).some((note) => shownWhy(summary, plainText(note.reason))) ? (
+          <UpgradeReport signedIn={!!user} title={t('See what might follow, which roles could matter, and what to watch.')} />
+        ) : null}
         <ItemSources type="tender" id={o.opportunity_id} skip={o.official_url} />
       </section>
 

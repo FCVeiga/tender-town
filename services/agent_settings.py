@@ -90,7 +90,7 @@ def load(session, search_defaults: dict = None) -> None:
             mine = [a for a in agents if a.scope_id == s.id]
             _state["scopes"].append(SimpleNamespace(
                 id=str(s.id), name=s.name, instructions=s.instructions, is_default=s.is_default,
-                search=s.search_config or {},
+                catalog=bool(s.catalog), search=s.search_config or {},
                 enabled={a.agent_key: bool(a.enabled) for a in mine},
                 overrides={a.agent_key: a.prompt_override for a in mine if a.prompt_override},
             ))
@@ -99,7 +99,7 @@ def load(session, search_defaults: dict = None) -> None:
             mine = [a for a in agents if a.scope_id == default_row.id]
             _state["default"] = SimpleNamespace(
                 id=str(default_row.id), name=default_row.name, instructions=default_row.instructions, is_default=True,
-                search=default_row.search_config or {},
+                catalog=bool(default_row.catalog), search=default_row.search_config or {},
                 enabled={a.agent_key: bool(a.enabled) for a in mine},
                 overrides={a.agent_key: a.prompt_override for a in mine if a.prompt_override})
         if _state["default"] is None and _state["scopes"]:
@@ -214,8 +214,13 @@ def prompt_for(prompt_filename: str, default: str, scope=None) -> str:
     if key == "triage" and s and (s.instructions or "").strip():
         # The scope's instructions (who it is for, what they sell, what they go
         # for and what they don't) sharpen relevance beyond the search rubric.
+        public = bool(getattr(s, "is_default", False) or getattr(s, "catalog", False))
+        audience = ("This scope is a public market. The summary and the reason are shown to every visitor. "
+                    "Do not name a company or who should bid.\n" if public else
+                    "The summary is public: do not name the company. The reason is shown only inside this scope "
+                    "and may say what the company should watch. It must not contradict the summary.\n")
         prompt = prompt.replace("<!-- /scope -->", "<!-- /scope -->\n\n## Scope instructions (from the scope's admins)\n"
                                 "Use these to judge relevance and importance for this scope. Where they say what is "
-                                "out of scope, score it below 50.\n\n" + s.instructions.strip()[:6000] + "\n", 1)
+                                "out of scope, score it below 50.\n\n" + s.instructions.strip()[:6000] + "\n" + audience, 1)
     return (prompt.replace("{topic}", "EUDI Wallet").replace("{company_name}", company_name(s))
             .replace("{language}", target_language()[0]))

@@ -8,6 +8,7 @@ import { searchWords } from '@/lib/search';
 import { buyerOf, opportunityPath, titleOf, type Opportunity, type NewsItem } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { publicText, shownWhy } from '@/lib/publication';
 import { getPlatformLanguage } from '@/lib/language';
 import { getCatalogScopes } from '@/lib/scopes';
 import { scopeSlug } from '@/lib/guestScope';
@@ -63,7 +64,7 @@ function oppHit(row: Opportunity): DiscoverHit {
     buyer: buyerOf(row),
     country: row.country,
     deadline: row.deadline,
-    summary: clip(plainText(firstInLanguage(row.summary) || ''), 220),
+    summary: clip(publicText(plainText(firstInLanguage(row.summary) || '')), 220),
   };
 }
 
@@ -75,7 +76,7 @@ function newsHit(row: NewsItem): DiscoverHit {
     buyer: row.source_name,
     country: row.country,
     deadline: null,
-    summary: clip(plainText(firstInLanguage(row.summary, row.excerpt) || ''), 220),
+    summary: clip(publicText(plainText(firstInLanguage(row.summary, row.excerpt) || '')), 220),
   };
 }
 
@@ -160,7 +161,7 @@ export async function marketBySlug(slug: string) {
   const whyOf = new Map((tenderLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
   const newsWhy = new Map((newsLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
   const withWhy = (hit: DiscoverHit, reason: string | null | undefined) => {
-    const why = plainText(reason || '');
+    const why = shownWhy(hit.summary, plainText(reason || ''));
     return { ...hit, why: why && why !== hit.summary ? why : null };
   };
   const ranked = ((oppRows.data || []) as Opportunity[]).map((row) => {

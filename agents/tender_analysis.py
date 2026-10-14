@@ -337,11 +337,12 @@ def analyse_tenders(session, errors: list, limit: int = 40) -> dict:
         country = (out.get("country") or "").strip().upper()
         if not (len(country) == 2 and country.isalpha()):
             country = None
+        from services.publication import neutralize
         session.execute(text("""update opportunities set tender_summary = :s, tender_analysed_at = now(),
                 authority = coalesce(authority, :buyer), authority_en = coalesce(authority_en, :buyer_en),
                 country = coalesce(country, :country)
                 where opportunity_id = :o"""),
-                        {"s": plain_summary(out.get("summary") or "") or None, "o": o.opportunity_id,
+                        {"s": neutralize(plain_summary(out.get("summary") or "")) or None, "o": o.opportunity_id,
                          "buyer": buyer, "buyer_en": buyer_en, "country": country})
         session.commit()
         done["requirements"] += 1

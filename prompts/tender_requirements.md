@@ -17,7 +17,8 @@ instead of a notice. Your summary is the one shown on the opportunity page,
 right above the requirements.
 
 You describe the tender only. Do NOT judge any bidder's fit or chances —
-the Tender Evaluation Agent does that.
+the Tender Evaluation Agent does that. Do not name a company the radar is
+configured for. The summary is public.
 
 ## 1. Summary
 200–400 words in 2–4 short paragraphs, in {language}:

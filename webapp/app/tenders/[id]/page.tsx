@@ -5,6 +5,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { Opportunity, buyerOf, oppCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { publicText, shownWhy } from '@/lib/publication';
 import { DeadlineText, StatusTags } from '@/components/OpportunityCard';
 import UpdateComment, { UpdateEvent } from '@/components/UpdateComment';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
@@ -146,9 +147,9 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     const rows = (r.requirement_matches || []).filter((m: any) => m.scope_id === scopeId);
     return (wsId && rows.find((m: any) => m.workspace_id === wsId)) || rows.find((m: any) => !m.workspace_id);
   };
-  const summary = plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? '')
-    .split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
-  const why = plainText(scopeItems?.reason.get(params.id) || '');
+  const summaryText = publicText(plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? ''));
+  const summary = summaryText.split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
+  const why = shownWhy(summaryText, plainText(scopeItems?.reason.get(params.id) || ''));
   const [{ data: countryRow }, likes, agentFlags] = await Promise.all([
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
     getLikes('tender', [o.opportunity_id]),
