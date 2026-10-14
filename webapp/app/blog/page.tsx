@@ -27,7 +27,6 @@ export default async function BlogPage() {
   return (
     <article className="legal blog-index">
       <h1 className="opps-h1">{t('Blog')}</h1>
-      <p className="page-sub">{t(BLOG_LEAD)}</p>
       {posts.length === 0 ? (
         <p className="muted">{t('No posts yet.')}</p>
       ) : (
