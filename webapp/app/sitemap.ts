@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = siteOrigin();
   const now = new Date();
   const [tenders, news, posts, people, markets] = await Promise.all([
-    pages('opportunities', 'opportunity_id, last_change, publication_date, first_detected', 'first_detected'),
+    pages('opportunities', 'opportunity_id, opportunity_type, last_change, publication_date, first_detected', 'first_detected'),
     pages('news_items', 'news_id, published_date, created_at', 'published_date'),
     pages('posts', 'id, created_at', 'created_at'),
     pages('profiles', 'username, created_at, searchable', 'created_at'),
@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...STATIC.map((path) => entry(path || '/', now.toISOString())),
     ...blogPosts.map((post) => entry(`/blog/${post.slug}`, post.date)),
     ...markets.map((market) => entry(`/markets/${market.slug}`)),
-    ...tenders.map((r) => entry(`/tenders/${r.opportunity_id}`, r.last_change || r.publication_date || r.first_detected)),
+    ...tenders.map((r) => entry(r.opportunity_type === 'signal' ? `/news/signals/${r.opportunity_id}` : `/tenders/${r.opportunity_id}`, r.last_change || r.publication_date || r.first_detected)),
     ...news.map((r) => entry(`/news/${r.news_id}`, r.published_date || r.created_at)),
     ...posts.map((r) => entry(`/posts/${r.id}`, r.created_at)),
     ...people.filter((r) => r.username && r.searchable !== false).map((r) => entry(`/u/${r.username}`, r.created_at)),

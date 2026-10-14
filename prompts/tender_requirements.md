@@ -30,6 +30,7 @@ the Tender Evaluation Agent does that.
 - changes made by later notices, clarifications or Q&A answers that matter,
   after the description of the tender as first published.
 Report facts; never invent a figure or date the sources don't give.
+Write plain paragraphs. No markdown, no asterisks, no headings.
 
 ## 2. Requirements
 One row per distinct requirement a bidder must meet, prove or deliver, in
@@ -74,6 +75,9 @@ Each criterion with its weight in percent and what is assessed, in {language}.
 ```json
 {
   "summary": "paragraphs separated by \n\n",
+  "buyer": "official name of the contracting authority from the source, or null",
+  "buyer_en": "that name in {language} when the official name is not, else the same name, or null",
+  "country": "ISO 3166-1 alpha-2 of the buyer's country from the source, or null. Never guess.",
   "requirements": [
     {"group": "ELIGIBILITY", "category": "CERTIFICATION",
      "text": "Valid ISO 27001 certification of the bidder or equivalent",

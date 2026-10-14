@@ -9,7 +9,8 @@ export type AgentRunBlock = 'plan' | 'quota' | null;
 export async function agentRunAllowance(kind: AgentRunKey): Promise<{ block: AgentRunBlock; accountId: string | null; limit: number | null }> {
   const ctx = await getContext();
   const account = ctx ? await getPersonalAccount(ctx.workspace.ownerId) : null;
-  const limit = kind === 'tender_evaluation' ? account?.plan.evaluationsPerMonth ?? 0 : account?.plan.proposalsPerMonth ?? 0;
+  const raw = kind === 'tender_evaluation' ? account?.plan.evaluationsPerMonth : account?.plan.proposalsPerMonth;
+  const limit = raw === undefined ? 0 : raw;
   if (!account || limit === 0) return { block: 'plan', accountId: account?.id ?? null, limit: 0 };
   if (limit == null) return { block: null, accountId: account.id, limit: null };
   const month = new Date().toISOString().slice(0, 7);

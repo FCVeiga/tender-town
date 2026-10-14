@@ -19,7 +19,7 @@ export const TENDER_CATEGORIES = OPP_CATEGORIES.filter((c) => c.slug !== 'signal
 // News sections — must match NEWS_CATEGORIES in run_daily.py.
 export const NEWS_CATEGORIES = [
   { slug: 'regulation', label: 'Regulation', blurb: 'Laws, implementing acts, regulators, certification and standards' },
-  { slug: 'industry', label: 'Industry', blurb: 'Vendors and industry players — launches, funding, partnerships, acquisitions' },
+  { slug: 'industry', label: 'Industry news', blurb: 'Vendors and industry players — launches, funding, partnerships, acquisitions' },
   { slug: 'market', label: 'Market', blurb: 'Governments, banks and other adopters launching or taking a stance on wallets' },
 ] as const;
 
@@ -79,6 +79,11 @@ export const titleOf = (x: { title: string; title_en?: string | null; language?:
 
 /** Buyer / organisation in English (null when no English form exists yet). */
 export const buyerOf = (o: { authority: string | null; authority_en?: string | null }) => nameInLanguage(o.authority_en, o.authority);
+
+/** Signals are early news, not open tenders. */
+export function opportunityPath(o: { opportunity_id: string; opportunity_type?: string | null }) {
+  return o.opportunity_type === 'signal' ? `/news/signals/${o.opportunity_id}` : `/tenders/${o.opportunity_id}`;
+}
 
 export function oppCategoryLabel(slug: string | null) {
   return OPP_CATEGORIES.find((c) => c.slug === slug)?.label.replace(/s$/, '') ?? slug ?? '';

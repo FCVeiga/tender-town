@@ -14,7 +14,7 @@ const GIVE_UP_MS = 4 * 60_000;
  * (or, if another visitor already did, waits for it) and refreshes the page
  * when the summary and report are ready.
  */
-export default function NewsReportRunner({ newsId, scopeId, lastError }: { newsId: string; scopeId: string; lastError: string | null }) {
+export default function NewsReportRunner({ newsId, scopeId, lastError, signedIn = true }: { newsId: string; scopeId: string; lastError: string | null; signedIn?: boolean }) {
   const t = useT();
   const router = useRouter();
   const [state, setState] = useState<'working' | 'error'>('working');
@@ -39,7 +39,7 @@ export default function NewsReportRunner({ newsId, scopeId, lastError }: { newsI
   }, [newsId, router]);
 
   if (state === 'error' && (message === 'plan' || lastError === 'plan')) {
-    return <UpgradeReport note={t('The News Report Agent is included on Pro and Teams.')} />;
+    return <UpgradeReport signedIn={signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} />;
   }
   if (state === 'error' && (message === 'quota' || lastError === 'quota')) {
     return <p className="muted">{t('This workspace has used its 50 news reports for this month.')}</p>;

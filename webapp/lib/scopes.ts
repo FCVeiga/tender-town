@@ -160,23 +160,31 @@ async function guestView(defaults: Scope[]): Promise<Scope[]> {
   return data ? [toScope(data)] : defaults;
 }
 
-export type ScopeItems = { ids: string[]; relevance: Map<string, number>; scopesOf: Map<string, string[]> };
+export type ScopeItems = { ids: string[]; relevance: Map<string, number>; scopesOf: Map<string, string[]>; reason: Map<string, string> };
 
 /** Tenders or news found by the viewer's scopes, with the best relevance any of them gave.
  * `focused` is the one scope Home, Tenders and News are showing. An empty result
  * (not null) means show nothing — null still means there is no scope setup yet. */
 const loadScopeItems = cache(async (type: 'tender' | 'news', scopeKey: string): Promise<ScopeItems | null> => {
   const ids = scopeKey ? scopeKey.split(',') : [];
-  if (!ids.length) return { ids: [], relevance: new Map(), scopesOf: new Map() };
-  const { data } = await getSupabaseServerClient().from('scope_items').select('scope_id, item_id, relevance')
+  if (!ids.length) return { ids: [], relevance: new Map(), scopesOf: new Map(), reason: new Map() };
+  const { data } = await getSupabaseServerClient().from('scope_items').select('scope_id, item_id, relevance, reason')
     .eq('item_type', type).in('scope_id', ids).limit(20000);
   const relevance = new Map<string, number>();
   const scopesOf = new Map<string, string[]>();
+  const reason = new Map<string, string>();
+  const reasonScore = new Map<string, number>();
   for (const r of data || []) {
-    relevance.set(r.item_id, Math.max(relevance.get(r.item_id) ?? -1, r.relevance ?? 0));
+    const score = r.relevance ?? 0;
+    relevance.set(r.item_id, Math.max(relevance.get(r.item_id) ?? -1, score));
     scopesOf.set(r.item_id, [...(scopesOf.get(r.item_id) || []), r.scope_id]);
+    const why = typeof r.reason === 'string' ? r.reason.trim() : '';
+    if (why && score >= (reasonScore.get(r.item_id) ?? -1)) {
+      reason.set(r.item_id, why);
+      reasonScore.set(r.item_id, score);
+    }
   }
-  return { ids: Array.from(relevance.keys()), relevance, scopesOf };
+  return { ids: Array.from(relevance.keys()), relevance, scopesOf, reason };
 });
 
 /** Tenders or news for these scopes. `focused` uses the scope Home, Tenders and News are showing.
@@ -186,12 +194,12 @@ export const getScopeItems = cache(async (type: 'tender' | 'news', focused = fal
   if (focused) {
     const { focusedScope } = await import('@/lib/scopeFocus');
     const picked = await focusedScope();
-    if (picked.hold) return { ids: [], relevance: new Map(), scopesOf: new Map() };
+    if (picked.hold) return { ids: [], relevance: new Map(), scopesOf: new Map(), reason: new Map() };
     scopes = picked.scope ? [picked.scope] : [];
   } else {
     scopes = (await getViewScopes()).scopes;
   }
-  if (!scopes.length) return focused ? { ids: [], relevance: new Map(), scopesOf: new Map() } : null;
+  if (!scopes.length) return focused ? { ids: [], relevance: new Map(), scopesOf: new Map(), reason: new Map() } : null;
   return loadScopeItems(type, scopes.map((s) => s.id).sort().join(','));
 });
 

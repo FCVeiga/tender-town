@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { permanentRedirect } from 'next/navigation';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { Opportunity, buyerOf, oppCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { plainText } from '@/lib/plain';
 import { DeadlineText, StatusTags } from '@/components/OpportunityCard';
 import UpdateComment, { UpdateEvent } from '@/components/UpdateComment';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
@@ -92,6 +94,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     );
   }
 
+  if (o.opportunity_type === 'signal') permanentRedirect(`/news/signals/${o.opportunity_id}`);
+
   const user = await getCurrentUser();
 
   const { data: requirements } = await supabase
@@ -123,8 +127,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     getViewScopes(), getContext(), user ? getPersonalAccount(user.id) : Promise.resolve(null),
   ]);
   const plan = ctx?.plan ?? account?.plan ?? PLANS[0];
-  const evaluationAllowed = (plan.evaluationsPerMonth ?? 0) !== 0;
-  const proposalsAllowed = (plan.proposalsPerMonth ?? 0) !== 0;
+  const evaluationAllowed = plan.evaluationsPerMonth !== 0;
+  const proposalsAllowed = plan.proposalsPerMonth !== 0;
   const showRequirements = user ? await allowRequirements(user.id, plan.requirementViewsPerMonth) : false;
   const locked = !ctx ? null : !ctx.canCustomize && ctx.isAdmin ? 'plan' : !ctx.isAdmin ? 'member' : null;
   const { data: scopeEvals } = await supabase.from('scope_evaluations').select('*').eq('opportunity_id', params.id)
@@ -142,9 +146,11 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     const rows = (r.requirement_matches || []).filter((m: any) => m.scope_id === scopeId);
     return (wsId && rows.find((m: any) => m.workspace_id === wsId)) || rows.find((m: any) => !m.workspace_id);
   };
-  const summary = (firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? '')
+  const summary = plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? '')
     .split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
-  const [likes, agentFlags] = await Promise.all([
+  const why = plainText(scopeItems?.reason.get(params.id) || '');
+  const [{ data: countryRow }, likes, agentFlags] = await Promise.all([
+    o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
     getLikes('tender', [o.opportunity_id]),
     Promise.all(viewScopes.map(async (s) => [s.id, await isAgentEnabled('tender_evaluation', s.id), await isAgentEnabled('proposal_manager', s.id)] as const)),
   ]);
@@ -173,7 +179,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
           <HeartButton type="tender" id={o.opportunity_id} liked={likes.liked.has(o.opportunity_id)} signedIn={likes.signedIn} className="page-heart" />
         </div>
         <h1>{titleOf(o)}</h1>
-        <p className="page-sub">{[buyerOf(o), o.country].filter(Boolean).join(' · ') || t('International')}</p>
+        <p className="page-sub">{[buyerOf(o), countryRow?.name || o.country].filter(Boolean).join(' · ') || t('International')}</p>
         {titleOf(o) !== o.title && (
           <p className="original-title"><span>{t('Original')}{o.language ? ` (${o.language.toUpperCase()})` : ''}</span> {o.title}</p>
         )}
@@ -192,6 +198,9 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
             <div className="detail-block">
               <h2>{t('Summary')}</h2>
               {summary.map((p: string, i: number) => <p key={i}>{p}</p>)}
+              {why && why !== summary.join('\n\n') && (
+                <p className="feed-why"><span>{t('Why this matters')}</span> {why}</p>
+              )}
               {o.tender_summary
                 ? <p className="summary-note">{t('Tender Analysis Agent')} · {o.official_url?.includes('ted.europa.eu') ? t('from the notice and the tender documents') : t('from the notice and the tender page')}</p>
                 : <p className="summary-note">{t('Preliminary summary.')}</p>}
@@ -231,10 +240,20 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                 <AgentAvatar agent="tender_evaluation" />
                 <div className="agent-id">
                   <h2>{t('Tender Evaluation')}</h2>
-                  <span className="agent-name">{t('Tender Evaluation Agent')}</span>
                 </div>
               </div>
-              <UpgradeReport note={t('Tender Evaluation is included from Starter.')} />
+              <UpgradeReport signedIn={!!user} note={t('This agent reads the full tender documents and scores your fit from your company information.')} />
+            </section>
+          )}
+          {!proposalsAllowed && (
+            <section className="detail-block analysis-block" id="proposal">
+              <div className="agent-head">
+                <AgentAvatar agent="proposal_manager" />
+                <div className="agent-id">
+                  <h2>{t('Proposal brief')}</h2>
+                </div>
+              </div>
+              <UpgradeReport signedIn={!!user} note={t('This agent writes the bid brief from the fit score: which requirements you can answer, which stay open, and which a partner has to cover.')} />
             </section>
           )}
           {changes && changes.length > 0 && (
@@ -281,7 +300,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
 
           <div className="detail-block" id="requirements">
             <h2>{evaluatedScopes.length && showRequirements ? t('Requirements & Match Status') : t('Requirements')} {showRequirements && reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
-            {!showRequirements ? <UpgradeReport /> : reqs.length === 0 ? (
+            {!showRequirements ? <UpgradeReport signedIn={!!user} /> : reqs.length === 0 ? (
               <p className="muted">
                 {o.tender_analysed_at
                   ? t('None published yet.')

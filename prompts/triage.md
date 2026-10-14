@@ -61,12 +61,12 @@ opportunity relevance, job postings.
   "eudi_relevance": "DIRECT | ADJACENT | STRATEGIC | LOW | NONE",
   "commercial_relevance": "HIGH | MEDIUM | LOW | NONE",
   "type": "TENDER | RFI | GRANT | CONSORTIUM_CALL | PILOT | PIPELINE_SIGNAL | NEWS_ONLY | FALSE_POSITIVE",
-  "reason": "one or two sentences",
+  "reason": "why this matters to the scope. For news, name who might buy, what changed, what could follow, and what to watch when the source supports it. If it is only background, say that in one sentence. Do not repeat the summary.",
   "deep_analysis_required": true,
   "country": "ISO 3166-1 alpha-2 code of the buying/issuing country, or null if multi-country/unclear",
   "authority": "contracting authority / funder / organisation name, or null",
   "deadline": "YYYY-MM-DD submission deadline if stated, else null",
-  "summary": "two or three plain sentences on what this is and why it matters for a wallet/identity vendor",
+  "summary": "two or three plain sentences of the facts, the same story as title_en. No verdict on whether it is an opportunity",
   "news_category": "regulation | industry | market | null  (only for NEWS_ONLY — see below)",
   "importance": 0,
   "language": "ISO 639-1 code of the input's language, e.g. de, el, fr, en",
@@ -104,7 +104,7 @@ with opportunities, so use the same bar for both:
 - 60-84: clearly relevant — a notable adopter (bank, ministry) committing to
   wallets, an EU/regulator decision, a significant vendor partnership/funding.
 - 30-59: useful context — surveys, analysis, smaller pilots, regional news.
-- 0-29: marginal — generic explainers, opinion, tangential identity news.
+- 0-29: marginal — generic explainers, opinion, tangential identity news, and industry background with no buyer who might procure.
 <!-- /importance -->
 
 ## Dates that sources get wrong

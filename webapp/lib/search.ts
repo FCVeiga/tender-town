@@ -5,7 +5,7 @@
  * German. Results come back as feed items so they render as post cards.
  */
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { NewsItem, Opportunity, isNew, newsCategoryLabel, oppCategoryLabel, titleOf } from '@/lib/data';
+import { NewsItem, Opportunity, isNew, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { FeedItem, HALF_LIFE_DAYS } from '@/lib/feed';
 import { firstInLanguage } from '@/lib/english';
 import { getPlatformLanguage } from '@/lib/language';
@@ -60,14 +60,11 @@ export async function search(q: string, now = new Date()) {
   const haveNews = new Set((news.data || []).map((n: any) => n.news_id));
   const missingOpp = [...oppIds].filter((id) => !haveOpp.has(id));
   const missingNews = [...newsIds].filter((id) => !haveNews.has(id));
-  const postIds = [...[...oppIds].map((id) => `opp:${id}`), ...[...newsIds].map((id) => `news:${id}`)];
 
-  const [extraOpps, extraNews, copy] = await Promise.all([
+  const [extraOpps, extraNews] = await Promise.all([
     missingOpp.length ? db.from('opportunities').select('*').in('opportunity_id', missingOpp) : { data: [] },
     missingNews.length ? db.from('news_items').select('*').in('news_id', missingNews) : { data: [] },
-    postIds.length ? db.from('feed_posts').select('post_id, headline, body').in('post_id', postIds) : { data: [] },
   ]);
-  const posted = new Map((copy.data || []).map((p: any) => [p.post_id, p]));
   const decay = (at: Date) => Math.pow(0.5, Math.max(0, (now.getTime() - at.getTime()) / 86400_000) / HALF_LIFE_DAYS);
 
   // Only what the viewer's scopes found, scored with their relevance.
@@ -76,25 +73,23 @@ export async function search(q: string, now = new Date()) {
   const newsRows = [...(news.data || []), ...(extraNews.data || [])].filter((n: NewsItem) => !newsScope || newsScope.relevance.has(n.news_id));
 
   const oppItems: FeedItem[] = oppRows.map((o: Opportunity) => {
-    const p = posted.get(`opp:${o.opportunity_id}`);
     const at = new Date(o.first_detected || o.publication_date || now);
     const score = tenderScope?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? 30;
     return {
       key: `opp:${o.opportunity_id}`, kind: 'opportunity', event: 'new_opportunity',
-      href: `/tenders/${o.opportunity_id}`,
-      headline: p?.headline || titleOf(o), body: p ? p.body : firstInLanguage(o.summary),
-      category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: 'Opportunity',
+      href: opportunityPath(o),
+      headline: titleOf(o), body: firstInLanguage(o.summary), why: null,
+      category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'News' : 'Opportunity',
       country: o.country, at, score, combined: Math.round(score * decay(at)), movement: 'same',
       deadline: o.deadline, isNew: isNew(o, now), statusLabel: statusLabel(o, now),
     };
   });
   const newsItems: FeedItem[] = newsRows.map((n: NewsItem) => {
-    const p = posted.get(`news:${n.news_id}`);
     const at = new Date(n.published_date || n.created_at || now);
     const score = newsScope?.relevance.get(n.news_id) ?? n.relevance_score ?? 30;
     return {
       key: `news:${n.news_id}`, kind: 'news', event: 'news', href: `/news/${n.news_id}`,
-      headline: p?.headline || titleOf(n), body: p ? p.body : firstInLanguage(n.summary, n.excerpt),
+      headline: titleOf(n), body: firstInLanguage(n.summary, n.excerpt), why: null,
       category: n.category || 'market', categoryLabel: newsCategoryLabel(n.category), kindLabel: 'News',
       country: n.country, at, score, combined: Math.round(score * decay(at)), movement: 'same',
       deadline: null, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,

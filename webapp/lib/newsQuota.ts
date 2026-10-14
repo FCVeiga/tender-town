@@ -8,7 +8,8 @@ export type NewsReportBlock = 'plan' | 'quota' | null;
 export async function newsReportAllowance(): Promise<{ block: NewsReportBlock; accountId: string | null; limit: number | null }> {
   const ctx = await getContext();
   const account = ctx ? await getPersonalAccount(ctx.workspace.ownerId) : null;
-  const limit = account?.plan.newsReportsPerMonth ?? 0;
+  const raw = account?.plan.newsReportsPerMonth;
+  const limit = raw === undefined ? 0 : raw;
   if (!account || limit === 0) return { block: 'plan', accountId: account?.id ?? null, limit: 0 };
   if (limit == null) return { block: null, accountId: account.id, limit: null };
   const month = new Date().toISOString().slice(0, 7);

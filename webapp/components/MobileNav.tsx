@@ -7,7 +7,7 @@ import { LINKS, isActive } from './SideNav';
 import { useT } from '@/lib/i18n/client';
 import { scopeQuery, withPublicScope } from '@/lib/guestScope';
 
-const SCOPED = new Set(['/', '/tenders', '/news']);
+const SCOPED = new Set(['/', '/tenders', '/news', '/news/signals']);
 
 const setMenu = (open: boolean) => {
   document.documentElement.toggleAttribute('data-menu-open', open);
@@ -40,7 +40,7 @@ export function MenuBackdrop() {
 export function BottomNavLinks({ guest = false, scope = null }: { guest?: boolean; scope?: string | null }) {
   const t = useT();
   const path = usePathname() || '/';
-  const links = LINKS.filter((l) => l.href !== '/workspaces' && l.href !== '/markets' && (!guest || l.href !== '/history'));
+  const links = LINKS.filter((l) => l.href !== '/workspaces' && l.href !== '/markets' && l.href !== '/news/signals' && (!guest || l.href !== '/history'));
   return (
     <nav className={`bottom-nav${guest ? ' guest' : ''}`} aria-label={t('Sections')}>
       {links.map((l) => {

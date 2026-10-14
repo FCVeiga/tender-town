@@ -264,8 +264,15 @@ def rank_posts(session, now=None) -> int:
             p.score = opps[p.opportunity_id].opportunity_relevance_score
         elif p.news_id in news:
             p.score = news[p.news_id].relevance_score
-    shown = sorted((p for p in posts if visible(p, opps, now)), key=lambda p: hot(p.score, p.posted_at, now),
-                   reverse=True)
+    def ranked(p):
+        # Planned procurements feature with the top importance band (85–100).
+        score = p.score
+        o = opps.get(p.opportunity_id) if p.opportunity_id else None
+        if o is not None and o.opportunity_type == "signal":
+            score = max(score or 0, 85)
+        return hot(score, p.posted_at, now)
+
+    shown = sorted((p for p in posts if visible(p, opps, now)), key=ranked, reverse=True)
     shown_ids = {p.post_id for p in shown}
     for i, p in enumerate(shown, 1):
         p.prev_rank, p.rank, p.ranked_at = p.rank, i, now

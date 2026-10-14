@@ -249,6 +249,12 @@ def page_text(url: str) -> str:
     return _clean(page)[:DOC_CHARS]
 
 
+def plain_summary(value: str) -> str:
+    text_value = re.sub(r"\*\*([^*]+)\*\*", r"\1", value or "")
+    text_value = re.sub(r"^#{1,6}\s+", "", text_value, flags=re.M)
+    return text_value.strip()
+
+
 def analyse_tenders(session, errors: list, limit: int = 40) -> dict:
     """Award criteria for every tracked TED notice; summary + requirements (LLM)
     for every active opportunity not analysed yet, or with new clarifications /
@@ -326,8 +332,17 @@ def analyse_tenders(session, errors: list, limit: int = 40) -> dict:
                         where opportunity_id = :o and weight is not distinct from :w"""),
                                 {"s": json.dumps({"name_en": a["criterion"], "description_en": a.get("description")}),
                                  "o": o.opportunity_id, "w": float(a["weight"]) if a.get("weight") is not None else None})
-        session.execute(text("update opportunities set tender_summary = :s, tender_analysed_at = now() where opportunity_id = :o"),
-                        {"s": (out.get("summary") or "").strip() or None, "o": o.opportunity_id})
+        buyer = (out.get("buyer") or "").strip() or None
+        buyer_en = (out.get("buyer_en") or "").strip() or None
+        country = (out.get("country") or "").strip().upper()
+        if not (len(country) == 2 and country.isalpha()):
+            country = None
+        session.execute(text("""update opportunities set tender_summary = :s, tender_analysed_at = now(),
+                authority = coalesce(authority, :buyer), authority_en = coalesce(authority_en, :buyer_en),
+                country = coalesce(country, :country)
+                where opportunity_id = :o"""),
+                        {"s": plain_summary(out.get("summary") or "") or None, "o": o.opportunity_id,
+                         "buyer": buyer, "buyer_en": buyer_en, "country": country})
         session.commit()
         done["requirements"] += 1
     return done

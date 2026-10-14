@@ -300,6 +300,20 @@
     "de": "Nachrichten",
     "it": "Notizie"
   },
+  "News report": {
+    "pt": "Relatório de notícias",
+    "es": "Informe de noticias",
+    "fr": "Rapport d’actualité",
+    "de": "Nachrichtenbericht",
+    "it": "Report di notizie"
+  },
+  "This agent reads the full article and writes what your team should do about it.": {
+    "pt": "Este agente lê o artigo completo e escreve o que a sua equipa deve fazer.",
+    "es": "Este agente lee el artículo completo y escribe qué debe hacer tu equipo.",
+    "fr": "Cet agent lit l’article en entier et écrit ce que votre équipe devrait faire.",
+    "de": "Dieser Agent liest den ganzen Artikel und schreibt, was dein Team tun sollte.",
+    "it": "Questo agente legge l’articolo per intero e scrive cosa dovrebbe fare il tuo team."
+  },
   "News Report Agent Analysis": {
     "pt": "Análise do Agente de Relatórios de Notícias",
     "es": "Análisis del Agente de Informes de Noticias",
@@ -782,6 +796,34 @@
     "fr": "Industrie",
     "de": "Branche",
     "it": "Industria"
+  },
+  "Industry news": {
+    "pt": "Notícias do setor",
+    "es": "Noticias del sector",
+    "fr": "Actualités du secteur",
+    "de": "Branchennachrichten",
+    "it": "Notizie di settore"
+  },
+  "This summary reads the notice and what the buyer is preparing.": {
+    "pt": "Este resumo lê o anúncio e o que o comprador está a preparar.",
+    "es": "Este resumen lee el anuncio y lo que el comprador está preparando.",
+    "fr": "Ce résumé lit l'avis et ce que l'acheteur prépare.",
+    "de": "Diese Zusammenfassung liest die Bekanntmachung und was der Auftraggeber vorbereitet.",
+    "it": "Questo riepilogo legge il bando e ciò che l'acquirente sta preparando."
+  },
+  "Why this matters": {
+    "pt": "Porque isto importa",
+    "es": "Por qué importa",
+    "fr": "Pourquoi cela compte",
+    "de": "Warum das zählt",
+    "it": "Perché conta"
+  },
+  "Why this matters to {scope}": {
+    "pt": "Porque isto importa para {scope}",
+    "es": "Por qué importa para {scope}",
+    "fr": "Pourquoi cela compte pour {scope}",
+    "de": "Warum das für {scope} zählt",
+    "it": "Perché conta per {scope}"
   },
   "Market": {
     "pt": "Mercado",

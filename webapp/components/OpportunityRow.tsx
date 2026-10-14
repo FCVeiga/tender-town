@@ -1,17 +1,10 @@
 import Link from 'next/link';
 import HeartButton from './HeartButton';
-import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, titleOf } from '@/lib/data';
+import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { plainText } from '@/lib/plain';
 import UpdateComment, { UpdateEvent } from './UpdateComment';
 import { getLocale, getTSync } from '@/lib/i18n/server';
-
-export type RowCopy = { headline: string | null; body: string | null } | undefined;
-
-/** Clean English title: title_en, else the agent's English headline without its event prefix. */
-function titleFor(o: Opportunity, copy: RowCopy) {
-  const h = copy?.headline?.replace(/^(New (tender|RFI|grant|signal)|Signal|Deadline (extended|changed|brought forward)|Awarded|Clarifications published):\s*/i, '');
-  return titleOf(o, h);
-}
 
 function money(value: number | null, currency: string | null) {
   if (!value) return null;
@@ -56,19 +49,22 @@ export function RingGradients() {
   );
 }
 
-export default function OpportunityRow({ o, copy, countryName, updates = [], like }: {
-  o: Opportunity; copy: RowCopy; countryName: string | null; updates?: UpdateEvent[];
+export default function OpportunityRow({ o, countryName, updates = [], like, why, archived = false }: {
+  o: Opportunity; countryName: string | null; updates?: UpdateEvent[];
   like?: { liked: boolean; signedIn: boolean };
+  why?: string | null;
+  archived?: boolean;
 }) {
   const days = daysUntil(o.deadline);
   const value = money(o.estimated_value, o.currency);
-  const description = firstInLanguage(copy?.body, o.summary);
+  const description = plainText(firstInLanguage(o.summary) || '');
+  const note = plainText(why || '');
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
   const t = getTSync();
 
   const row = (
-    <Link href={`/tenders/${o.opportunity_id}`} className="opp-row">
+    <Link href={opportunityPath(o)} className="opp-row">
       <div className="opp-where">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="flag" src={`https://flagcdn.com/${flagCode(o.country)}.svg`} alt="" width={44} height={33} loading="lazy" />
@@ -79,11 +75,13 @@ export default function OpportunityRow({ o, copy, countryName, updates = [], lik
         <div className="opp-tags">
           {isNew(o) && <span className="tag new">{t('New')}</span>}
           {!isNew(o) && isUpdated(o) && <span className="tag updated">{t('Updated')}</span>}
+          {archived && <span className="tag closed">{t('Closed')}</span>}
           {o.opportunity_type && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
           {o.duration_months ? <span className="opp-chip">{o.duration_months >= 24 ? t('{n} years', { n: +(o.duration_months / 12).toFixed(1) }) : t('{n} months', { n: o.duration_months })}</span> : null}
         </div>
-        <h2 className="opp-title">{titleFor(o, copy)}</h2>
+        <h2 className="opp-title">{titleOf(o)}</h2>
         {description && <p className="opp-desc">{description}</p>}
+        {note && note !== description && <p className="feed-why"><span>{t('Why this matters')}</span> {note}</p>}
         {buyer && <p className="opp-buyer" title={o.authority ?? ''}><span>{t('Buyer')}</span>{buyer}</p>}
       </div>
 
@@ -94,8 +92,13 @@ export default function OpportunityRow({ o, copy, countryName, updates = [], lik
           <span className={`metric-big ${value ? 'shine' : 'muted'}`}>{value ?? t('n/d')}</span>
           <span className="metric-label">{t('Value')}</span>
         </div>
-        <div className={`metric deadline ${urgent ? 'urgent' : ''}`}>
-          {days != null ? (
+        <div className={`metric deadline ${urgent && !archived ? 'urgent' : ''}`}>
+          {archived ? (
+            <>
+              <span className="metric-big muted">{t('Closed')}</span>
+              <span className="metric-label">{o.deadline ? new Date(o.deadline).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : t('No deadline')}</span>
+            </>
+          ) : days != null ? (
             <>
               <span className={`metric-big ${urgent ? 'shine-warm' : 'shine-ink'}`}>{days <= 0 ? t('Today') : t('{n}d', { n: days })}</span>
               <span className="metric-label">{new Date(o.deadline!).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' })}</span>

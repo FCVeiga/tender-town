@@ -587,6 +587,62 @@
     "de": "{n} Ausschreibungen",
     "it": "{n} gare"
   },
+  "{n} open tender": {
+    "pt": "{n} concurso aberto",
+    "es": "{n} licitación abierta",
+    "fr": "{n} appel d'offres ouvert",
+    "de": "{n} offene Ausschreibung",
+    "it": "{n} gara aperta"
+  },
+  "{n} open tenders": {
+    "pt": "{n} concursos abertos",
+    "es": "{n} licitaciones abiertas",
+    "fr": "{n} appels d'offres ouverts",
+    "de": "{n} offene Ausschreibungen",
+    "it": "{n} gare aperte"
+  },
+  "{n} signal": {
+    "pt": "{n} sinal",
+    "es": "{n} señal",
+    "fr": "{n} signal",
+    "de": "{n} Signal",
+    "it": "{n} segnale"
+  },
+  "{n} signals": {
+    "pt": "{n} sinais",
+    "es": "{n} señales",
+    "fr": "{n} signaux",
+    "de": "{n} Signale",
+    "it": "{n} segnali"
+  },
+  "{n} archived tender": {
+    "pt": "{n} concurso arquivado",
+    "es": "{n} licitación archivada",
+    "fr": "{n} appel d'offres archivé",
+    "de": "{n} archivierte Ausschreibung",
+    "it": "{n} gara archiviata"
+  },
+  "{n} archived tenders": {
+    "pt": "{n} concursos arquivados",
+    "es": "{n} licitaciones archivadas",
+    "fr": "{n} appels d'offres archivés",
+    "de": "{n} archivierte Ausschreibungen",
+    "it": "{n} gare archiviate"
+  },
+  "No open tenders": {
+    "pt": "Nenhum concurso aberto",
+    "es": "Ninguna licitación abierta",
+    "fr": "Aucun appel d'offres ouvert",
+    "de": "Keine offenen Ausschreibungen",
+    "it": "Nessuna gara aperta"
+  },
+  "Open tenders": {
+    "pt": "Concursos abertos",
+    "es": "Licitaciones abiertas",
+    "fr": "Appels d'offres ouverts",
+    "de": "Offene Ausschreibungen",
+    "it": "Gare aperte"
+  },
   "{n} news": {
     "pt": "{n} notícias",
     "es": "{n} noticias",

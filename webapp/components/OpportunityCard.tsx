@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getLocale, getTSync } from '@/lib/i18n/server';
-import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, titleOf } from '@/lib/data';
+import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 
 export function DeadlineText({ deadline }: { deadline: string | null }) {
   const t = getTSync();
@@ -42,7 +42,7 @@ export function ScoreBar({ label, value, kind }: { label: string; value: number 
 export default function OpportunityCard({ o }: { o: Opportunity }) {
   const t = getTSync();
   return (
-    <Link href={`/tenders/${o.opportunity_id}`} className="opp-card">
+    <Link href={opportunityPath(o)} className="opp-card">
       <div className="opp-card-top">
         <div className="opp-tags"><StatusTags o={o} /></div>
         {o.country && <span className="country-chip">{o.country}</span>}

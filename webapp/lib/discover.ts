@@ -5,8 +5,9 @@
 import 'server-only';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { searchWords } from '@/lib/search';
-import { buyerOf, titleOf, type Opportunity, type NewsItem } from '@/lib/data';
+import { buyerOf, opportunityPath, titleOf, type Opportunity, type NewsItem } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { plainText } from '@/lib/plain';
 import { getPlatformLanguage } from '@/lib/language';
 import { getCatalogScopes } from '@/lib/scopes';
 import { scopeSlug } from '@/lib/guestScope';
@@ -22,10 +23,12 @@ export type DiscoverHit = {
   country: string | null;
   deadline: string | null;
   summary: string;
+  why?: string | null;
   closed?: boolean;
+  upcoming?: boolean;
 };
 
-export type MarketSummary = { slug: string; name: string; tenders: number; news: number };
+export type MarketSummary = { slug: string; name: string; open: number; upcoming: number; archived: number; news: number };
 
 const KIND_WORDS = new Set([
   'grant', 'grants', 'tender', 'tenders', 'news', 'rfp', 'rfps', 'rfi', 'rfis',
@@ -56,11 +59,11 @@ function oppHit(row: Opportunity): DiscoverHit {
   return {
     kind: row.opportunity_type === 'grant' ? 'grant' : 'tender',
     title: titleOf(row),
-    url: `/tenders/${row.opportunity_id}`,
+    url: opportunityPath(row),
     buyer: buyerOf(row),
     country: row.country,
     deadline: row.deadline,
-    summary: clip(firstInLanguage(row.summary) || '', 220),
+    summary: clip(plainText(firstInLanguage(row.summary) || ''), 220),
   };
 }
 
@@ -72,7 +75,7 @@ function newsHit(row: NewsItem): DiscoverHit {
     buyer: row.source_name,
     country: row.country,
     deadline: null,
-    summary: clip(firstInLanguage(row.summary, row.excerpt) || '', 220),
+    summary: clip(plainText(firstInLanguage(row.summary, row.excerpt) || ''), 220),
   };
 }
 
@@ -120,10 +123,12 @@ export async function marketIndex(): Promise<MarketSummary[]> {
   const db = getSupabaseServerClient();
   return Promise.all(scopes.map(async (scope) => {
     const [tenders, news] = await Promise.all([
-      db.from('scope_items').select('item_id', { count: 'exact', head: true }).eq('scope_id', scope.id).eq('item_type', 'tender'),
+      db.from('scope_items').select('item_id').eq('scope_id', scope.id).eq('item_type', 'tender').limit(2000),
       db.from('scope_items').select('item_id', { count: 'exact', head: true }).eq('scope_id', scope.id).eq('item_type', 'news'),
     ]);
-    return { slug: scopeSlug(scope.name), name: scope.name, tenders: tenders.count ?? 0, news: news.count ?? 0 };
+    const ids = (tenders.data || []).map((row) => row.item_id);
+    const counts = await openAndArchived(db, ids);
+    return { slug: scopeSlug(scope.name), name: scope.name, ...counts, news: news.count ?? 0 };
   }));
 }
 
@@ -134,8 +139,8 @@ export async function marketBySlug(slug: string) {
   if (!scope) return null;
   const db = getSupabaseServerClient();
   const [tenderLinks, newsLinks] = await Promise.all([
-    db.from('scope_items').select('item_id, relevance').eq('scope_id', scope.id).eq('item_type', 'tender').order('relevance', { ascending: false }).limit(80),
-    db.from('scope_items').select('item_id, relevance').eq('scope_id', scope.id).eq('item_type', 'news').order('relevance', { ascending: false }).limit(20),
+    db.from('scope_items').select('item_id, relevance, reason').eq('scope_id', scope.id).eq('item_type', 'tender').order('relevance', { ascending: false }).limit(80),
+    db.from('scope_items').select('item_id, relevance, reason').eq('scope_id', scope.id).eq('item_type', 'news').order('relevance', { ascending: false }).limit(20),
   ]);
   const tenderIds = (tenderLinks.data || []).map((row) => row.item_id);
   const newsIds = (newsLinks.data || []).map((row) => row.item_id);
@@ -152,18 +157,49 @@ export async function marketBySlug(slug: string) {
       : Promise.resolve({ data: [] as NewsItem[] }),
   ]);
   const now = new Date();
-  const rank = new Map((tenderLinks.data || []).map((row, index) => [row.item_id, index]));
-  const tenders = ((oppRows.data || []) as Opportunity[]).map((row) => {
-    const open = (row.status === 'OPEN' || row.status === 'SIGNAL') && (!row.deadline || new Date(row.deadline) >= now);
-    return { ...oppHit(row), closed: !open };
-  })
-    .sort((a, b) => Number(!!a.closed) - Number(!!b.closed) || (rank.get(a.url.split('/').pop() || '') ?? 99) - (rank.get(b.url.split('/').pop() || '') ?? 99))
-    .slice(0, 20);
+  const whyOf = new Map((tenderLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
+  const newsWhy = new Map((newsLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
+  const withWhy = (hit: DiscoverHit, reason: string | null | undefined) => {
+    const why = plainText(reason || '');
+    return { ...hit, why: why && why !== hit.summary ? why : null };
+  };
+  const ranked = ((oppRows.data || []) as Opportunity[]).map((row) => {
+    const live = (row.status === 'OPEN' || row.status === 'SIGNAL') && (!row.deadline || new Date(row.deadline) >= now);
+    const upcoming = live && (row.status === 'SIGNAL' || row.opportunity_type === 'signal');
+    return withWhy({ ...oppHit(row), closed: !live, upcoming }, whyOf.get(row.opportunity_id));
+  });
+  const open = ranked.filter((hit) => !hit.closed && !hit.upcoming).slice(0, 20);
+  const upcoming = ranked.filter((hit) => hit.upcoming).slice(0, 20);
+  const archived = ranked.filter((hit) => hit.closed).slice(0, 20);
   const newsRank = new Map(newsIds.map((id, index) => [id, index]));
-  const news = ((newsRows.data || []) as NewsItem[]).map(newsHit)
-    .sort((a, b) => (newsRank.get(a.url.split('/').pop() || '') ?? 99) - (newsRank.get(b.url.split('/').pop() || '') ?? 99))
+  const industry = new Map(((newsRows.data || []) as NewsItem[]).map((row) => [row.news_id, row.category === 'industry']));
+  const news = ((newsRows.data || []) as NewsItem[])
+    .map((row) => withWhy(newsHit(row), newsWhy.get(row.news_id)))
+    .sort((a, b) => {
+      const id = (url: string) => url.split('/').pop() || '';
+      return Number(!!industry.get(id(a.url))) - Number(!!industry.get(id(b.url)))
+        || (newsRank.get(id(a.url)) ?? 99) - (newsRank.get(id(b.url)) ?? 99);
+    })
     .slice(0, 12);
-  return { name: scope.name, slug, tenders, news };
+  return { name: scope.name, slug, open, upcoming, archived, news };
+}
+
+async function openAndArchived(db: ReturnType<typeof getSupabaseServerClient>, ids: string[]) {
+  let open = 0;
+  let upcoming = 0;
+  let archived = 0;
+  const now = Date.now();
+  for (let i = 0; i < ids.length; i += 100) {
+    const { data } = await db.from('opportunities').select('status, deadline, opportunity_type').in('opportunity_id', ids.slice(i, i + 100));
+    for (const row of data || []) {
+      const live = (row.status === 'OPEN' || row.status === 'SIGNAL') && (!row.deadline || new Date(row.deadline).getTime() >= now);
+      const signal = live && (row.status === 'SIGNAL' || row.opportunity_type === 'signal');
+      if (signal) upcoming += 1;
+      else if (live) open += 1;
+      else archived += 1;
+    }
+  }
+  return { open, upcoming, archived };
 }
 
 const HEADING: Record<DiscoverKind, string> = { grant: 'Grants', tender: 'Tenders', news: 'News' };

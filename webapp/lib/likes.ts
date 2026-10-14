@@ -21,8 +21,10 @@ export async function getFeedLikes(hrefs: string[]): Promise<LikeState> {
   return { signedIn: true, liked: new Set((data || []).map((r: any) => `${r.item_type}:${r.item_id}`)) };
 }
 
-/** "/tenders/abc" → ["tender", "abc"], "/blog/slug" → ["blog", "slug"]. */
+/** "/tenders/abc" → ["tender", "abc"], "/blog/slug" → ["blog", "slug"]. A signal lives under news but is still the tender record. */
 export function likeTarget(href: string): [LikeType, string] | null {
+  const signal = href.match(/^\/news\/signals\/([\w-]{6,64})$/);
+  if (signal) return ['tender', signal[1]];
   const m = href.match(/^\/(tenders|news|posts|blog)\/([\w-]{6,64})$/);
   if (!m) return null;
   const type = m[1] === 'tenders' ? 'tender' : m[1] === 'posts' ? 'post' : m[1] === 'blog' ? 'blog' : 'news';

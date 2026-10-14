@@ -20,7 +20,7 @@ Say what happened, plainly and specifically. Lead with the event:
 - Deadline change → "Deadline extended: Germany's EWSO tooling tender now closes 5 Oct"
 - Award → "Awarded: youniqx wins Germany's EUDI Wallet infrastructure contract"
 - Tender update → "Clarifications published: Germany's EWSO tooling tender amends price sheet"
-- News → the news itself: "Germany launches d-you, its national EUDI Wallet"
+- News → the Title in the facts: "Germany launches d-you, its national EUDI Wallet". Shorten that title only when it is over 90 characters. Do not switch to a different story on the same source page. The body adds one fact about that same story.
 
 Use country names, not codes. Never copy procurement boilerplate such as
 CPV category prefixes ("IT services: consulting, software development…"),

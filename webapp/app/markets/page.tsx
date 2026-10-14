@@ -22,9 +22,15 @@ export default async function MarketsPage() {
             <div className="list-row-main">
               <div className="news-title">{t(market.name)}</div>
               <div className="list-row-meta">
-                {t('{n} tenders', { n: market.tenders })}
-                <span className="sep">·</span>
-                {t('{n} news', { n: market.news })}
+                {[
+                  market.open === 1 ? t('{n} open tender', { n: market.open }) : market.open > 1 ? t('{n} open tenders', { n: market.open }) : null,
+                  market.upcoming === 1 ? t('{n} signal', { n: market.upcoming }) : market.upcoming > 1 ? t('{n} signals', { n: market.upcoming }) : null,
+                  market.open + market.upcoming === 0 ? t('No open tenders') : null,
+                  market.archived === 1 ? t('{n} archived tender', { n: market.archived }) : market.archived > 1 ? t('{n} archived tenders', { n: market.archived }) : null,
+                  t('{n} news', { n: market.news }),
+                ].filter(Boolean).map((part, index) => (
+                  <span key={index}>{index > 0 && <span className="sep">·</span>}{part}</span>
+                ))}
               </div>
             </div>
           </Link>

@@ -56,7 +56,6 @@ export default function AgentCard({ agent, enabled, instructions, config, custom
         </button>
       </div>
       <p className="agent-role">{t(agent.role)}</p>
-      {locked && <p className="field-hint">{t(agent.key === 'proposal_manager' ? 'Proposal briefs are included on Teams.' : agent.key === 'tender_evaluation' ? 'Tender Evaluation is included from Starter.' : 'The News Report Agent is included on Pro and Teams.')}</p>}
 
       {locked && upgrade ? (
         <div className="agent-card-actions">

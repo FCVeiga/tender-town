@@ -12,12 +12,16 @@
  * same rate, order only shifts when posts enter or leave the feed.
  */
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel } from '@/lib/data';
+import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
+import { firstInLanguage } from '@/lib/english';
+import { plainText } from '@/lib/plain';
 import { getScopeItems } from '@/lib/scopes';
 import { getPlatformLanguage } from '@/lib/language';
 
 export const HALF_LIFE_DAYS = 4;
 const UNSCORED = 30;
+// A planned procurement sits in the top importance band (85–100) on the home feed.
+const SIGNAL_RELEVANCE = 85;
 
 // Top (default) = AI score × novelty; Relevance = AI score alone; New = newest first.
 export const FEED_VIEWS = [
@@ -43,6 +47,7 @@ export type FeedItem = {
   href: string;
   headline: string;
   body: string | null;
+  why: string | null;
   category: string;
   categoryLabel: string;
   kindLabel: string;
@@ -94,19 +99,20 @@ export async function getFeed(view: FeedView, now = new Date()) {
     .filter((p) => inScope(p) && (p.kind === 'news' || p.event === 'awarded' || (p.opportunity_id && active.has(p.opportunity_id))))
     .map((p) => {
       const at = new Date(p.posted_at || p.created_at || now);
-      const score = scopeScore(p) ?? p.score ?? UNSCORED;
       const opp = p.opportunity_id ? active.get(p.opportunity_id) : undefined;
       const movement: FeedItem['movement'] =
         p.rank === null ? 'same'
           : p.prev_rank === null || p.rank < p.prev_rank ? 'up'
             : p.rank > p.prev_rank ? 'down' : 'same';
+      const signal = opp?.opportunity_type === 'signal' || p.category === 'signal' || p.event === 'signal';
+      const score = Math.max(scopeScore(p) ?? p.score ?? UNSCORED, signal ? SIGNAL_RELEVANCE : 0);
       return {
-        key: p.post_id, kind: p.kind, event: p.event,
-        href: p.kind === 'news' ? `/news/${p.news_id}` : `/tenders/${p.opportunity_id}`,
-        headline: p.headline, body: p.body,
-        category: p.category || (p.kind === 'news' ? 'market' : 'rfp'),
-        categoryLabel: p.kind === 'news' ? newsCategoryLabel(p.category) : oppCategoryLabel(p.category),
-        kindLabel: p.kind === 'news' ? 'News' : 'Tender',
+        key: p.post_id, kind: p.kind, event: signal ? 'signal' : p.event,
+        href: p.kind === 'news' ? `/news/${p.news_id}` : opportunityPath({ opportunity_id: p.opportunity_id || '', opportunity_type: signal ? 'signal' : opp?.opportunity_type }),
+        headline: p.headline, body: p.body, why: null,
+        category: signal ? 'signal' : (p.category || (p.kind === 'news' ? 'market' : 'rfp')),
+        categoryLabel: p.kind === 'news' && !signal ? newsCategoryLabel(p.category) : oppCategoryLabel(signal ? 'signal' : p.category),
+        kindLabel: p.kind === 'news' || signal ? 'News' : 'Tender',
         country: p.country, at, score, combined: Math.round(score * decay(at, now)),
         movement, deadline: p.event === 'awarded' ? null : opp?.deadline ?? null,
         isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
@@ -132,6 +138,21 @@ export async function getFeed(view: FeedView, now = new Date()) {
       rest.push(item);
     }
   }
+  // A signal with no post yet still features. Its relevance is the top band.
+  for (const o of opportunities) {
+    if (o.opportunity_type !== 'signal' || keptOpp.has(o.opportunity_id)) continue;
+    const at = new Date(o.publication_date || o.first_detected || now);
+    const score = Math.max(tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED, SIGNAL_RELEVANCE);
+    keptOpp.set(o.opportunity_id, {
+      key: `signal:${o.opportunity_id}`, kind: 'opportunity', event: 'signal',
+      href: opportunityPath(o), headline: titleOf(o), body: plainText(o.summary || '') || null, why: null,
+      category: 'signal', categoryLabel: oppCategoryLabel('signal'), kindLabel: 'News',
+      country: o.country, at, score, combined: Math.round(score * decay(at, now)),
+      movement: 'same', deadline: o.deadline, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
+      opportunityId: o.opportunity_id,
+    });
+  }
+  await publishedCopy([...rest, ...keptOpp.values(), ...newsById.values()]);
   const newsByHeadline = new Map<string, FeedItem>();
   for (const item of newsById.values()) {
     const key = item.headline.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -140,11 +161,40 @@ export async function getFeed(view: FeedView, now = new Date()) {
   }
   const unique = [...rest, ...keptOpp.values(), ...newsByHeadline.values()];
 
+  const band = (item: FeedItem) => item.category === 'signal' || item.event === 'signal' ? 0 : item.category === 'industry' ? 2 : 1;
+  const hot = (item: FeedItem) => item.score * decay(item.at, now);
   const sorted =
-    view === 'new' ? unique.sort((a, b) => b.at.getTime() - a.at.getTime())
-      : view === 'relevance' ? unique.sort((a, b) => b.score - a.score || b.at.getTime() - a.at.getTime())
-        : unique.sort((a, b) => b.score * decay(b.at, now) - a.score * decay(a.at, now));
+    view === 'new' ? unique.sort((a, b) => band(a) - band(b) || b.at.getTime() - a.at.getTime())
+      : view === 'relevance' ? unique.sort((a, b) => band(a) - band(b) || b.score - a.score || b.at.getTime() - a.at.getTime())
+        : unique.sort((a, b) => band(a) - band(b) || hot(b) - hot(a));
   return { items: sorted, error };
+}
+
+/** The card title and summary are the published record. The scope's note stays separate. */
+async function publishedCopy(items: FeedItem[]) {
+  const db = getSupabaseServerClient();
+  const newsIds = items.map((item) => item.newsId).filter((id): id is string => !!id);
+  const oppIds = items.map((item) => item.opportunityId).filter((id): id is string => !!id);
+  const [newsScope, tenderScope, newsRows, oppRows] = await Promise.all([
+    getScopeItems('news', true),
+    getScopeItems('tender', true),
+    newsIds.length ? db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, category').in('news_id', newsIds) : Promise.resolve({ data: [] as any[] }),
+    oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
+  ]);
+  const news = new Map((newsRows.data || []).map((row: any) => [row.news_id, row]));
+  const opps = new Map((oppRows.data || []).map((row: any) => [row.opportunity_id, row]));
+  for (const item of items) {
+    const story = item.newsId ? news.get(item.newsId) : null;
+    const opp = item.opportunityId ? opps.get(item.opportunityId) : null;
+    const row = story || opp;
+    if (!row) continue;
+    const summary = plainText(firstInLanguage(row.summary, row.excerpt) || '');
+    const why = plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || '');
+    item.headline = titleOf(row);
+    item.body = summary || null;
+    item.why = why && why !== summary ? why : null;
+    if (story?.category === 'industry') item.categoryLabel = 'Industry news';
+  }
 }
 
 /** "3h ago", "2d ago", "14 Sep" — compact, like a feed. */

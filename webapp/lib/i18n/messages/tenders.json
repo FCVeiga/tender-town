@@ -475,6 +475,27 @@
     "de": "Wird von den Admins deines Arbeitsbereichs ausgeführt.",
     "it": "Eseguito dagli amministratori della tua area di lavoro."
   },
+  "Proposal brief": {
+    "pt": "Resumo da proposta",
+    "es": "Resumen de la propuesta",
+    "fr": "Note de proposition",
+    "de": "Angebotsbriefing",
+    "it": "Brief dell'offerta"
+  },
+  "This agent reads the full tender documents and scores your fit from your company information.": {
+    "pt": "Este agente lê a documentação completa do concurso e avalia o enquadramento a partir da informação da sua empresa.",
+    "es": "Este agente lee la documentación completa de la licitación y valora tu encaje a partir de la información de tu empresa.",
+    "fr": "Cet agent lit l’ensemble des documents du marché et évalue votre adéquation à partir des informations de votre entreprise.",
+    "de": "Dieser Agent liest die vollständigen Ausschreibungsunterlagen und bewertet deine Eignung anhand der Informationen deines Unternehmens.",
+    "it": "Questo agente legge la documentazione completa della gara e valuta la tua idoneità in base alle informazioni della tua azienda."
+  },
+  "This agent writes the bid brief from the fit score: which requirements you can answer, which stay open, and which a partner has to cover.": {
+    "pt": "Este agente escreve o resumo da proposta a partir da avaliação de enquadramento: os requisitos que consegue responder, os que ficam em aberto e os que um parceiro tem de cobrir.",
+    "es": "Este agente escribe el resumen de la oferta a partir de la valoración de encaje: qué requisitos puedes responder, cuáles quedan abiertos y cuáles tiene que cubrir un socio.",
+    "fr": "Cet agent écrit la note d’offre à partir du score d’adéquation : les exigences auxquelles vous pouvez répondre, celles qui restent ouvertes, et celles qu’un partenaire doit couvrir.",
+    "de": "Dieser Agent schreibt das Angebotsbriefing aus der Eignungsbewertung: welche Anforderungen du beantworten kannst, welche offen bleiben und welche ein Partner abdecken muss.",
+    "it": "Questo agente scrive il brief di offerta a partire dal punteggio di idoneità: quali requisiti puoi rispondere, quali restano aperti e quali deve coprire un partner."
+  },
   "Scores your fit and recommends whether to bid.": {
     "pt": "Avalia a tua adequação e recomenda se deves concorrer.",
     "es": "Puntúa tu encaje y recomienda si presentarte.",
@@ -1146,6 +1167,48 @@
     "fr": "PAS UNE OPPORTUNITÉ",
     "de": "KEINE CHANCE",
     "it": "NON È UN'OPPORTUNITÀ"
+  },
+  "Archived": {
+    "pt": "Arquivo",
+    "es": "Archivo",
+    "fr": "Archives",
+    "de": "Archiv",
+    "it": "Archivio"
+  },
+  "Upcoming": {
+    "pt": "Próximos",
+    "es": "Próximos",
+    "fr": "À venir",
+    "de": "Bevorstehend",
+    "it": "In arrivo"
+  },
+  "No open tenders in {scope} right now.": {
+    "pt": "Não há concursos abertos em {scope} neste momento.",
+    "es": "No hay licitaciones abiertas en {scope} ahora mismo.",
+    "fr": "Aucun appel d'offres ouvert dans {scope} pour le moment.",
+    "de": "In {scope} gibt es gerade keine offenen Ausschreibungen.",
+    "it": "Nessuna gara aperta in {scope} in questo momento."
+  },
+  "Past buyers are listed below.": {
+    "pt": "Os compradores anteriores estão listados abaixo.",
+    "es": "Los compradores anteriores están abajo.",
+    "fr": "Les acheteurs passés sont listés ci-dessous.",
+    "de": "Frühere Auftraggeber stehen unten.",
+    "it": "Gli acquirenti passati sono elencati sotto."
+  },
+  "Follow upcoming procurement.": {
+    "pt": "Siga as compras futuras.",
+    "es": "Sigue las compras próximas.",
+    "fr": "Suivez les achats à venir.",
+    "de": "Folge der kommenden Beschaffung.",
+    "it": "Segui gli acquisti in arrivo."
+  },
+  "Change what this scope follows if these buyers are wrong.": {
+    "pt": "Altere o que este âmbito segue se estes compradores não forem os certos.",
+    "es": "Cambia lo que sigue este ámbito si estos compradores no son los adecuados.",
+    "fr": "Changez ce que ce périmètre suit si ces acheteurs ne sont pas les bons.",
+    "de": "Ändere, was dieser Bereich verfolgt, wenn das die falschen Auftraggeber sind.",
+    "it": "Cambia ciò che questo ambito segue se questi acquirenti non sono quelli giusti."
   },
   "The Tender Evaluation Agent is checking every requirement against your scope — about a minute.": {
     "pt": "O Agente de Avaliação de Concursos está a verificar cada requisito face ao seu âmbito — cerca de um minuto.",

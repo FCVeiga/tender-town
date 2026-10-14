@@ -30,7 +30,7 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, showN
         <AgentAvatar agent="tender_evaluation" working={running} off={!evaluatorOn} />
         <div className="agent-id">
           <h2>{t('Tender Evaluation')}{showName && <span className="scope-name-chip">{scope.name}</span>}</h2>
-          <span className="agent-name">{t('Tender Evaluation Agent')}{row?.evaluated_at ? ` · ${t('report from {date}', { date: fmtDate(row.evaluated_at) })}` : ''}</span>
+          {row?.evaluated_at && <span className="agent-name">{t('report from {date}', { date: fmtDate(row.evaluated_at) })}</span>}
         </div>
         {evaluation && <span className={`verdict eval-${evaluation.verdict}`}>{VERDICTS[evaluation.verdict] ? t(VERDICTS[evaluation.verdict]) : evaluation.verdict}</span>}
       </div>
@@ -66,7 +66,7 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, showN
           <div className="agent-head">
             <AgentAvatar agent="proposal_manager" size={36} working={proposing} />
             <div className="agent-id">
-              <h3>{t('Proposal Manager Agent')}</h3>
+              <h3>{t('Proposal brief')}</h3>
               <span className="agent-name">{row?.proposal_at ? t('Proposal brief from {date}', { date: fmtDate(row.proposal_at) }) : t('Next step after the evaluation')}</span>
             </div>
           </div>

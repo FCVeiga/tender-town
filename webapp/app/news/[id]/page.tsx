@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { newsCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { plainText } from '@/lib/plain';
 import NewsImage from '@/components/NewsImage';
 import NewsReportRunner from '@/components/NewsReport';
 import AgentAvatar from '@/components/AgentAvatar';
@@ -57,10 +58,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
   const locale = getLocale();
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
   const supabase = getSupabaseServerClient();
-  const [{ data: n, error }, { data: post }] = await Promise.all([
-    supabase.from('news_items').select('*').eq('news_id', params.id).single(),
-    supabase.from('feed_posts').select('headline, body').eq('post_id', `news:${params.id}`).maybeSingle(),
-  ]);
+  const { data: n, error } = await supabase.from('news_items').select('*').eq('news_id', params.id).single();
 
   if (error || !n) {
     return (
@@ -71,8 +69,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
     );
   }
 
-  // The analyst's complete summary; until it has run, the best English summary we have.
-  const paragraphs = (firstInLanguage(n.summary_long) ?? firstInLanguage(post?.body, n.summary) ?? '')
+  const paragraphs = plainText(firstInLanguage(n.summary_long, n.summary, n.excerpt) || '')
     .split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
   const facts: string[] = Array.isArray(n.key_facts) ? n.key_facts.filter((f: string) => firstInLanguage(f)) : [];
   // One report per scope the viewer looks through (their active scopes, or the default scope).
@@ -87,8 +84,11 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
   let domain = n.source_name;
   try { if (n.source_url) domain = new URL(n.source_url).hostname.replace(/^www\./, ''); } catch { /* keep the source name */ }
 
+  const { data: notes } = viewScopes.length
+    ? await supabase.from('scope_items').select('scope_id, reason').eq('item_type', 'news').eq('item_id', n.news_id).in('scope_id', viewScopes.map((sc) => sc.id))
+    : { data: [] as { scope_id: string; reason: string | null }[] };
   const origin = siteOrigin();
-  const headline = titleOf(n, firstInLanguage(post?.headline));
+  const headline = titleOf(n);
   return (
     <div className="news-detail">
       <JsonLd data={{
@@ -111,7 +111,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
         </div>
           <HeartButton type="news" id={n.news_id} liked={likes.liked.has(n.news_id)} signedIn={likes.signedIn} className="page-heart" />
         </div>
-        <h1>{titleOf(n, firstInLanguage(post?.headline))}</h1>
+        <h1>{headline}</h1>
         <p className="page-sub">
           {[n.region, n.published_date ? fmtDate(n.published_date) : null].filter(Boolean).join(' · ')}
         </p>
@@ -130,6 +130,17 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
         {!n.summary_long && <p className="summary-pending">{t('Preview — the News Report Agent replaces this with the full summary.')}</p>}
         {paragraphs.length ? paragraphs.map((p: string, i: number) => <p key={i}>{p}</p>)
           : <p className="muted">{t('No English summary yet.')}</p>}
+        {(notes || []).map((note) => {
+          const why = plainText(note.reason);
+          if (!why) return null;
+          const scope = viewScopes.find((sc) => sc.id === note.scope_id);
+          return (
+            <p key={note.scope_id} className="feed-why">
+              <span>{viewScopes.length > 1 ? t('Why this matters to {scope}', { scope: scope?.name || '' }) : t('Why this matters')}</span>
+              {why}
+            </p>
+          );
+        })}
         {facts.length > 0 && (
           <ul className="key-facts">{facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
         )}
@@ -146,19 +157,19 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
             <div className="agent-head">
               <AgentAvatar agent="news_report" working={!analysis && agentOn && !allowance.block} off={allowance.block === 'plan' || (!agentOn && !analysis)} />
               <div className="agent-id">
-                <h2>{t('News Report Agent Analysis')}{viewScopes.length > 1 && <span className="scope-name-chip">{scope.name}</span>}</h2>
+                <h2>{t('News report')}{viewScopes.length > 1 && <span className="scope-name-chip">{scope.name}</span>}</h2>
                 {r?.analysed_at && <span className="agent-name">{t('Report from {date}', { date: fmtDate(r.analysed_at) })}</span>}
               </div>
               {analysis && allowance.block !== 'plan' && <span className={`verdict ${analysis.verdict}`} title={VERDICTS[analysis.verdict] ? t(VERDICTS[analysis.verdict].note) : undefined}>{VERDICTS[analysis.verdict] ? t(VERDICTS[analysis.verdict].label) : null}</span>}
             </div>
             {allowance.block === 'plan' && (
-              <UpgradeReport note={t('The News Report Agent is included on Pro and Teams.')} />
+              <UpgradeReport signedIn={likes.signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} />
             )}
             {allowance.block !== 'plan' && !analysis && allowance.block === 'quota' && (
               <p className="muted">{t('This workspace has used its 50 news reports for this month.')}</p>
             )}
             {allowance.block !== 'plan' && !analysis && allowance.block !== 'quota' && (agentOn
-              ? <NewsReportRunner newsId={n.news_id} scopeId={scope.id} lastError={r?.error === 'plan' || r?.error === 'quota' ? null : r?.error ?? null} />
+              ? <NewsReportRunner newsId={n.news_id} scopeId={scope.id} signedIn={likes.signedIn} lastError={r?.error === 'plan' || r?.error === 'quota' ? null : r?.error ?? null} />
               : <p className="muted">{t('Agent off for this scope.')}</p>)}
             {allowance.block !== 'plan' && analysis && (
               <>

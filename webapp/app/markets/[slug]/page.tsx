@@ -20,7 +20,7 @@ export default async function MarketPage({ params }: { params: { slug: string } 
   const t = await getT();
   const market = await marketBySlug(params.slug);
   if (!market) notFound();
-  const empty = market.tenders.length === 0 && market.news.length === 0;
+  const empty = market.open.length === 0 && market.upcoming.length === 0 && market.archived.length === 0 && market.news.length === 0;
   return (
     <div>
       <Link className="back-link" href="/markets">← {t('Markets')}</Link>
@@ -28,11 +28,27 @@ export default async function MarketPage({ params }: { params: { slug: string } 
         <h1>{t(market.name)}</h1>
       </div>
       {empty && <div className="callout">{t('Nothing open in this market right now.')}</div>}
-      {market.tenders.length > 0 && (
+      {market.open.length > 0 && (
         <section className="market-section">
-          <h2 className="search-h2">{t('Tenders')}</h2>
+          <h2 className="search-h2">{t('Open tenders')}</h2>
           <div className="feed">
-            {market.tenders.map((hit) => <Hit key={hit.url} hit={hit} />)}
+            {market.open.map((hit) => <Hit key={hit.url} hit={hit} />)}
+          </div>
+        </section>
+      )}
+      {market.upcoming.length > 0 && (
+        <section className="market-section">
+          <h2 className="search-h2">{t('Upcoming')}</h2>
+          <div className="feed">
+            {market.upcoming.map((hit) => <Hit key={hit.url} hit={hit} />)}
+          </div>
+        </section>
+      )}
+      {market.archived.length > 0 && (
+        <section className="market-section">
+          <h2 className="search-h2">{t('Archived')}</h2>
+          <div className="feed">
+            {market.archived.map((hit) => <Hit key={hit.url} hit={hit} />)}
           </div>
         </section>
       )}
@@ -51,8 +67,8 @@ export default async function MarketPage({ params }: { params: { slug: string } 
 function Hit({ hit }: { hit: DiscoverHit }) {
   const t = getTSync();
   const meta = [hit.buyer, hit.country].filter(Boolean).join(' · ');
-  const tag = hit.kind === 'grant' ? 'grant' : hit.kind === 'news' ? 'market' : 'rfp';
-  const label = hit.kind === 'grant' ? 'Grants' : hit.kind === 'news' ? 'News' : 'Tenders';
+  const tag = hit.upcoming ? 'signal' : hit.kind === 'grant' ? 'grant' : hit.kind === 'news' ? 'market' : 'rfp';
+  const label = hit.upcoming ? 'Signal' : hit.kind === 'grant' ? 'Grants' : hit.kind === 'news' ? 'News' : 'Tenders';
   return (
     <Link href={hit.url} className="news-card">
       <div className="list-row-main">
@@ -63,6 +79,7 @@ function Hit({ hit }: { hit: DiscoverHit }) {
         </div>
         <div className="news-title">{hit.title}</div>
         {hit.summary && <div className="news-excerpt">{hit.summary}</div>}
+        {hit.why && <p className="feed-why"><span>{t('Why this matters')}</span> {hit.why}</p>}
         {meta && <div className="list-row-meta">{meta}</div>}
       </div>
     </Link>
