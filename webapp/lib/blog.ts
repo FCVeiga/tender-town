@@ -2,7 +2,9 @@
 
 export type PostBlock =
   | { type: 'h2'; text: string }
+  | { type: 'h3'; text: string }
   | { type: 'p'; text: string }
+  | { type: 'ul'; items: string[] }
   | { type: 'img'; src: string; alt: string };
 
 export type Post = {
@@ -18,7 +20,7 @@ export type Post = {
 
 const STEPS_ALT = 'A notice with a magnifying glass, a marked checklist and an open notebook on a café table.';
 const ELIGIBILITY_ALT = 'A long notice with one line marked, a certificate and a second folder on a café table.';
-const HOW_ALT = 'An open notice, a round seal and a navy folder on a café table.';
+const HOW_ALT = 'A notice on a board outside a town hall, one person walking in, two sharing a folder, and one held back by a rope.';
 
 const HOW_IT_WORKS: Post = {
   slug: 'how-government-tenders-work',
@@ -28,13 +30,57 @@ const HOW_IT_WORKS: Post = {
   image: '/blog/how-tenders-work.jpg',
   imageAlt: HOW_ALT,
   blocks: [
-    { type: 'p', text: 'A government tender is the way a public buyer buys. A ministry, a hospital, a city or a development bank writes down what it needs, publishes a notice, and takes offers. The contract goes to the offer that meets the rules and scores best. Everything that matters is in the notice. The title is the least useful line in it.' },
-    { type: 'p', text: 'The buyer starts from a need and a value. Under a set value it can buy with little advertising, or with none. Above that value the notice has to be public, so a company that was never invited can still see the work. In the EU, those higher-value notices go on Tenders Electronic Daily. Beneath them, the notice is on a national portal. The UK uses Find a Tender and Contracts Finder. The United States uses SAM.gov. The World Bank and the other development banks publish on their own boards. There is no one list called government tenders. A search for that phrase is a search across all of these.' },
-    { type: 'p', text: 'The notice names the procedure, and that line decides who may send an offer. In an open procedure, any company that meets the criteria may submit by the deadline. In a restricted procedure, you ask to take part first, and only the invited companies send a full offer. Negotiation and competitive dialogue are for work the buyer cannot specify completely at the start. A framework does not award the job once. It appoints suppliers, and the orders come later.' },
-    { type: 'p', text: 'The clock has the same shape each time. The notice is published. Questions are answered to every bidder, not only to the one who asked. Offers are in by the deadline, and a late file is out. The buyer checks who is eligible, and only then scores what is left, on price or on price and quality together. An award notice follows. A standstill often sits between the decision and the signed contract, so a bidder who lost can object.' },
-    { type: 'p', text: 'Who applies is the company. A limited company, a partnership, a sole trader, a startup with no public contract behind it: each can apply when the notice is open to economic operators, which is the ordinary case. A company established in the EU can apply in another member state once the contract is large enough for the EU rules. Two companies can bid as one, when the notice allows a consortium, and share the accounts, the references and the certificates on the lines the notice permits.' },
-    { type: 'p', text: 'Some applicants are out before any scoring. People employed by the buyer running that tender should not bid on it. A company that helped draft the specification is in a conflict, and is normally excluded. So is a company barred for fraud, corruption or unpaid tax. A job in a public body is not an application. If you own a separate company, and that buyer is not your employer, you apply as the company, and you still have to meet every line.' },
-    { type: 'p', text: 'Before the deadline you need a registered business, a login on the portal where the offer is actually uploaded, and the papers the notice lists. That portal is often a different site from the one where you saw the notice. The papers are a declaration that the company is not excluded, a turnover, the reference contracts, the certificates and the insurance. The lines that throw a company out are usually <check>a turnover, a reference project and a certificate</check>. Miss one and the offer is not read.' },
+    { type: 'p', text: 'A government tender is the way a public buyer buys. A ministry, a hospital, a city or a development bank writes down what it needs, publishes a notice, and takes offers. The contract goes to the offer that meets the rules and scores best.' },
+    { type: 'h2', text: 'The notice is the whole process' },
+    { type: 'p', text: 'The title is the least useful line in it. The value, the procedure and the deadline decide whether you can apply.' },
+    { type: 'h2', text: 'Where the notice is published' },
+    { type: 'p', text: 'Under a set value the buyer can buy with little advertising, or with none. Above that value the notice has to be public, so a company that was never invited can still see the work.' },
+    { type: 'ul', items: [
+      'In the EU, higher-value notices go on Tenders Electronic Daily.',
+      'Below those values, the notice is on a national portal.',
+      'The UK uses Find a Tender and Contracts Finder.',
+      'The United States uses SAM.gov.',
+      'The World Bank and the other development banks publish on their own boards.',
+    ] },
+    { type: 'p', text: 'There is no one list called government tenders. A search for that phrase is a search across all of these.' },
+    { type: 'h2', text: 'The procedure decides who may send an offer' },
+    { type: 'p', text: 'The notice names it. Read that line before you read the scope of the work.' },
+    { type: 'ul', items: [
+      'Open procedure: any company that meets the criteria may submit by the deadline.',
+      'Restricted procedure: you ask to take part first, and only the invited companies send a full offer.',
+      'Negotiation and competitive dialogue: for work the buyer cannot specify completely at the start.',
+      'Framework: suppliers are appointed, and the orders come later. The job is not awarded once.',
+    ] },
+    { type: 'h2', text: 'What happens, and in what order' },
+    { type: 'ul', items: [
+      'The notice is published.',
+      'Questions are answered to every bidder, not only to the one who asked.',
+      'Offers are in by the deadline. A late file is out.',
+      'The buyer checks who is eligible, and only then scores what is left, on price or on price and quality together.',
+      'An award notice follows.',
+      'A standstill often sits between the decision and the signed contract, so a bidder who lost can object.',
+    ] },
+    { type: 'h2', text: 'Who can apply' },
+    { type: 'p', text: 'Who applies is the company, not the person who found the notice.' },
+    { type: 'ul', items: [
+      'A limited company, a partnership, a sole trader, or a startup with no public contract yet, when the notice is open to economic operators.',
+      'A company established in the EU, bidding in another member state, once the contract is large enough for the EU rules.',
+      'Two companies bidding as one, when the notice allows a consortium. They share the accounts, the references and the certificates on the lines the notice permits.',
+    ] },
+    { type: 'h3', text: 'Who is out before any scoring' },
+    { type: 'ul', items: [
+      'People employed by the buyer that is running the tender.',
+      'A company that helped draft the specification. That is a conflict, and it normally means exclusion.',
+      'A company barred for fraud, corruption or unpaid tax.',
+      'A job in a public body. That is not an application. If you own a separate company, and that buyer is not your employer, you apply as the company and still have to meet every line.',
+    ] },
+    { type: 'h2', text: 'What you need before the deadline' },
+    { type: 'ul', items: [
+      'A registered business.',
+      'A login on the portal where the offer is actually uploaded. It is often a different site from the one where you saw the notice.',
+      'The papers the notice lists: a declaration that the company is not excluded, a turnover, the reference contracts, the certificates and the insurance.',
+    ] },
+    { type: 'p', text: 'The lines that throw a company out are usually <check>a turnover, a reference project and a certificate</check>. Miss one and the offer is not read.' },
     { type: 'p', text: 'Tender Town puts the open notices, the grants and the funding calls in one place, and checks each notice against the company you describe. <fit>Fit analysis</fit> returns before anyone writes: bid, bid with a partner, worth a closer look, or no bid. <account>Create an account</account>, choose the field you sell in, and each notice comes back checked against your company before you spend a deadline on it.' },
   ],
 };

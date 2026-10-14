@@ -1,4 +1,284 @@
 {
+  "A notice on a board outside a town hall, one person walking in, two sharing a folder, and one held back by a rope.": {
+    "pt": "Um anúncio num painel à porta de uma câmara, uma pessoa a entrar, duas a partilhar uma pasta, e uma retida por uma corda.",
+    "es": "Un anuncio en un tablón frente a un ayuntamiento, una persona entrando, dos compartiendo una carpeta, y una retenida por una cuerda.",
+    "fr": "Un avis sur un panneau devant une mairie, une personne qui entre, deux qui partagent un dossier, et une retenue par une corde.",
+    "de": "Eine Bekanntmachung an einem Brett vor einem Rathaus, eine Person geht hinein, zwei teilen sich eine Mappe, und eine wird von einem Seil zurückgehalten.",
+    "it": "Un avviso su una bacheca davanti a un municipio, una persona che entra, due che condividono una cartella, e una trattenuta da una corda."
+  },
+  "A government tender is the way a public buyer buys. A ministry, a hospital, a city or a development bank writes down what it needs, publishes a notice, and takes offers. The contract goes to the offer that meets the rules and scores best.": {
+    "pt": "Um concurso público é a forma de um adjudicante comprar. Um ministério, um hospital, uma cidade ou um banco de desenvolvimento escreve o que precisa, publica um anúncio e recebe propostas. O contrato vai para a proposta que cumpre as regras e obtém a melhor pontuação.",
+    "es": "Una licitación pública es la forma en que compra un comprador público. Un ministerio, un hospital, una ciudad o un banco de desarrollo escribe lo que necesita, publica un anuncio y recibe ofertas. El contrato va a la oferta que cumple las reglas y obtiene la mejor puntuación.",
+    "fr": "Un marché public est la façon dont un acheteur public achète. Un ministère, un hôpital, une ville ou une banque de développement écrit ce dont il a besoin, publie un avis et reçoit des offres. Le marché va à l’offre qui respecte les règles et obtient le meilleur score.",
+    "de": "Eine öffentliche Ausschreibung ist die Art, wie ein öffentlicher Auftraggeber einkauft. Ein Ministerium, ein Krankenhaus, eine Stadt oder eine Entwicklungsbank schreibt auf, was sie braucht, veröffentlicht eine Bekanntmachung und nimmt Angebote an. Der Auftrag geht an das Angebot, das die Regeln erfüllt und am besten abschneidet.",
+    "it": "Una gara pubblica è il modo in cui un committente pubblico compra. Un ministero, un ospedale, una città o una banca di sviluppo scrive ciò di cui ha bisogno, pubblica un avviso e riceve offerte. Il contratto va all’offerta che rispetta le regole e ottiene il punteggio migliore."
+  },
+  "The notice is the whole process": {
+    "pt": "O anúncio é o processo inteiro",
+    "es": "El anuncio es todo el proceso",
+    "fr": "L’avis est tout le processus",
+    "de": "Die Bekanntmachung ist das ganze Verfahren",
+    "it": "L’avviso è l’intero processo"
+  },
+  "The title is the least useful line in it. The value, the procedure and the deadline decide whether you can apply.": {
+    "pt": "O título é a linha menos útil. O valor, o procedimento e o prazo decidem se pode concorrer.",
+    "es": "El título es la línea menos útil. El valor, el procedimiento y el plazo deciden si puedes presentarte.",
+    "fr": "Le titre est la ligne la moins utile. La valeur, la procédure et la date limite décident si vous pouvez soumissionner.",
+    "de": "Der Titel ist die am wenigsten nützliche Zeile. Wert, Verfahren und Frist entscheiden, ob du dich bewerben kannst.",
+    "it": "Il titolo è la riga meno utile. Il valore, la procedura e il termine decidono se puoi partecipare."
+  },
+  "Where the notice is published": {
+    "pt": "Onde o anúncio é publicado",
+    "es": "Dónde se publica el anuncio",
+    "fr": "Où l’avis est publié",
+    "de": "Wo die Bekanntmachung veröffentlicht wird",
+    "it": "Dove viene pubblicato l’avviso"
+  },
+  "Under a set value the buyer can buy with little advertising, or with none. Above that value the notice has to be public, so a company that was never invited can still see the work.": {
+    "pt": "Abaixo de um valor fixo o adjudicante pode comprar com pouca publicidade, ou sem nenhuma. Acima desse valor o anúncio tem de ser público, para que uma empresa que nunca foi convidada possa ainda assim ver o trabalho.",
+    "es": "Por debajo de un valor fijado el comprador puede comprar con poca publicidad, o sin ninguna. Por encima de ese valor el anuncio tiene que ser público, para que una empresa que nunca fue invitada pueda igualmente ver el trabajo.",
+    "fr": "Sous un montant fixé, l’acheteur peut acheter avec peu de publicité, ou sans aucune. Au-dessus, l’avis doit être public, pour qu’une entreprise qui n’a jamais été invitée puisse quand même voir le travail.",
+    "de": "Unter einem festgelegten Wert kann der Auftraggeber mit wenig Werbung einkaufen, oder ganz ohne. Darüber muss die Bekanntmachung öffentlich sein, damit ein Unternehmen, das nie eingeladen wurde, die Arbeit trotzdem sehen kann.",
+    "it": "Sotto un valore fissato il committente può comprare con poca pubblicità, o senza. Sopra quel valore l’avviso deve essere pubblico, così un’azienda che non è mai stata invitata può comunque vedere il lavoro."
+  },
+  "In the EU, higher-value notices go on Tenders Electronic Daily.": {
+    "pt": "Na UE, os anúncios de valor mais alto vão para o Tenders Electronic Daily.",
+    "es": "En la UE, los anuncios de mayor valor van a Tenders Electronic Daily.",
+    "fr": "Dans l’UE, les avis de valeur plus haute vont sur Tenders Electronic Daily.",
+    "de": "In der EU gehen Bekanntmachungen mit höherem Wert an Tenders Electronic Daily.",
+    "it": "Nell’UE, gli avvisi di valore più alto vanno su Tenders Electronic Daily."
+  },
+  "Below those values, the notice is on a national portal.": {
+    "pt": "Abaixo desses valores, o anúncio fica num portal nacional.",
+    "es": "Por debajo de esos valores, el anuncio está en un portal nacional.",
+    "fr": "En dessous de ces valeurs, l’avis est sur un portail national.",
+    "de": "Unter diesen Werten liegt die Bekanntmachung auf einem nationalen Portal.",
+    "it": "Sotto quei valori, l’avviso sta su un portale nazionale."
+  },
+  "The UK uses Find a Tender and Contracts Finder.": {
+    "pt": "O Reino Unido usa o Find a Tender e o Contracts Finder.",
+    "es": "El Reino Unido usa Find a Tender y Contracts Finder.",
+    "fr": "Le Royaume-Uni utilise Find a Tender et Contracts Finder.",
+    "de": "Das Vereinigte Königreich nutzt Find a Tender und Contracts Finder.",
+    "it": "Il Regno Unito usa Find a Tender e Contracts Finder."
+  },
+  "The United States uses SAM.gov.": {
+    "pt": "Os Estados Unidos usam o SAM.gov.",
+    "es": "Estados Unidos usa SAM.gov.",
+    "fr": "Les États-Unis utilisent SAM.gov.",
+    "de": "Die Vereinigten Staaten nutzen SAM.gov.",
+    "it": "Gli Stati Uniti usano SAM.gov."
+  },
+  "The World Bank and the other development banks publish on their own boards.": {
+    "pt": "O Banco Mundial e os outros bancos de desenvolvimento publicam nas suas próprias plataformas.",
+    "es": "El Banco Mundial y los demás bancos de desarrollo publican en sus propios tableros.",
+    "fr": "La Banque mondiale et les autres banques de développement publient sur leurs propres sites.",
+    "de": "Die Weltbank und die anderen Entwicklungsbanken veröffentlichen auf ihren eigenen Seiten.",
+    "it": "La Banca mondiale e le altre banche di sviluppo pubblicano sulle proprie bacheche."
+  },
+  "There is no one list called government tenders. A search for that phrase is a search across all of these.": {
+    "pt": "Não existe uma lista única chamada concursos públicos. Procurar essa expressão é procurar em todas estas.",
+    "es": "No hay una sola lista llamada licitaciones públicas. Buscar esa frase es buscar en todas ellas.",
+    "fr": "Il n’existe pas une seule liste appelée marchés publics. Chercher cette expression, c’est chercher dans tous ceux-là.",
+    "de": "Es gibt nicht eine Liste namens öffentliche Ausschreibungen. Nach diesem Ausdruck zu suchen heißt, in all diesen zu suchen.",
+    "it": "Non esiste un unico elenco chiamato gare pubbliche. Cercare quella frase significa cercare in tutti questi."
+  },
+  "The procedure decides who may send an offer": {
+    "pt": "O procedimento decide quem pode enviar uma proposta",
+    "es": "El procedimiento decide quién puede enviar una oferta",
+    "fr": "La procédure décide qui peut envoyer une offre",
+    "de": "Das Verfahren entscheidet, wer ein Angebot schicken darf",
+    "it": "La procedura decide chi può inviare un’offerta"
+  },
+  "The notice names it. Read that line before you read the scope of the work.": {
+    "pt": "O anúncio indica-o. Leia essa linha antes de ler o âmbito do trabalho.",
+    "es": "El anuncio lo nombra. Lee esa línea antes de leer el alcance del trabajo.",
+    "fr": "L’avis le nomme. Lisez cette ligne avant de lire l’objet du travail.",
+    "de": "Die Bekanntmachung nennt es. Lies diese Zeile, bevor du den Umfang der Arbeit liest.",
+    "it": "L’avviso lo indica. Leggi quella riga prima di leggere l’oggetto del lavoro."
+  },
+  "Open procedure: any company that meets the criteria may submit by the deadline.": {
+    "pt": "Procedimento aberto: qualquer empresa que cumpra os critérios pode apresentar até ao prazo.",
+    "es": "Procedimiento abierto: cualquier empresa que cumpla los criterios puede presentar hasta el plazo.",
+    "fr": "Procédure ouverte : toute entreprise qui remplit les critères peut soumettre avant la date limite.",
+    "de": "Offenes Verfahren: jedes Unternehmen, das die Kriterien erfüllt, darf bis zur Frist einreichen.",
+    "it": "Procedura aperta: qualsiasi azienda che soddisfa i criteri può presentare entro il termine."
+  },
+  "Restricted procedure: you ask to take part first, and only the invited companies send a full offer.": {
+    "pt": "Procedimento restrito: pede primeiro para participar, e só as empresas convidadas enviam uma proposta completa.",
+    "es": "Procedimiento restringido: pides participar primero, y solo las empresas invitadas envían una oferta completa.",
+    "fr": "Procédure restreinte : vous demandez d’abord à participer, et seules les entreprises invitées envoient une offre complète.",
+    "de": "Nicht offenes Verfahren: du bittest zuerst um Teilnahme, und nur die eingeladenen Unternehmen schicken ein volles Angebot.",
+    "it": "Procedura ristretta: chiedi prima di partecipare, e solo le aziende invitate inviano un’offerta completa."
+  },
+  "Negotiation and competitive dialogue: for work the buyer cannot specify completely at the start.": {
+    "pt": "Negociação e diálogo concorrencial: para trabalho que o adjudicante não consegue especificar por completo no início.",
+    "es": "Negociación y diálogo competitivo: para un trabajo que el comprador no puede especificar del todo al principio.",
+    "fr": "Négociation et dialogue compétitif : pour un travail que l’acheteur ne peut pas spécifier entièrement au départ.",
+    "de": "Verhandlung und wettbewerblicher Dialog: für Arbeit, die der Auftraggeber am Anfang nicht vollständig beschreiben kann.",
+    "it": "Negoziazione e dialogo competitivo: per un lavoro che il committente non riesce a specificare del tutto all’inizio."
+  },
+  "Framework: suppliers are appointed, and the orders come later. The job is not awarded once.": {
+    "pt": "Acordo-quadro: os fornecedores são nomeados, e as encomendas vêm depois. O trabalho não é adjudicado uma vez.",
+    "es": "Acuerdo marco: se nombran proveedores, y los pedidos llegan después. El trabajo no se adjudica de una vez.",
+    "fr": "Accord-cadre : des fournisseurs sont retenus, et les commandes viennent ensuite. Le travail n’est pas attribué en une fois.",
+    "de": "Rahmenvereinbarung: Lieferanten werden benannt, und die Abrufe kommen später. Der Auftrag wird nicht einmal vergeben.",
+    "it": "Accordo quadro: si nominano i fornitori, e gli ordini arrivano dopo. Il lavoro non viene assegnato una volta sola."
+  },
+  "What happens, and in what order": {
+    "pt": "O que acontece, e por que ordem",
+    "es": "Qué ocurre, y en qué orden",
+    "fr": "Ce qui se passe, et dans quel ordre",
+    "de": "Was passiert, und in welcher Reihenfolge",
+    "it": "Cosa succede, e in che ordine"
+  },
+  "The notice is published.": {
+    "pt": "O anúncio é publicado.",
+    "es": "Se publica el anuncio.",
+    "fr": "L’avis est publié.",
+    "de": "Die Bekanntmachung wird veröffentlicht.",
+    "it": "L’avviso viene pubblicato."
+  },
+  "Questions are answered to every bidder, not only to the one who asked.": {
+    "pt": "As perguntas são respondidas a todos os concorrentes, não só a quem perguntou.",
+    "es": "Las preguntas se responden a todos los licitadores, no solo a quien preguntó.",
+    "fr": "Les questions reçoivent une réponse pour tous les soumissionnaires, pas seulement pour celui qui a demandé.",
+    "de": "Fragen werden allen Bietern beantwortet, nicht nur dem, der gefragt hat.",
+    "it": "Le domande ricevono risposta a tutti i partecipanti, non solo a chi ha chiesto."
+  },
+  "Offers are in by the deadline. A late file is out.": {
+    "pt": "As propostas entram até ao prazo. Um ficheiro tardio fica de fora.",
+    "es": "Las ofertas entran antes del plazo. Un archivo tarde queda fuera.",
+    "fr": "Les offres sont déposées avant la date limite. Un dossier en retard est écarté.",
+    "de": "Angebote sind bis zur Frist da. Eine verspätete Datei ist draußen.",
+    "it": "Le offerte entrano entro il termine. Un file in ritardo è fuori."
+  },
+  "The buyer checks who is eligible, and only then scores what is left, on price or on price and quality together.": {
+    "pt": "O adjudicante verifica quem é elegível, e só então pontua o que resta, pelo preço ou pelo preço e pela qualidade em conjunto.",
+    "es": "El comprador comprueba quién es elegible, y solo entonces puntúa lo que queda, por precio o por precio y calidad juntos.",
+    "fr": "L’acheteur vérifie qui est éligible, et seulement ensuite note ce qui reste, sur le prix ou sur le prix et la qualité ensemble.",
+    "de": "Der Auftraggeber prüft, wer geeignet ist, und bewertet erst dann, was übrig ist, nach Preis oder nach Preis und Qualität zusammen.",
+    "it": "Il committente verifica chi è idoneo, e solo allora valuta ciò che resta, sul prezzo o sul prezzo e la qualità insieme."
+  },
+  "An award notice follows.": {
+    "pt": "Segue-se um anúncio de adjudicação.",
+    "es": "Sigue un anuncio de adjudicación.",
+    "fr": "Un avis d’attribution suit.",
+    "de": "Eine Zuschlagsbekanntmachung folgt.",
+    "it": "Segue un avviso di aggiudicazione."
+  },
+  "A standstill often sits between the decision and the signed contract, so a bidder who lost can object.": {
+    "pt": "Muitas vezes há um período de suspensão entre a decisão e o contrato assinado, para que um concorrente que perdeu possa reclamar.",
+    "es": "A menudo hay un periodo de suspensión entre la decisión y el contrato firmado, para que un licitador que perdió pueda reclamar.",
+    "fr": "Un délai de suspension se place souvent entre la décision et le contrat signé, pour qu’un soumissionnaire écarté puisse contester.",
+    "de": "Oft liegt eine Stillhaltefrist zwischen der Entscheidung und dem unterschriebenen Vertrag, damit ein Bieter, der verloren hat, widersprechen kann.",
+    "it": "Spesso c’è un periodo di sospensione tra la decisione e il contratto firmato, così chi ha perso può contestare."
+  },
+  "Who can apply": {
+    "pt": "Quem pode concorrer",
+    "es": "Quién puede presentarse",
+    "fr": "Qui peut soumissionner",
+    "de": "Wer sich bewerben kann",
+    "it": "Chi può partecipare"
+  },
+  "Who applies is the company, not the person who found the notice.": {
+    "pt": "Quem concorre é a empresa, não a pessoa que encontrou o anúncio.",
+    "es": "Quien se presenta es la empresa, no la persona que encontró el anuncio.",
+    "fr": "Celui qui soumissionne est l’entreprise, pas la personne qui a trouvé l’avis.",
+    "de": "Wer sich bewirbt, ist das Unternehmen, nicht die Person, die die Bekanntmachung gefunden hat.",
+    "it": "Chi partecipa è l’azienda, non la persona che ha trovato l’avviso."
+  },
+  "A limited company, a partnership, a sole trader, or a startup with no public contract yet, when the notice is open to economic operators.": {
+    "pt": "Uma sociedade, uma sociedade de pessoas, um empresário em nome individual, ou uma startup ainda sem contrato público, quando o anúncio está aberto a operadores económicos.",
+    "es": "Una sociedad, una sociedad personal, un autónomo, o una startup aún sin contrato público, cuando el anuncio está abierto a operadores económicos.",
+    "fr": "Une société, une société de personnes, un entrepreneur individuel, ou une startup encore sans marché public, quand l’avis est ouvert aux opérateurs économiques.",
+    "de": "Eine Kapitalgesellschaft, eine Personengesellschaft, ein Einzelunternehmer oder ein Startup noch ohne öffentlichen Auftrag, wenn die Bekanntmachung für Wirtschaftsteilnehmer offen ist.",
+    "it": "Una società, una società di persone, una ditta individuale, o una startup ancora senza contratto pubblico, quando l’avviso è aperto agli operatori economici."
+  },
+  "A company established in the EU, bidding in another member state, once the contract is large enough for the EU rules.": {
+    "pt": "Uma empresa estabelecida na UE, a concorrer noutro Estado-Membro, quando o contrato é grande o suficiente para as regras da UE.",
+    "es": "Una empresa establecida en la UE, que licita en otro Estado miembro, cuando el contrato es lo bastante grande para las normas de la UE.",
+    "fr": "Une entreprise établie dans l’UE, qui soumissionne dans un autre État membre, dès que le marché est assez important pour les règles de l’UE.",
+    "de": "Ein in der EU niedergelassenes Unternehmen, das in einem anderen Mitgliedstaat bietet, sobald der Auftrag groß genug für die EU-Regeln ist.",
+    "it": "Un’azienda stabilita nell’UE, che partecipa in un altro Stato membro, quando il contratto è abbastanza grande per le regole dell’UE."
+  },
+  "Two companies bidding as one, when the notice allows a consortium. They share the accounts, the references and the certificates on the lines the notice permits.": {
+    "pt": "Duas empresas a concorrer como uma, quando o anúncio permite um consórcio. Partilham as contas, as referências e os certificados nas linhas que o anúncio permite.",
+    "es": "Dos empresas que licitan como una, cuando el anuncio permite un consorcio. Comparten las cuentas, las referencias y los certificados en las líneas que el anuncio permite.",
+    "fr": "Deux entreprises qui soumissionnent comme une seule, quand l’avis permet un groupement. Elles partagent les comptes, les références et les certificats sur les lignes que l’avis permet.",
+    "de": "Zwei Unternehmen, die als eines bieten, wenn die Bekanntmachung eine Bietergemeinschaft erlaubt. Sie teilen die Abschlüsse, die Referenzen und die Zertifikate auf den Zeilen, die die Bekanntmachung zulässt.",
+    "it": "Due aziende che partecipano come una, quando l’avviso consente un raggruppamento. Condividono i conti, le referenze e i certificati sulle righe che l’avviso permette."
+  },
+  "Who is out before any scoring": {
+    "pt": "Quem fica de fora antes de qualquer pontuação",
+    "es": "Quién queda fuera antes de cualquier puntuación",
+    "fr": "Qui est écarté avant toute notation",
+    "de": "Wer draußen ist, bevor irgendetwas bewertet wird",
+    "it": "Chi è fuori prima di qualsiasi punteggio"
+  },
+  "People employed by the buyer that is running the tender.": {
+    "pt": "Quem trabalha para o adjudicante que está a lançar o concurso.",
+    "es": "Quien trabaja para el comprador que convoca la licitación.",
+    "fr": "Les personnes employées par l’acheteur qui passe ce marché.",
+    "de": "Wer bei dem Auftraggeber angestellt ist, der diese Ausschreibung durchführt.",
+    "it": "Chi è dipendente del committente che indice quella gara."
+  },
+  "A company that helped draft the specification. That is a conflict, and it normally means exclusion.": {
+    "pt": "Uma empresa que ajudou a redigir o caderno de encargos. Isso é um conflito, e normalmente significa exclusão.",
+    "es": "Una empresa que ayudó a redactar el pliego. Eso es un conflicto, y normalmente significa exclusión.",
+    "fr": "Une entreprise qui a aidé à rédiger le cahier des charges. C’est un conflit, et cela signifie normalement l’exclusion.",
+    "de": "Ein Unternehmen, das an der Leistungsbeschreibung mitgeschrieben hat. Das ist eine Befangenheit, und sie bedeutet normalerweise den Ausschluss.",
+    "it": "Un’azienda che ha contribuito a scrivere il capitolato. È un conflitto, e di norma significa esclusione."
+  },
+  "A company barred for fraud, corruption or unpaid tax.": {
+    "pt": "Uma empresa impedida por fraude, corrupção ou imposto em dívida.",
+    "es": "Una empresa inhabilitada por fraude, corrupción o impuestos impagados.",
+    "fr": "Une entreprise écartée pour fraude, corruption ou impôt impayé.",
+    "de": "Ein Unternehmen, das wegen Betrug, Korruption oder unbezahlter Steuer gesperrt ist.",
+    "it": "Un’azienda esclusa per frode, corruzione o tasse non pagate."
+  },
+  "A job in a public body. That is not an application. If you own a separate company, and that buyer is not your employer, you apply as the company and still have to meet every line.": {
+    "pt": "Um emprego num organismo público. Isso não é uma candidatura. Se tem uma empresa à parte, e esse adjudicante não é o seu empregador, concorre como a empresa e tem na mesma de cumprir todas as linhas.",
+    "es": "Un empleo en un organismo público. Eso no es una solicitud. Si tienes una empresa aparte, y ese comprador no es tu empleador, te presentas como la empresa y aun así tienes que cumplir todas las líneas.",
+    "fr": "Un emploi dans un organisme public. Ce n’est pas une candidature. Si vous avez une entreprise distincte, et que cet acheteur n’est pas votre employeur, vous soumissionnez en tant qu’entreprise et vous devez quand même remplir chaque ligne.",
+    "de": "Eine Anstellung bei einer Behörde. Das ist kein Antrag. Wenn du ein separates Unternehmen hast und dieser Auftraggeber nicht dein Arbeitgeber ist, bewirbst du dich als das Unternehmen und musst trotzdem jede Zeile erfüllen.",
+    "it": "Un impiego in un ente pubblico. Non è una domanda. Se hai un’azienda a parte, e quel committente non è il tuo datore di lavoro, partecipi come l’azienda e devi comunque soddisfare ogni riga."
+  },
+  "What you need before the deadline": {
+    "pt": "O que precisa antes do prazo",
+    "es": "Qué necesitas antes del plazo",
+    "fr": "Ce qu’il vous faut avant la date limite",
+    "de": "Was du vor der Frist brauchst",
+    "it": "Cosa ti serve prima del termine"
+  },
+  "A registered business.": {
+    "pt": "Uma empresa registada.",
+    "es": "Una empresa registrada.",
+    "fr": "Une entreprise enregistrée.",
+    "de": "Ein eingetragenes Unternehmen.",
+    "it": "Un’azienda registrata."
+  },
+  "A login on the portal where the offer is actually uploaded. It is often a different site from the one where you saw the notice.": {
+    "pt": "Um acesso ao portal onde a proposta é mesmo carregada. Muitas vezes é um sítio diferente daquele onde viu o anúncio.",
+    "es": "Un acceso al portal donde la oferta se carga de verdad. Suele ser un sitio distinto de aquel en el que viste el anuncio.",
+    "fr": "Un accès au portail où l’offre est réellement déposée. C’est souvent un site différent de celui où vous avez vu l’avis.",
+    "de": "Einen Zugang zu dem Portal, auf dem das Angebot tatsächlich hochgeladen wird. Oft ist das eine andere Seite als die, auf der du die Bekanntmachung gesehen hast.",
+    "it": "Un accesso al portale dove l’offerta viene davvero caricata. Spesso è un sito diverso da quello in cui hai visto l’avviso."
+  },
+  "The papers the notice lists: a declaration that the company is not excluded, a turnover, the reference contracts, the certificates and the insurance.": {
+    "pt": "Os documentos que o anúncio lista: uma declaração de que a empresa não está excluída, um volume de negócios, os contratos de referência, os certificados e o seguro.",
+    "es": "Los documentos que lista el anuncio: una declaración de que la empresa no está excluida, una facturación, los contratos de referencia, los certificados y el seguro.",
+    "fr": "Les pièces que l’avis liste : une déclaration que l’entreprise n’est pas exclue, un chiffre d’affaires, les contrats de référence, les certificats et l’assurance.",
+    "de": "Die Unterlagen, die die Bekanntmachung nennt: eine Erklärung, dass das Unternehmen nicht ausgeschlossen ist, ein Umsatz, die Referenzverträge, die Zertifikate und die Versicherung.",
+    "it": "I documenti che l’avviso elenca: una dichiarazione che l’azienda non è esclusa, un fatturato, i contratti di riferimento, i certificati e l’assicurazione."
+  },
+  "The lines that throw a company out are usually <check>a turnover, a reference project and a certificate</check>. Miss one and the offer is not read.": {
+    "pt": "As linhas que excluem uma empresa são, em regra, <check>um volume de negócios, um projeto de referência e um certificado</check>. Falhe uma e a proposta não é lida.",
+    "es": "Las líneas que dejan fuera a una empresa suelen ser <check>una facturación, un proyecto de referencia y un certificado</check>. Falla una y la oferta no se lee.",
+    "fr": "Les lignes qui éliminent une entreprise sont en général <check>un chiffre d’affaires, un projet de référence et un certificat</check>. Manquez-en une, et l’offre n’est pas lue.",
+    "de": "Die Zeilen, die ein Unternehmen ausschließen, sind meist <check>ein Umsatz, ein Referenzprojekt und ein Zertifikat</check>. Verfehlst du eine, wird das Angebot nicht gelesen.",
+    "it": "Le righe che escludono un’azienda sono di solito <check>un fatturato, un progetto di riferimento e un certificato</check>. Ne manchi una e l’offerta non viene letta."
+  },
   "How government tenders work, and who can apply": {
     "pt": "Como funcionam os concursos públicos, e quem pode concorrer",
     "es": "Cómo funcionan las licitaciones públicas, y quién puede presentarse",
@@ -12,62 +292,6 @@
     "fr": "Un acheteur public publie un avis et reçoit des offres. Une entreprise enregistrée peut soumissionner. Les lignes de cet avis décident si l’offre est lue.",
     "de": "Ein öffentlicher Auftraggeber veröffentlicht eine Bekanntmachung und nimmt Angebote an. Ein eingetragenes Unternehmen kann sich bewerben. Die Zeilen dieser Bekanntmachung entscheiden, ob das Angebot gelesen wird.",
     "it": "Un committente pubblico pubblica un avviso e riceve offerte. Un’azienda registrata può partecipare. Le righe di quell’avviso decidono se l’offerta viene letta."
-  },
-  "An open notice, a round seal and a navy folder on a café table.": {
-    "pt": "Um anúncio aberto, um selo redondo e uma pasta azul-marinho numa mesa de café.",
-    "es": "Un anuncio abierto, un sello redondo y una carpeta azul marino en una mesa de café.",
-    "fr": "Un avis ouvert, un sceau rond et un dossier bleu marine sur une table de café.",
-    "de": "Eine offene Bekanntmachung, ein rundes Siegel und eine marineblaue Mappe auf einem Cafétisch.",
-    "it": "Un avviso aperto, un sigillo rotondo e una cartella blu navy su un tavolino da caffè."
-  },
-  "A government tender is the way a public buyer buys. A ministry, a hospital, a city or a development bank writes down what it needs, publishes a notice, and takes offers. The contract goes to the offer that meets the rules and scores best. Everything that matters is in the notice. The title is the least useful line in it.": {
-    "pt": "Um concurso público é a forma de um adjudicante comprar. Um ministério, um hospital, uma cidade ou um banco de desenvolvimento escreve o que precisa, publica um anúncio e recebe propostas. O contrato vai para a proposta que cumpre as regras e obtém a melhor pontuação. Tudo o que importa está no anúncio. O título é a linha menos útil.",
-    "es": "Una licitación pública es la forma en que compra un comprador público. Un ministerio, un hospital, una ciudad o un banco de desarrollo escribe lo que necesita, publica un anuncio y recibe ofertas. El contrato va a la oferta que cumple las reglas y obtiene la mejor puntuación. Todo lo que importa está en el anuncio. El título es la línea menos útil.",
-    "fr": "Un marché public est la façon dont un acheteur public achète. Un ministère, un hôpital, une ville ou une banque de développement écrit ce dont il a besoin, publie un avis et reçoit des offres. Le marché va à l’offre qui respecte les règles et obtient le meilleur score. Tout ce qui compte est dans l’avis. Le titre est la ligne la moins utile.",
-    "de": "Eine öffentliche Ausschreibung ist die Art, wie ein öffentlicher Auftraggeber einkauft. Ein Ministerium, ein Krankenhaus, eine Stadt oder eine Entwicklungsbank schreibt auf, was sie braucht, veröffentlicht eine Bekanntmachung und nimmt Angebote an. Der Auftrag geht an das Angebot, das die Regeln erfüllt und am besten abschneidet. Alles, worauf es ankommt, steht in der Bekanntmachung. Der Titel ist die am wenigsten nützliche Zeile.",
-    "it": "Una gara pubblica è il modo in cui un committente pubblico compra. Un ministero, un ospedale, una città o una banca di sviluppo scrive ciò di cui ha bisogno, pubblica un avviso e riceve offerte. Il contratto va all’offerta che rispetta le regole e ottiene il punteggio migliore. Tutto ciò che conta è nell’avviso. Il titolo è la riga meno utile."
-  },
-  "The buyer starts from a need and a value. Under a set value it can buy with little advertising, or with none. Above that value the notice has to be public, so a company that was never invited can still see the work. In the EU, those higher-value notices go on Tenders Electronic Daily. Beneath them, the notice is on a national portal. The UK uses Find a Tender and Contracts Finder. The United States uses SAM.gov. The World Bank and the other development banks publish on their own boards. There is no one list called government tenders. A search for that phrase is a search across all of these.": {
-    "pt": "O adjudicante parte de uma necessidade e de um valor. Abaixo de um valor fixo pode comprar com pouca publicidade, ou sem nenhuma. Acima desse valor o anúncio tem de ser público, para que uma empresa que nunca foi convidada possa ainda assim ver o trabalho. Na UE, esses anúncios de valor mais alto vão para o Tenders Electronic Daily. Abaixo deles, o anúncio fica num portal nacional. O Reino Unido usa o Find a Tender e o Contracts Finder. Os Estados Unidos usam o SAM.gov. O Banco Mundial e os outros bancos de desenvolvimento publicam nas suas próprias plataformas. Não existe uma lista única chamada concursos públicos. Procurar essa expressão é procurar em todas estas.",
-    "es": "El comprador parte de una necesidad y de un valor. Por debajo de un valor fijado puede comprar con poca publicidad, o sin ninguna. Por encima de ese valor el anuncio tiene que ser público, para que una empresa que nunca fue invitada pueda igualmente ver el trabajo. En la UE, esos anuncios de mayor valor van a Tenders Electronic Daily. Por debajo, el anuncio está en un portal nacional. El Reino Unido usa Find a Tender y Contracts Finder. Estados Unidos usa SAM.gov. El Banco Mundial y los demás bancos de desarrollo publican en sus propios tableros. No hay una sola lista llamada licitaciones públicas. Buscar esa frase es buscar en todas ellas.",
-    "fr": "L’acheteur part d’un besoin et d’une valeur. Sous un montant fixé, il peut acheter avec peu de publicité, ou sans aucune. Au-dessus, l’avis doit être public, pour qu’une entreprise qui n’a jamais été invitée puisse quand même voir le travail. Dans l’UE, ces avis de valeur plus haute vont sur Tenders Electronic Daily. En dessous, l’avis est sur un portail national. Le Royaume-Uni utilise Find a Tender et Contracts Finder. Les États-Unis utilisent SAM.gov. La Banque mondiale et les autres banques de développement publient sur leurs propres sites. Il n’existe pas une seule liste appelée marchés publics. Chercher cette expression, c’est chercher dans tous ceux-là.",
-    "de": "Der Auftraggeber geht von einem Bedarf und einem Wert aus. Unter einem festgelegten Wert kann er mit wenig Werbung einkaufen, oder ganz ohne. Darüber muss die Bekanntmachung öffentlich sein, damit ein Unternehmen, das nie eingeladen wurde, die Arbeit trotzdem sehen kann. In der EU gehen diese Bekanntmachungen mit höherem Wert an Tenders Electronic Daily. Darunter liegt die Bekanntmachung auf einem nationalen Portal. Das Vereinigte Königreich nutzt Find a Tender und Contracts Finder. Die Vereinigten Staaten nutzen SAM.gov. Die Weltbank und die anderen Entwicklungsbanken veröffentlichen auf ihren eigenen Seiten. Es gibt nicht eine Liste namens öffentliche Ausschreibungen. Nach diesem Ausdruck zu suchen heißt, in all diesen zu suchen.",
-    "it": "Il committente parte da un bisogno e da un valore. Sotto un valore fissato può comprare con poca pubblicità, o senza. Sopra quel valore l’avviso deve essere pubblico, così un’azienda che non è mai stata invitata può comunque vedere il lavoro. Nell’UE, gli avvisi di valore più alto vanno su Tenders Electronic Daily. Sotto, l’avviso sta su un portale nazionale. Il Regno Unito usa Find a Tender e Contracts Finder. Gli Stati Uniti usano SAM.gov. La Banca mondiale e le altre banche di sviluppo pubblicano sulle proprie bacheche. Non esiste un unico elenco chiamato gare pubbliche. Cercare quella frase significa cercare in tutti questi."
-  },
-  "The notice names the procedure, and that line decides who may send an offer. In an open procedure, any company that meets the criteria may submit by the deadline. In a restricted procedure, you ask to take part first, and only the invited companies send a full offer. Negotiation and competitive dialogue are for work the buyer cannot specify completely at the start. A framework does not award the job once. It appoints suppliers, and the orders come later.": {
-    "pt": "O anúncio indica o procedimento, e essa linha decide quem pode enviar uma proposta. Num procedimento aberto, qualquer empresa que cumpra os critérios pode apresentar até ao prazo. Num procedimento restrito, pede primeiro para participar, e só as empresas convidadas enviam uma proposta completa. A negociação e o diálogo concorrencial servem para trabalho que o adjudicante não consegue especificar por completo no início. Um acordo-quadro não adjudica o trabalho uma vez. Nomeia fornecedores, e as encomendas vêm depois.",
-    "es": "El anuncio nombra el procedimiento, y esa línea decide quién puede enviar una oferta. En un procedimiento abierto, cualquier empresa que cumpla los criterios puede presentar hasta el plazo. En un procedimiento restringido, pides participar primero, y solo las empresas invitadas envían una oferta completa. La negociación y el diálogo competitivo son para un trabajo que el comprador no puede especificar del todo al principio. Un acuerdo marco no adjudica el trabajo de una vez. Nombra proveedores, y los pedidos llegan después.",
-    "fr": "L’avis nomme la procédure, et cette ligne décide qui peut envoyer une offre. Dans une procédure ouverte, toute entreprise qui remplit les critères peut soumettre avant la date limite. Dans une procédure restreinte, vous demandez d’abord à participer, et seules les entreprises invitées envoient une offre complète. La négociation et le dialogue compétitif servent au travail que l’acheteur ne peut pas spécifier entièrement au départ. Un accord-cadre n’attribue pas le travail en une fois. Il retient des fournisseurs, et les commandes viennent ensuite.",
-    "de": "Die Bekanntmachung nennt das Verfahren, und diese Zeile entscheidet, wer ein Angebot schicken darf. In einem offenen Verfahren darf jedes Unternehmen, das die Kriterien erfüllt, bis zur Frist einreichen. In einem nicht offenen Verfahren bittest du zuerst um Teilnahme, und nur die eingeladenen Unternehmen schicken ein volles Angebot. Verhandlung und wettbewerblicher Dialog sind für Arbeit, die der Auftraggeber am Anfang nicht vollständig beschreiben kann. Eine Rahmenvereinbarung vergibt den Auftrag nicht einmal. Sie benennt Lieferanten, und die Abrufe kommen später.",
-    "it": "L’avviso indica la procedura, e quella riga decide chi può inviare un’offerta. In una procedura aperta, qualsiasi azienda che soddisfa i criteri può presentare entro il termine. In una procedura ristretta, chiedi prima di partecipare, e solo le aziende invitate inviano un’offerta completa. La negoziazione e il dialogo competitivo servono per un lavoro che il committente non riesce a specificare del tutto all’inizio. Un accordo quadro non assegna il lavoro una volta sola. Nomina i fornitori, e gli ordini arrivano dopo."
-  },
-  "The clock has the same shape each time. The notice is published. Questions are answered to every bidder, not only to the one who asked. Offers are in by the deadline, and a late file is out. The buyer checks who is eligible, and only then scores what is left, on price or on price and quality together. An award notice follows. A standstill often sits between the decision and the signed contract, so a bidder who lost can object.": {
-    "pt": "O calendário tem sempre a mesma forma. O anúncio é publicado. As perguntas são respondidas a todos os concorrentes, não só a quem perguntou. As propostas entram até ao prazo, e um ficheiro tardio fica de fora. O adjudicante verifica quem é elegível, e só então pontua o que resta, pelo preço ou pelo preço e pela qualidade em conjunto. Segue-se um anúncio de adjudicação. Muitas vezes há um período de suspensão entre a decisão e o contrato assinado, para que um concorrente que perdeu possa reclamar.",
-    "es": "El calendario tiene siempre la misma forma. Se publica el anuncio. Las preguntas se responden a todos los licitadores, no solo a quien preguntó. Las ofertas entran antes del plazo, y un archivo tarde queda fuera. El comprador comprueba quién es elegible, y solo entonces puntúa lo que queda, por precio o por precio y calidad juntos. Sigue un anuncio de adjudicación. A menudo hay un periodo de suspensión entre la decisión y el contrato firmado, para que un licitador que perdió pueda reclamar.",
-    "fr": "Le calendrier a toujours la même forme. L’avis est publié. Les questions reçoivent une réponse pour tous les soumissionnaires, pas seulement pour celui qui a demandé. Les offres sont déposées avant la date limite, et un dossier en retard est écarté. L’acheteur vérifie qui est éligible, et seulement ensuite note ce qui reste, sur le prix ou sur le prix et la qualité ensemble. Un avis d’attribution suit. Un délai de suspension se place souvent entre la décision et le contrat signé, pour qu’un soumissionnaire écarté puisse contester.",
-    "de": "Der Zeitplan hat jedes Mal dieselbe Form. Die Bekanntmachung wird veröffentlicht. Fragen werden allen Bietern beantwortet, nicht nur dem, der gefragt hat. Angebote sind bis zur Frist da, und eine verspätete Datei ist draußen. Der Auftraggeber prüft, wer geeignet ist, und bewertet erst dann, was übrig ist, nach Preis oder nach Preis und Qualität zusammen. Eine Zuschlagsbekanntmachung folgt. Oft liegt eine Stillhaltefrist zwischen der Entscheidung und dem unterschriebenen Vertrag, damit ein Bieter, der verloren hat, widersprechen kann.",
-    "it": "Il calendario ha sempre la stessa forma. L’avviso viene pubblicato. Le domande ricevono risposta a tutti i partecipanti, non solo a chi ha chiesto. Le offerte entrano entro il termine, e un file in ritardo è fuori. Il committente verifica chi è idoneo, e solo allora valuta ciò che resta, sul prezzo o sul prezzo e la qualità insieme. Segue un avviso di aggiudicazione. Spesso c’è un periodo di sospensione tra la decisione e il contratto firmato, così chi ha perso può contestare."
-  },
-  "Who applies is the company. A limited company, a partnership, a sole trader, a startup with no public contract behind it: each can apply when the notice is open to economic operators, which is the ordinary case. A company established in the EU can apply in another member state once the contract is large enough for the EU rules. Two companies can bid as one, when the notice allows a consortium, and share the accounts, the references and the certificates on the lines the notice permits.": {
-    "pt": "Quem concorre é a empresa. Uma sociedade, uma sociedade de pessoas, um empresário em nome individual, uma startup sem nenhum contrato público: cada um pode concorrer quando o anúncio está aberto a operadores económicos, que é o caso habitual. Uma empresa estabelecida na UE pode concorrer noutro Estado-Membro quando o contrato é grande o suficiente para as regras da UE. Duas empresas podem concorrer como uma, quando o anúncio permite um consórcio, e partilhar as contas, as referências e os certificados nas linhas que o anúncio permite.",
-    "es": "Quien se presenta es la empresa. Una sociedad, una sociedad personal, un autónomo, una startup sin ningún contrato público: cada uno puede presentarse cuando el anuncio está abierto a operadores económicos, que es el caso habitual. Una empresa establecida en la UE puede presentarse en otro Estado miembro cuando el contrato es lo bastante grande para las normas de la UE. Dos empresas pueden licitar como una, cuando el anuncio permite un consorcio, y compartir las cuentas, las referencias y los certificados en las líneas que el anuncio permite.",
-    "fr": "Celui qui soumissionne est l’entreprise. Une société, une société de personnes, un entrepreneur individuel, une startup sans marché public derrière elle : chacun peut soumissionner quand l’avis est ouvert aux opérateurs économiques, ce qui est le cas ordinaire. Une entreprise établie dans l’UE peut soumissionner dans un autre État membre dès que le marché est assez important pour les règles de l’UE. Deux entreprises peuvent soumissionner comme une seule, quand l’avis permet un groupement, et partager les comptes, les références et les certificats sur les lignes que l’avis permet.",
-    "de": "Wer sich bewirbt, ist das Unternehmen. Eine Kapitalgesellschaft, eine Personengesellschaft, ein Einzelunternehmer, ein Startup ohne öffentlichen Auftrag zuvor: jedes kann sich bewerben, wenn die Bekanntmachung für Wirtschaftsteilnehmer offen ist, und das ist der gewöhnliche Fall. Ein in der EU niedergelassenes Unternehmen kann sich in einem anderen Mitgliedstaat bewerben, sobald der Auftrag groß genug für die EU-Regeln ist. Zwei Unternehmen können als eines bieten, wenn die Bekanntmachung eine Bietergemeinschaft erlaubt, und die Abschlüsse, die Referenzen und die Zertifikate auf den Zeilen teilen, die die Bekanntmachung zulässt.",
-    "it": "Chi partecipa è l’azienda. Una società, una società di persone, una ditta individuale, una startup senza alcun contratto pubblico: ciascuna può partecipare quando l’avviso è aperto agli operatori economici, che è il caso ordinario. Un’azienda stabilita nell’UE può partecipare in un altro Stato membro quando il contratto è abbastanza grande per le regole dell’UE. Due aziende possono partecipare come una, quando l’avviso consente un raggruppamento, e condividere i conti, le referenze e i certificati sulle righe che l’avviso permette."
-  },
-  "Some applicants are out before any scoring. People employed by the buyer running that tender should not bid on it. A company that helped draft the specification is in a conflict, and is normally excluded. So is a company barred for fraud, corruption or unpaid tax. A job in a public body is not an application. If you own a separate company, and that buyer is not your employer, you apply as the company, and you still have to meet every line.": {
-    "pt": "Alguns candidatos ficam de fora antes de qualquer pontuação. Quem trabalha para o adjudicante desse concurso não deve concorrer a ele. Uma empresa que ajudou a redigir o caderno de encargos está em conflito, e normalmente é excluída. O mesmo acontece a uma empresa impedida por fraude, corrupção ou imposto em dívida. Um emprego num organismo público não é uma candidatura. Se tem uma empresa à parte, e esse adjudicante não é o seu empregador, concorre como a empresa, e tem na mesma de cumprir todas as linhas.",
-    "es": "Algunos candidatos quedan fuera antes de cualquier puntuación. Quien trabaja para el comprador de esa licitación no debe presentarse a ella. Una empresa que ayudó a redactar el pliego está en conflicto, y normalmente queda excluida. También una empresa inhabilitada por fraude, corrupción o impuestos impagados. Un empleo en un organismo público no es una solicitud. Si tienes una empresa aparte, y ese comprador no es tu empleador, te presentas como la empresa, y aun así tienes que cumplir todas las líneas.",
-    "fr": "Certains candidats sont écartés avant toute notation. Les personnes employées par l’acheteur qui passe ce marché ne devraient pas y soumissionner. Une entreprise qui a aidé à rédiger le cahier des charges est en conflit, et elle est normalement exclue. Il en va de même d’une entreprise écartée pour fraude, corruption ou impôt impayé. Un emploi dans un organisme public n’est pas une candidature. Si vous avez une entreprise distincte, et que cet acheteur n’est pas votre employeur, vous soumissionnez en tant qu’entreprise, et vous devez quand même remplir chaque ligne.",
-    "de": "Manche Bewerber sind draußen, bevor irgendetwas bewertet wird. Wer bei dem Auftraggeber angestellt ist, der diese Ausschreibung durchführt, sollte sich nicht darauf bewerben. Ein Unternehmen, das an der Leistungsbeschreibung mitgeschrieben hat, ist befangen und wird normalerweise ausgeschlossen. Ebenso ein Unternehmen, das wegen Betrug, Korruption oder unbezahlter Steuer gesperrt ist. Eine Anstellung bei einer Behörde ist kein Antrag. Wenn du ein separates Unternehmen hast und dieser Auftraggeber nicht dein Arbeitgeber ist, bewirbst du dich als das Unternehmen, und du musst trotzdem jede Zeile erfüllen.",
-    "it": "Alcuni candidati sono fuori prima di qualsiasi punteggio. Chi è dipendente del committente che indice quella gara non dovrebbe parteciparvi. Un’azienda che ha contribuito a scrivere il capitolato è in conflitto, e di norma è esclusa. Lo è anche un’azienda esclusa per frode, corruzione o tasse non pagate. Un impiego in un ente pubblico non è una domanda. Se hai un’azienda a parte, e quel committente non è il tuo datore di lavoro, partecipi come l’azienda, e devi comunque soddisfare ogni riga."
-  },
-  "Before the deadline you need a registered business, a login on the portal where the offer is actually uploaded, and the papers the notice lists. That portal is often a different site from the one where you saw the notice. The papers are a declaration that the company is not excluded, a turnover, the reference contracts, the certificates and the insurance. The lines that throw a company out are usually <check>a turnover, a reference project and a certificate</check>. Miss one and the offer is not read.": {
-    "pt": "Antes do prazo precisa de uma empresa registada, de um acesso ao portal onde a proposta é mesmo carregada, e dos documentos que o anúncio lista. Esse portal é muitas vezes um sítio diferente daquele onde viu o anúncio. Os documentos são uma declaração de que a empresa não está excluída, o volume de negócios, os contratos de referência, os certificados e o seguro. As linhas que excluem uma empresa são, em regra, <check>um volume de negócios, um projeto de referência e um certificado</check>. Falhe uma e a proposta não é lida.",
-    "es": "Antes del plazo necesitas una empresa registrada, un acceso al portal donde la oferta se carga de verdad, y los documentos que lista el anuncio. Ese portal suele ser un sitio distinto de aquel en el que viste el anuncio. Los documentos son una declaración de que la empresa no está excluida, la facturación, los contratos de referencia, los certificados y el seguro. Las líneas que dejan fuera a una empresa suelen ser <check>una facturación, un proyecto de referencia y un certificado</check>. Falla una y la oferta no se lee.",
-    "fr": "Avant la date limite, il vous faut une entreprise enregistrée, un accès au portail où l’offre est réellement déposée, et les pièces que l’avis liste. Ce portail est souvent un site différent de celui où vous avez vu l’avis. Les pièces sont une déclaration que l’entreprise n’est pas exclue, le chiffre d’affaires, les contrats de référence, les certificats et l’assurance. Les lignes qui éliminent une entreprise sont en général <check>un chiffre d’affaires, un projet de référence et un certificat</check>. Manquez-en une, et l’offre n’est pas lue.",
-    "de": "Vor der Frist brauchst du ein eingetragenes Unternehmen, einen Zugang zu dem Portal, auf dem das Angebot tatsächlich hochgeladen wird, und die Unterlagen, die die Bekanntmachung nennt. Dieses Portal ist oft eine andere Seite als die, auf der du die Bekanntmachung gesehen hast. Die Unterlagen sind eine Erklärung, dass das Unternehmen nicht ausgeschlossen ist, der Umsatz, die Referenzverträge, die Zertifikate und die Versicherung. Die Zeilen, die ein Unternehmen ausschließen, sind meist <check>ein Umsatz, ein Referenzprojekt und ein Zertifikat</check>. Verfehlst du eine, wird das Angebot nicht gelesen.",
-    "it": "Prima del termine ti servono un’azienda registrata, un accesso al portale dove l’offerta viene davvero caricata, e i documenti che l’avviso elenca. Quel portale è spesso un sito diverso da quello in cui hai visto l’avviso. I documenti sono una dichiarazione che l’azienda non è esclusa, il fatturato, i contratti di riferimento, i certificati e l’assicurazione. Le righe che escludono un’azienda sono di solito <check>un fatturato, un progetto di riferimento e un certificato</check>. Ne manchi una e l’offerta non viene letta."
   },
   "Tender Town puts the open notices, the grants and the funding calls in one place, and checks each notice against the company you describe. <fit>Fit analysis</fit> returns before anyone writes: bid, bid with a partner, worth a closer look, or no bid. <account>Create an account</account>, choose the field you sell in, and each notice comes back checked against your company before you spend a deadline on it.": {
     "pt": "O Tender Town junta os anúncios abertos, as subvenções e os avisos de financiamento num só sítio, e verifica cada anúncio contra a empresa que descreve. A <fit>análise de enquadramento</fit> volta antes de alguém escrever: concorrer, concorrer com um parceiro, vale a pena olhar melhor, ou não concorrer. <account>Crie uma conta</account>, escolha o campo em que vende, e cada anúncio volta verificado contra a sua empresa antes de gastar um prazo com ele.",

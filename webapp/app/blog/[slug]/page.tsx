@@ -120,8 +120,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       <div className="legal-body">
         {post.blocks.map((block, i) => (
           block.type === 'h2' ? <h2 key={i}>{t(block.text)}</h2>
-            : block.type === 'img' ? <figure key={i} className="blog-figure"><img src={block.src} alt={t(block.alt)} width={1280} height={720} /></figure>
-              : <p key={i}>{rich(t(block.text))}</p>
+            : block.type === 'h3' ? <h3 key={i}>{t(block.text)}</h3>
+              : block.type === 'ul' ? <ul key={i}>{block.items.map((item) => <li key={item}>{rich(t(item))}</li>)}</ul>
+                : block.type === 'img' ? <figure key={i} className="blog-figure"><img src={block.src} alt={t(block.alt)} width={1280} height={720} /></figure>
+                  : <p key={i}>{rich(t(block.text))}</p>
         ))}
         <div className="blog-cta">
           <Link className="btn primary" href="/signup">{t('Create an account')}</Link>
