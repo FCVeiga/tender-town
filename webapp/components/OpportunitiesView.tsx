@@ -16,6 +16,7 @@ import AgentLoader from '@/components/AgentLoader';
 import ScopeView from './ScopeView';
 import ScopeStatus, { CheckedLine } from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
+import { publicScope } from '@/lib/publication';
 
 type View = 'all' | 'new' | (typeof OPP_CATEGORIES)[number]['slug'];
 
@@ -121,7 +122,7 @@ async function OpportunitiesBody({ view }: { view: View }) {
       <RingGradients />
       <div className="opp-rows">
         {(kind === 'ready' || kind === 'stale') && shown.map((o) => (
-          <OpportunityRow key={o.opportunity_id} o={o}
+          <OpportunityRow key={o.opportunity_id} o={o} open={publicScope(focus.current)}
                           why={scopeItems?.reason.get(o.opportunity_id)}
                           like={{ liked: likes.liked.has(o.opportunity_id), signedIn: likes.signedIn }}
                           countryName={o.country ? names.get(o.country) ?? null : null}
@@ -133,7 +134,7 @@ async function OpportunitiesBody({ view }: { view: View }) {
           <h2 className="search-h2">{t('Archived')}</h2>
           <div className="opp-rows">
             {archived.map((o) => (
-              <OpportunityRow key={o.opportunity_id} o={o} archived
+              <OpportunityRow key={o.opportunity_id} o={o} archived open={publicScope(focus.current)}
                               why={scopeItems?.reason.get(o.opportunity_id)}
                               like={{ liked: likes.liked.has(o.opportunity_id), signedIn: likes.signedIn }}
                               countryName={o.country ? names.get(o.country) ?? null : null} />

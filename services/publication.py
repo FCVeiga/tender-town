@@ -44,11 +44,10 @@ _NO_PROC = re.compile(
     re.I,
 )
 _OPEN = re.compile(
-    r"\b(?:tender is open|bids are open|open for bids|call is open|has been awarded|"
-    r"contract was awarded|awarded the contract)\b",
+    r"\b(?:tender is open|bids are open|open for bids|call is open)\b",
     re.I,
 )
-_BUYER = re.compile(r"\b(?:buyer|contracting authority)\s*(?:is|:)\s*([^.;\n]{3,80})", re.I)
+_BUYER = re.compile(r"\b(?:buyer|contracting authority)\s*(?:is\b|:)\s*([^.;\n]{3,80})", re.I)
 
 
 def vendor_names() -> set[str]:
@@ -107,6 +106,15 @@ def _completed_before(text: str) -> bool:
     return False
 
 
+def _stated(pattern: re.Pattern, text: str) -> bool:
+    """A match counts only when the previous words do not negate it."""
+    for hit in pattern.finditer(text or ""):
+        window = text[max(0, hit.start() - 40):hit.start()]
+        if not re.search(r"\b(?:no|not|without|never)\b|n't", window, re.I):
+            return True
+    return False
+
+
 def contradicts(summary: str, reason: str) -> bool:
     """True when the interpretation disagrees with the summary."""
     summary, reason = summary or "", reason or ""
@@ -119,8 +127,8 @@ def contradicts(summary: str, reason: str) -> bool:
         done = _near(reason, _DONE) or [day for _, day in _dates(reason)]
         if not done or max(planned) > min(done):
             return True
-    no_proc = bool(_NO_PROC.search(summary)), bool(_NO_PROC.search(reason))
-    opened = bool(_OPEN.search(summary)), bool(_OPEN.search(reason))
+    no_proc = _stated(_NO_PROC, summary), _stated(_NO_PROC, reason)
+    opened = _stated(_OPEN, summary), _stated(_OPEN, reason)
     if (no_proc[0] and opened[1]) or (opened[0] and no_proc[1]):
         return True
     buyers_s, buyers_r = _BUYER.findall(summary), _BUYER.findall(reason)
@@ -137,6 +145,8 @@ def neutralize(text: str, names: set[str] | None = None) -> str:
     names = vendor_names() if names is None else names
     if not text or not names:
         return (text or "").strip()
+    if not any(re.search(rf"\b{re.escape(name)}\b", text) for name in names):
+        return text.strip()
     kept = []
     for sentence in re.split(r"(?<=[.!?])\s+", text.strip()):
         if not any(re.search(rf"\b{re.escape(name)}\b", sentence) for name in names):
@@ -186,4 +196,12 @@ def self_check() -> None:
         "No procurement is open. Watch the ministry's notices.",
     )
     assert contradicts("The article reports no procurement.", "The tender is open for bids.")
+    assert not contradicts(
+        "The announcement gives no tender details.",
+        "No tender or call is open yet. Watch the ministry's notices.",
+    )
+    assert not contradicts(
+        "The product has been awarded a supply contract. This is not a public procurement.",
+        "This is not a procurement opportunity for an outside supplier.",
+    )
     assert contradicts("The buyer is Brno University Hospital.", "The buyer is the Ministry of Defence.")

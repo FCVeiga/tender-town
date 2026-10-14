@@ -8,6 +8,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { NewsItem, Opportunity, isNew, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { FeedItem, HALF_LIFE_DAYS } from '@/lib/feed';
 import { firstInLanguage } from '@/lib/english';
+import { publicText } from '@/lib/publication';
 import { getPlatformLanguage } from '@/lib/language';
 import { getScopeItems } from '@/lib/scopes';
 
@@ -78,7 +79,7 @@ export async function search(q: string, now = new Date()) {
     return {
       key: `opp:${o.opportunity_id}`, kind: 'opportunity', event: 'new_opportunity',
       href: opportunityPath(o),
-      headline: titleOf(o), body: firstInLanguage(o.summary), why: null,
+      headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || ''), why: null,
       category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'News' : 'Opportunity',
       country: o.country, at, score, combined: Math.round(score * decay(at)), movement: 'same',
       deadline: o.deadline, isNew: isNew(o, now), statusLabel: statusLabel(o, now),
@@ -89,7 +90,7 @@ export async function search(q: string, now = new Date()) {
     const score = newsScope?.relevance.get(n.news_id) ?? n.relevance_score ?? 30;
     return {
       key: `news:${n.news_id}`, kind: 'news', event: 'news', href: `/news/${n.news_id}`,
-      headline: titleOf(n), body: firstInLanguage(n.summary, n.excerpt), why: null,
+      headline: titleOf(n), body: publicText(firstInLanguage(n.summary, n.excerpt) || ''), why: null,
       category: n.category || 'market', categoryLabel: newsCategoryLabel(n.category), kindLabel: 'News',
       country: n.country, at, score, combined: Math.round(score * decay(at)), movement: 'same',
       deadline: null, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,

@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { newsCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicText, shownWhy } from '@/lib/publication';
+import { publicScope, publicText, shownWhy } from '@/lib/publication';
 import NewsImage from '@/components/NewsImage';
 import NewsReportRunner from '@/components/NewsReport';
 import AgentAvatar from '@/components/AgentAvatar';
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const title = titleOf(data);
   return pageMeta({
     title: `${title} — Tender Town`,
-    description: clip(firstInLanguage(data.summary, data.excerpt) || title),
+    description: clip(publicText(firstInLanguage(data.summary, data.excerpt) || '') || title),
     path: `/news/${params.id}`,
     type: 'article',
     image: data.image_url,
@@ -72,7 +72,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
 
   const paragraphs = publicText(plainText(firstInLanguage(n.summary_long, n.summary, n.excerpt) || ''))
     .split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
-  const facts: string[] = Array.isArray(n.key_facts) ? n.key_facts.filter((f: string) => firstInLanguage(f)) : [];
+  const facts: string[] = Array.isArray(n.key_facts) ? n.key_facts.map((f: string) => publicText(plainText(f))).filter((f: string) => firstInLanguage(f)) : [];
   // One report per scope the viewer looks through (their active scopes, or the default scope).
   const { scopes: viewScopes } = await getViewScopes();
   const [likes, { data: reports }, agentFlags, allowance] = await Promise.all([
@@ -96,7 +96,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
         '@context': 'https://schema.org',
         '@type': 'NewsArticle',
         headline,
-        description: clip(firstInLanguage(n.summary_long, n.summary, n.excerpt) || headline, 300),
+        description: clip(paragraphs.join(' ') || headline, 300),
         datePublished: n.published_date || n.created_at,
         image: n.image_url || undefined,
         author: { '@type': 'Organization', name: n.source_name || 'Tender Town' },
@@ -132,9 +132,9 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
         {paragraphs.length ? paragraphs.map((p: string, i: number) => <p key={i}>{p}</p>)
           : <p className="muted">{t('No English summary yet.')}</p>}
         {(notes || []).map((note) => {
-          const why = shownWhy(paragraphs.join('\n\n'), plainText(note.reason));
-          if (!why) return null;
           const scope = viewScopes.find((sc) => sc.id === note.scope_id);
+          const why = shownWhy(paragraphs.join('\n\n'), plainText(note.reason), publicScope(scope));
+          if (!why) return null;
           return (
             <p key={note.scope_id} className="feed-why">
               <span>{viewScopes.length > 1 ? t('Why this matters to {scope}', { scope: scope?.name || '' }) : t('Why this matters')}</span>

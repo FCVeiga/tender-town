@@ -12,6 +12,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { agentPrompt, companyBrief, isAgentEnabled } from '@/lib/settings';
 import { friendly, lockRow, unlockRow } from '@/lib/scopeWork';
 import { newsReportAllowance, recordNewsReport } from '@/lib/newsQuota';
+import { publicText } from '@/lib/publication';
 
 export const AGENT_NAME = 'News Report Agent';
 const MODEL = 'claude-opus-5-5';
@@ -127,10 +128,11 @@ async function runNewsReport(newsId: string, scopeId: string) {
     model: response.model ?? MODEL,
   };
   // The summary describes the story (shared by every scope); the report is this scope's.
-  const summary = String(out.summary || '').trim();
+  const summary = publicText(String(out.summary || '').trim());
+  const facts = (Array.isArray(out.key_facts) ? out.key_facts : []).map((fact: unknown) => publicText(String(fact))).filter(Boolean).slice(0, 8);
   if (summary) {
     await db.from('news_items').update({
-      summary_long: summary, key_facts: (Array.isArray(out.key_facts) ? out.key_facts : []).map(String).slice(0, 8), analysed_at: new Date().toISOString(),
+      summary_long: summary, key_facts: facts, analysed_at: new Date().toISOString(),
     }).eq('news_id', newsId);
   }
   const { error: saveError } = await db.from('scope_news_reports').update({ analysis: report, analysed_at: new Date().toISOString(), error: null })

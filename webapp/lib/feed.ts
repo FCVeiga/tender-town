@@ -15,7 +15,8 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicText, shownWhy } from '@/lib/publication';
+import { publicScope, publicText, shownWhy } from '@/lib/publication';
+import { focusedScope } from '@/lib/scopeFocus';
 import { getScopeItems } from '@/lib/scopes';
 import { getPlatformLanguage } from '@/lib/language';
 
@@ -176,7 +177,8 @@ async function publishedCopy(items: FeedItem[]) {
   const db = getSupabaseServerClient();
   const newsIds = items.map((item) => item.newsId).filter((id): id is string => !!id);
   const oppIds = items.map((item) => item.opportunityId).filter((id): id is string => !!id);
-  const [newsScope, tenderScope, newsRows, oppRows] = await Promise.all([
+  const [{ scope }, newsScope, tenderScope, newsRows, oppRows] = await Promise.all([
+    focusedScope(),
     getScopeItems('news', true),
     getScopeItems('tender', true),
     newsIds.length ? db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, category').in('news_id', newsIds) : Promise.resolve({ data: [] as any[] }),
@@ -190,7 +192,7 @@ async function publishedCopy(items: FeedItem[]) {
     const row = story || opp;
     if (!row) continue;
     const summary = publicText(plainText(firstInLanguage(row.summary, row.excerpt) || ''));
-    const why = shownWhy(summary, plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || ''));
+    const why = shownWhy(summary, plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || ''), publicScope(scope));
     item.headline = titleOf(row);
     item.body = summary || null;
     item.why = why && why !== summary ? why : null;

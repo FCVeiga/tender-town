@@ -50,16 +50,18 @@ export function RingGradients() {
   );
 }
 
-export default function OpportunityRow({ o, countryName, updates = [], like, why, archived = false }: {
+export default function OpportunityRow({ o, countryName, updates = [], like, why, archived = false, open = true }: {
   o: Opportunity; countryName: string | null; updates?: UpdateEvent[];
   like?: { liked: boolean; signedIn: boolean };
   why?: string | null;
   archived?: boolean;
+  /** False inside a custom scope, whose interpretation may name the company. */
+  open?: boolean;
 }) {
   const days = daysUntil(o.deadline);
   const value = money(o.estimated_value, o.currency);
   const description = publicText(plainText(firstInLanguage(o.summary) || ''));
-  const note = shownWhy(description, plainText(why || ''));
+  const note = shownWhy(description, plainText(why || ''), open);
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
   const t = getTSync();

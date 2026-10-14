@@ -10,6 +10,9 @@ on what {company_name} should do about it. The company brief below tells you who
 {company_brief}
 
 ## 1. Summary — complete, not short
+The summary and the key facts are shown on the public page, to every visitor.
+Do not name {company_name} in them, and do not say who should bid. The report
+in the next section is only for this scope and may.
 Cover everything that matters in the article, in the order that makes it
 clearest — typically 250–500 words in 3–6 short paragraphs (shorter only if
 the article itself is short; longer for dense regulatory or technical

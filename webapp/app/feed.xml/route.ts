@@ -2,6 +2,7 @@ import { siteOrigin } from '@/lib/auth';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { publicText } from '@/lib/publication';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
@@ -24,13 +25,13 @@ export async function GET() {
       title: titleOf(r),
       link: `${origin}${opportunityPath(r)}`,
       date: r.publication_date || r.first_detected || new Date().toISOString(),
-      description: firstInLanguage(r.tender_summary, r.summary) || '',
+      description: publicText(firstInLanguage(r.tender_summary, r.summary) || ''),
     })),
     ...(news.data || []).map((r: any) => ({
       title: titleOf(r),
       link: `${origin}/news/${r.news_id}`,
       date: r.published_date || r.created_at || new Date().toISOString(),
-      description: firstInLanguage(r.summary, r.excerpt) || '',
+      description: publicText(firstInLanguage(r.summary, r.excerpt) || ''),
     })),
     ...(posts.data || []).map((r: any) => ({
       title: r.title,

@@ -14,6 +14,7 @@ import { friendlyError, parseSearchScope, tunePrompt, validateSearchConfig } fro
 import { newsReportAllowance } from '@/lib/newsQuota';
 import { startProposalBrief, startTenderEvaluation } from '@/app/actions';
 import { ensureNewsReport } from '@/lib/newsReport';
+import { publicText } from '@/lib/publication';
 
 const db = () => getSupabaseServerClient();
 const ID = /^[0-9a-f-]{36}$/i;
@@ -357,7 +358,7 @@ export async function getTender(id: string) {
   const comments = await getCommentTree('tender', id, user.id);
   return {
     id: o.opportunity_id, title: titleOf(o), buyer: buyerOf(o), country: o.country, type: o.opportunity_type, status: o.status,
-    summary: o.tender_summary || o.summary, deadline: o.deadline, value: o.estimated_value, currency: o.currency, published: o.publication_date, url: o.official_url,
+    summary: publicText(o.tender_summary || o.summary || ''), deadline: o.deadline, value: o.estimated_value, currency: o.currency, published: o.publication_date, url: o.official_url,
     requirements, requirementsIncluded: showRequirements, evaluation, proposal, comments: comments.tree, commentCount: comments.total,
   };
 }
@@ -371,7 +372,7 @@ export async function listNews(limit: number) {
   return ids.map(({ id, relevance }) => {
     const n = byId.get(id);
     if (!n) return null;
-    return { id, title: titleOf(n), category: n.category, source: n.source_name, published: n.published_date, excerpt: n.excerpt, relevance };
+    return { id, title: titleOf(n), category: n.category, source: n.source_name, published: n.published_date, excerpt: publicText(n.excerpt || ''), relevance };
   }).filter(Boolean);
 }
 
@@ -394,7 +395,7 @@ export async function getNews(id: string) {
   const comments = await getCommentTree('news', id, user.id);
   return {
     id: n.news_id, title: titleOf(n), category: n.category, source: n.source_name, published: n.published_date,
-    excerpt: n.excerpt, summary: n.summary, reportSummary: allowed ? n.summary_long : null, url: n.source_url, reports, comments: comments.tree, commentCount: comments.total,
+    excerpt: publicText(n.excerpt || ''), summary: publicText(n.summary || ''), reportSummary: allowed ? publicText(n.summary_long || '') : null, url: n.source_url, reports, comments: comments.tree, commentCount: comments.total,
   };
 }
 

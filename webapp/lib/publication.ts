@@ -1,9 +1,33 @@
 /**
  * The same publication check as services/publication.py.
  * A reason that contradicts the summary is withheld. A public sentence does
- * not address the company the agents are briefed for.
+ * not address the company the agents are briefed for. The name comes from the
+ * company brief, so it covers whatever company the agents are configured for.
  */
-const VENDORS = ['WalliD'];
+import 'server-only';
+import fs from 'fs';
+import path from 'path';
+
+function vendorNames(): string[] {
+  const files = [
+    path.join(process.cwd(), 'agents', 'company_brief.md'),
+    path.join(process.cwd(), 'webapp', 'agents', 'company_brief.md'),
+  ];
+  for (const file of files) {
+    try {
+      const text = fs.readFileSync(file, 'utf8');
+      return [...text.matchAll(/^#\s+([A-Za-z][A-Za-z0-9]+)\b/gm)].map((match) => match[1]).filter((name) => name.length > 2);
+    } catch { /* the brief lives in one of those two places */ }
+  }
+  return [];
+}
+
+const VENDORS = vendorNames();
+
+/** A catalog market and General are read by every visitor. A custom scope is not. */
+export function publicScope(scope: { isDefault?: boolean; catalog?: boolean } | null | undefined): boolean {
+  return !scope || !!scope.isDefault || !!scope.catalog;
+}
 
 const MONTHS: Record<string, number> = {
   january: 1, jan: 1, february: 2, feb: 2, march: 3, mar: 3, april: 4, apr: 4, may: 5,
@@ -15,8 +39,8 @@ const DATE_RE = /\b(?:(\d{1,2})(?:st|nd|rd|th)?\s+)?(january|february|march|apri
 const DONE_RE = /\b(has launched|have launched|launched|went live|rolled out|rollout completed|completed by|already (?:live|launched|completed)|was completed|has been completed)\b/i;
 const PLAN_RE = /\b(plans? to|planned to|scheduled to|will launch|set to launch|expected to|due to launch|to be launched|launch(?:es)? on|scheduled for)\b/i;
 const NO_PROC_RE = /\bno (?:open |direct |specific )?(?:tender|procurement|rfp|call\b)|not a procurement|no procurement|no vendor engagement|contains no direct procurement\b/i;
-const OPEN_RE = /\b(?:tender is open|bids are open|open for bids|call is open|has been awarded|contract was awarded|awarded the contract)\b/i;
-const BUYER_RE = /\b(?:buyer|contracting authority)\s*(?:is|:)\s*([^.;\n]{3,80})/gi;
+const OPEN_RE = /\b(?:tender is open|bids are open|open for bids|call is open)\b/i;
+const BUYER_RE = /\b(?:buyer|contracting authority)\s*(?:is\b|:)\s*([^.;\n]{3,80})/gi;
 
 function asDate(match: RegExpExecArray): Date | null {
   if (match[4]) {
@@ -67,6 +91,15 @@ function completedBefore(text: string): boolean {
   return false;
 }
 
+function stated(pattern: RegExp, text: string): boolean {
+  for (const hit of text.matchAll(new RegExp(pattern.source, 'gi'))) {
+    if (hit.index == null) continue;
+    const window = text.slice(Math.max(0, hit.index - 40), hit.index);
+    if (!/\b(?:no|not|without|never)\b|n't/i.test(window)) return true;
+  }
+  return false;
+}
+
 /** True when the interpretation disagrees with the summary. */
 export function contradicts(summary: string, reason: string): boolean {
   if (!reason.trim()) return false;
@@ -77,8 +110,8 @@ export function contradicts(summary: string, reason: string): boolean {
     const marks = done.length ? done : dates(reason).map((item) => item.day);
     if (!marks.length || Math.max(...planned.map((day) => day.getTime())) > Math.min(...marks.map((day) => day.getTime()))) return true;
   }
-  const noProc = [NO_PROC_RE.test(summary), NO_PROC_RE.test(reason)];
-  const opened = [OPEN_RE.test(summary), OPEN_RE.test(reason)];
+  const noProc = [stated(NO_PROC_RE, summary), stated(NO_PROC_RE, reason)];
+  const opened = [stated(OPEN_RE, summary), stated(OPEN_RE, reason)];
   if ((noProc[0] && opened[1]) || (opened[0] && noProc[1])) return true;
   const buyers = (text: string) => {
     BUYER_RE.lastIndex = 0;
@@ -115,10 +148,11 @@ export function publicText(text: string): string {
   return kept.join(' ').trim();
 }
 
-/** The interpretation to show. Empty when it contradicts the summary. */
-export function shownWhy(summary: string | null | undefined, reason: string | null | undefined): string {
+/** The interpretation to show. Empty when it contradicts the summary.
+ * A public market drops the configured company. A custom scope may keep it. */
+export function shownWhy(summary: string | null | undefined, reason: string | null | undefined, open = true): string {
   const facts = publicText(summary || '');
-  const text = publicText(reason || '');
+  const text = open ? publicText(reason || '') : (reason || '').trim();
   if (!text || contradicts(facts, text)) return '';
   return text;
 }

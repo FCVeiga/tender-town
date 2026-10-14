@@ -5,7 +5,8 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { Opportunity, buyerOf, oppCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicText, shownWhy } from '@/lib/publication';
+import { publicScope, publicText, shownWhy } from '@/lib/publication';
+import { focusedScope } from '@/lib/scopeFocus';
 import { DeadlineText, StatusTags } from '@/components/OpportunityCard';
 import UpdateComment, { UpdateEvent } from '@/components/UpdateComment';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
@@ -71,7 +72,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     .eq('opportunity_id', params.id).maybeSingle();
   if (!data) return { title: 'Not found — Tender Town', robots: { index: false, follow: false } };
   const title = titleOf(data);
-  const description = clip(firstInLanguage(data.tender_summary, data.summary) || [title, data.authority_en || data.authority, data.country].filter(Boolean).join(' · '));
+  const description = clip(publicText(firstInLanguage(data.tender_summary, data.summary) || '') || [title, data.authority_en || data.authority, data.country].filter(Boolean).join(' · '));
   return pageMeta({ title: `${title} — Tender Town`, description, path: `/tenders/${params.id}`, type: 'article' });
 }
 
@@ -149,7 +150,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   };
   const summaryText = publicText(plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? ''));
   const summary = summaryText.split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
-  const why = shownWhy(summaryText, plainText(scopeItems?.reason.get(params.id) || ''));
+  const { scope: reading } = await focusedScope();
+  const why = shownWhy(summaryText, plainText(scopeItems?.reason.get(params.id) || ''), publicScope(reading));
   const [{ data: countryRow }, likes, agentFlags] = await Promise.all([
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
     getLikes('tender', [o.opportunity_id]),
@@ -165,7 +167,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
         '@context': 'https://schema.org',
         '@type': 'Article',
         headline,
-        description: clip(firstInLanguage(o.tender_summary, o.summary) || headline, 300),
+        description: clip(summaryText || headline, 300),
         datePublished: o.publication_date || o.first_detected,
         dateModified: o.last_change || o.publication_date || o.first_detected,
         author: { '@type': 'Organization', name: buyerOf(o) || 'Tender Town' },

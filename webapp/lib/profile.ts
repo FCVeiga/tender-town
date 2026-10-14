@@ -3,6 +3,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { postBySlug } from '@/lib/blog';
 import { newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { publicText } from '@/lib/publication';
 import type { FeedItem } from '@/lib/feed';
 
 export type Profile = {
@@ -85,7 +86,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
       const closed = o.deadline && new Date(o.deadline).getTime() < now;
       return [{
         key: `tender:${o.opportunity_id}`, kind: o.opportunity_type === 'signal' ? 'news' : 'opportunity', event: 'liked', href: opportunityPath(o),
-        headline: titleOf(o), body: firstInLanguage(o.summary)?.split(/\n{2,}/)[0] ?? null, why: null,
+        headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || '').split(/\n{2,}/)[0] || null, why: null,
         category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'News' : 'Tender',
         country: o.country, at, score: o.opportunity_relevance_score ?? 0, combined: o.opportunity_relevance_score ?? 0,
         movement: 'same', deadline: closed ? null : o.deadline, isNew: false,
@@ -96,7 +97,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
     if (!n) return [];
     return [{
       key: `news:${n.news_id}`, kind: 'news', event: 'liked', href: `/news/${n.news_id}`,
-      headline: titleOf(n), body: firstInLanguage(n.summary), why: null, category: n.category || 'market',
+      headline: titleOf(n), body: publicText(firstInLanguage(n.summary) || ''), why: null, category: n.category || 'market',
       categoryLabel: newsCategoryLabel(n.category), kindLabel: 'News', country: n.region && n.region !== 'EU / International' ? n.region : null,
       at, score: n.relevance_score ?? 0, combined: n.relevance_score ?? 0, movement: 'same', deadline: null, isNew: false,
       image: n.image_url,

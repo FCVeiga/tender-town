@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { NewsItem, newsCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { publicText } from '@/lib/publication';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 
 export function formatDate(iso: string | null) {
@@ -18,7 +19,7 @@ export default function NewsRow({ n }: { n: NewsItem }) {
           <span className="news-date">{formatDate(n.published_date)}</span>
         </div>
         <div className="news-title">{titleOf(n)}</div>
-        {firstInLanguage(n.summary, n.excerpt) && <div className="news-excerpt">{firstInLanguage(n.summary, n.excerpt)}</div>}
+        {publicText(firstInLanguage(n.summary, n.excerpt) || '') && <div className="news-excerpt">{publicText(firstInLanguage(n.summary, n.excerpt) || '')}</div>}
         <div className="list-row-meta">
           {n.region}{n.source_name ? <> <span className="sep">·</span> {n.source_name}</> : null}
         </div>
