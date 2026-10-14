@@ -1,13 +1,14 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getT } from '@/lib/i18n/server';
 import { pageMeta } from '@/lib/seo';
 
-export const metadata: Metadata = pageMeta({
-  title: 'Example — Tender Town',
-  description: 'An example of requirements, company evidence, a partner gap and a proposal brief.',
-  path: '/example',
-});
+export async function generateMetadata() {
+  return pageMeta({
+    title: 'Example — Tender Town',
+    description: 'An example of requirements, company evidence, a partner gap and a proposal brief.',
+    path: '/example',
+  });
+}
 
 export default async function ExamplePage() {
   const t = await getT();
