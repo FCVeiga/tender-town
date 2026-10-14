@@ -9,7 +9,7 @@ export const OPP_CATEGORIES = [
   { slug: 'rfp', path: 'rfps', label: 'RFPs', blurb: 'Open calls for tenders and contract notices' },
   { slug: 'rfi', path: 'rfis', label: 'RFIs', blurb: 'Requests for information, market consultations and prior information notices' },
   { slug: 'grant', path: 'grants', label: 'Grants', blurb: 'Grants, calls for proposals, consortium calls and funded pilots' },
-  { slug: 'signal', path: 'signals', label: 'Signals', blurb: 'A named buyer has announced a procurement that isn\u2019t open yet — TED prior information notices, approved budgets, mandated systems. Dated within the last 6 months.' },
+  { slug: 'signal', path: 'signals', label: 'Signals', blurb: 'A named buyer has announced a procurement that isn\u2019t open yet — prior information notices, approved budgets, mandated systems. Dated within the last 6 months.' },
 ] as const;
 
 // Tenders, RFIs and grants: what Opportunities and Tender History list. Signals

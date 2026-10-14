@@ -4,7 +4,7 @@ import { pageMeta } from '@/lib/seo';
 
 export async function generateMetadata() {
   const t = await getT();
-  return pageMeta({ title: `${t('RFIs')} — Tender Town`, description: t('Requests for information open across Europe.'), path: '/tenders/rfis' });
+  return pageMeta({ title: `${t('RFIs')} — Tender Town`, description: t('Requests for information open worldwide.'), path: '/tenders/rfis' });
 }
 
 export default function RfisPage() {

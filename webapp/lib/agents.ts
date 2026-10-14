@@ -26,7 +26,7 @@ export type AgentDef = {
 export const AGENTS: AgentDef[] = [
   {
     key: 'search', name: 'Search Agent', runs: 'pipeline', prompt: 'search scope (Workspace → scope → Search Agent)', fineTune: false,
-    role: 'Finds tenders and news on TED, the web and your followed sources.',
+    role: 'Finds tenders and news on procurement portals, the web and your followed sources.',
     face: { colors: ['#00CCFF', '#3D7BFF'], eyes: 'scan', top: 'dish', mouth: 'flat' },
   },
   {

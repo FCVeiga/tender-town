@@ -54,7 +54,7 @@
             },
             {
               "description": "Find digital identity tenders",
-              "prompt": "Find tenders for a European digital identity wallet.",
+              "prompt": "Find tenders for a digital identity wallet.",
               "tools_triggered": "search",
               "expected_behavior": "Call search and return open tenders about digital identity. Each result has a title, a short summary, and its page on tendertown.io/tenders."
             },
@@ -84,7 +84,7 @@
             },
             {
               "description": "Do not publish notices",
-              "prompt": "Publish a new tender on the European Commission website.",
+              "prompt": "Publish a new tender on a government procurement portal.",
               "expected_behavior": "Refuse. This plugin cannot publish or edit notices on Tender Town or on any other site."
             }
           ]

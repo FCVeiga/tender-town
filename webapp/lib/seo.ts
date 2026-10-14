@@ -10,18 +10,21 @@ export function clip(text: string | null | undefined, max = 160) {
   return `${flat.slice(0, max - 1).replace(/\s+\S*$/, '')}…`;
 }
 
+/** Landscape card for link previews. Pages pass their own image when they have one. */
+export const SHARE_IMAGE = { url: '/brand/share.png', width: 1200, height: 630, alt: 'Tender Town' };
+
 /** Title, description, canonical and social cards for one public URL. */
 export function pageMeta({ title, description, path, type = 'website', image }: {
   title: string; description: string; path: string; type?: 'website' | 'article'; image?: string | null;
 }): Metadata {
   const origin = siteOrigin();
   const url = `${origin}${path}`;
-  const images = image ? [image] : undefined;
+  const images = image ? [{ url: image, alt: title }] : [SHARE_IMAGE];
   return {
     title,
     description,
     alternates: { canonical: url, types: { 'application/rss+xml': `${origin}/feed.xml` } },
     openGraph: { title, description, url, siteName: 'Tender Town', type, images },
-    twitter: { card: image ? 'summary_large_image' : 'summary', title, description, images },
+    twitter: { card: 'summary_large_image', title, description, images },
   };
 }

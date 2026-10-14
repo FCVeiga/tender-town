@@ -9,7 +9,7 @@ import { pageMeta } from '@/lib/seo';
 
 export async function generateMetadata() {
   const t = await getT();
-  return pageMeta({ title: `${t('Community')} — Tender Town`, description: t('Posts from people who find and bid on public contracts in Europe.'), path: '/community' });
+  return pageMeta({ title: `${t('Community')} — Tender Town`, description: t('Posts from people who find and bid on public contracts.'), path: '/community' });
 }
 const PAGE = 25;
 

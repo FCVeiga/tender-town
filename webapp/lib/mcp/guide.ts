@@ -9,7 +9,7 @@ type Doc = { h: 2 | 3; text: string } | { p: string } | { ul: string[] } | { cod
 
 export const MCP_DOC: Doc[] = [
   { h: 2, text: 'What you can do' },
-  { p: 'Tender Town tracks public tenders, grants and market news across Europe. This server lets an external agent do the work a person does in the product: set the radar up, and read what it found.' },
+  { p: 'Tender Town tracks public tenders, grants and market news worldwide. This server lets an external agent do the work a person does in the product: set the radar up, and read what it found.' },
   { p: 'The agent acts as the account that owns the token. Every call is checked against that account and against the workspace owner’s plan. A call the plan does not include is refused, with the reason.' },
 
   { h: 2, text: 'How the product is organised' },
@@ -26,7 +26,7 @@ export const MCP_DOC: Doc[] = [
   { h: 3, text: 'Scope agents' },
   { p: 'Each scope has five agents you can configure. Search and triage run on the platform’s schedule. The other three run only when you ask, and each run is counted.' },
   { ul: [
-    'Search Agent finds tenders and news on TED, the web and the sources the workspace follows. Plain-language instructions are turned into its search configuration. Saving them does not fetch results immediately. Search runs with the pipeline, as often as the plan allows: once a day on Free, twice on Starter, three times on Pro, six times on Teams.',
+    'Search Agent finds tenders and news on procurement portals, the web and the sources the workspace follows. Plain-language instructions are turned into its search configuration. Saving them does not fetch results immediately. Search runs with the pipeline, as often as the plan allows: once a day on Free, twice on Starter, three times on Pro, six times on Teams.',
     'Triage Agent scores each find and sorts tenders, grants and news. Instructions rewrite its prompt. It runs on the same schedule as search.',
     'Tender Evaluation Agent checks one tender against the scope, scores the fit and advises. Starter includes 1 run a month, Pro 5, Teams unlimited. Not on Free.',
     'Proposal Manager Agent writes a proposal brief from that evaluation: the requirements, the references the scope already has, the gaps and the steps. Teams only, and only after an evaluation exists for that scope.',

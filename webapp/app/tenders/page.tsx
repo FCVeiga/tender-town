@@ -4,7 +4,7 @@ import { pageMeta } from '@/lib/seo';
 
 export async function generateMetadata() {
   const t = await getT();
-  return pageMeta({ title: `${t('Tenders')} — Tender Town`, description: t('Open public tenders and funding calls across Europe.'), path: '/tenders' });
+  return pageMeta({ title: `${t('Tenders')} — Tender Town`, description: t('Open public tenders and funding calls worldwide.'), path: '/tenders' });
 }
 
 export default function OpportunitiesPage() {

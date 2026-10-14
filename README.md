@@ -1,17 +1,16 @@
 # Tender Town
 
-**Public tenders, funding and market news across Europe — and a community of
+**Public tenders, funding and market news worldwide — and a community of
 the people who bid on them.** Live at https://tendertown.io.
 
-Tender Town started as a radar for EUDI Wallet opportunities and grew into a
-platform for every kind of public procurement: national and EU tenders, grants
+Tender Town is a platform for public procurement worldwide: tenders, grants
 and funding calls, development-bank procurement, and the news around them,
 with a social layer (posts, comments, chat, profiles) on top.
 
 ## What it does
 
-- **Tenders** — open RFPs, RFIs, grants and procurement signals from TED, the
-  national procurement portals, EU funding programmes and development banks;
+- **Tenders** — open RFPs, RFIs, grants and procurement signals from
+  procurement portals, funding programmes and development banks worldwide;
   each tender page has its documents, a summary and the full list of
   requirements, a fit evaluation and a proposal brief for your scope.
 - **News** — regulation, industry and market stories, with an on-demand report

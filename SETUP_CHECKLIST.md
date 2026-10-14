@@ -1,11 +1,11 @@
 # Tender Town — Setup Checklist
 
-> Tender Town (formerly EUDI Radar) covers public tenders across Europe; the
-> sections below that mention Africa/LatAm or EUDI-specific config are optional.
+> Tender Town (formerly EUDI Radar) covers public procurement worldwide. The
+> sections below that mention a single region or EUDI-specific config are optional.
 
 Everything below is either already in the repo (needs real values) or
 needs to be created as an environment/secrets file. Nothing here is
-optional if you want the full scope (Europe + Africa + LatAm + social).
+optional if you want the full product, worldwide, including the social layer.
 
 ---
 

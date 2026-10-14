@@ -22,6 +22,7 @@ import UserAvatar from '@/components/UserAvatar';
 import { logOut } from '@/app/auth/actions';
 import { BottomNav, BottomNavLinks, MenuBackdrop, MenuButton } from '@/components/MobileNav';
 import { isSuperAdmin } from '@/lib/admin';
+import { SHARE_IMAGE } from '@/lib/seo';
 
 // Every page reads live from Supabase. Without this, Next prerenders pages
 // with no searchParams at build time and serves that frozen snapshot forever.
@@ -48,8 +49,8 @@ export async function generateMetadata() {
     title: { default: 'Tender Town', template: '%s' },
     description,
     alternates: { types: { 'application/rss+xml': `${siteOrigin()}/feed.xml` } },
-    openGraph: { siteName: 'Tender Town', type: 'website', description },
-    twitter: { card: 'summary' },
+    openGraph: { siteName: 'Tender Town', type: 'website', description, images: [SHARE_IMAGE] },
+    twitter: { card: 'summary_large_image', description, images: [SHARE_IMAGE] },
     icons: {
       icon: [
         { url: '/brand/favicon.png', media: '(prefers-color-scheme: light)', type: 'image/png' },

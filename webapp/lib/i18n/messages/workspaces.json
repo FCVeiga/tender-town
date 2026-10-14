@@ -1861,12 +1861,12 @@
   "de": "Such-Agent",
   "it": "Agente di ricerca"
  },
- "Finds tenders and news on TED, the web and your followed sources.": {
-  "pt": "Encontra concursos e notícias no TED, na web e nas fontes que segue.",
-  "es": "Encuentra licitaciones y noticias en TED, la web y las fuentes que sigues.",
-  "fr": "Trouve des appels d'offres et des actualités sur TED, le web et vos sources suivies.",
-  "de": "Findet Ausschreibungen und Nachrichten auf TED, im Web und in deinen gefolgten Quellen.",
-  "it": "Trova gare e notizie su TED, sul web e nelle fonti che segui."
+ "Finds tenders and news on procurement portals, the web and your followed sources.": {
+  "pt": "Encontra concursos e notícias em portais de contratação, na web e nas fontes que segue.",
+  "es": "Encuentra licitaciones y noticias en portales de contratación, la web y las fuentes que sigues.",
+  "fr": "Trouve des appels d'offres et des actualités sur les portails de marchés, le web et vos sources suivies.",
+  "de": "Findet Ausschreibungen und Nachrichten auf Vergabeportalen, im Web und in deinen gefolgten Quellen.",
+  "it": "Trova gare e notizie sui portali degli appalti, sul web e nelle fonti che segui."
  },
  "Triage Agent": {
   "pt": "Agente de Triagem",

@@ -2,21 +2,14 @@ import { getCurrentUser, siteOrigin } from '@/lib/auth';
 import { getPersonalAccount } from '@/lib/accounts';
 import { getT, getTSync } from '@/lib/i18n/server';
 import { PLANS, yearPrice } from '@/lib/plans';
+import { pageMeta } from '@/lib/seo';
 import PricingTable from '@/components/PricingTable';
 
 const INTRO = 'Plans for public tenders, funding and market news.';
 
 export async function generateMetadata() {
   const t = await getT();
-  const origin = siteOrigin();
-  const description = t(INTRO);
-  const title = `${t('Pricing')} — Tender Town`;
-  return {
-    title,
-    description,
-    alternates: { canonical: `${origin}/pricing`, types: { 'application/rss+xml': `${origin}/feed.xml` } },
-    openGraph: { title, description, url: `${origin}/pricing`, siteName: 'Tender Town', type: 'website' },
-  };
+  return pageMeta({ title: `${t('Pricing')} — Tender Town`, description: t(INTRO), path: '/pricing' });
 }
 
 export default async function PricingPage() {

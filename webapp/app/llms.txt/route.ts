@@ -55,7 +55,7 @@ export async function GET() {
     '',
     'Tender Town tracks open public procurement: requests for proposals, requests for information, grants and funding calls, with their documents, summaries and requirements, plus regulation, industry and market news. Visitors see the General scope. Each catalog market has its own page. A workspace can also create a custom scope so the agents work to that business.',
     '',
-    'The pipeline runs every four hours. It searches TED (Tenders Electronic Daily), national procurement portals, EU funding programmes, development-bank notices, news, and the sources a workspace follows.',
+    'The pipeline runs every four hours. It searches public procurement notices and funding programmes worldwide, including national portals, TED and development-bank notices, plus news and the sources a workspace follows.',
     '',
     'Tenders, news and community posts are public HTML. No account is required to read them. Signed-out visitors on /, /tenders and /news see one preset scope. Crawlers always see General on those pages. /markets lists every catalog market. New items appear in the sitemap and the feed as the pipeline publishes them.',
     '',

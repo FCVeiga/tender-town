@@ -23,7 +23,7 @@ const link = (href: string) => (s: string) => <Link href={href}>{s}</Link>;
 
 function faq(t: (key: string) => string): { q: string; a: React.ReactNode }[] {
   return [
-    { q: t('What is Tender Town?'), a: t('A radar for public tenders, grants and market news in your field. Agents search TED, national portals, news and the sources you follow every day, sort what matters, and write it up for you.') },
+    { q: t('What is Tender Town?'), a: t('A radar for public tenders, grants and market news in your field. Agents search procurement notices, news and the sources you follow every day, sort what matters, and write it up for you.') },
     { q: t('How is the home feed ordered?'), a: rich(t('<b>Top</b> blends each item’s relevance with how recent it is, so important news stays up longer. <b>Relevance</b> is the AI score alone; <b>New</b> is newest first.'), { b }) },
     { q: t('What does the heart do?'), a: rich(t('It follows a tender or news story. Everything you follow is under <b>Following</b> on your profile, visible only to you.'), { b }) },
     { q: t('What are the agents?'), a: rich(t('Each step of the radar is an agent — search, triage, documents, analysis, evaluation, proposal brief, news reports, feed writing and translation. Each scope in your <workspaces>Workspaces</workspaces> has its own; on a paid plan you can switch them on or off and tune them in plain language.'), { workspaces: link('/workspaces') }) },

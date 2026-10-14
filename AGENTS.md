@@ -1,7 +1,7 @@
 # Tender Town — instructions for coding agents
 
 Tender Town (formerly EUDI Radar) is a platform for public tenders, funding and
-market news across Europe, with a community (posts, comments, chat, profiles).
+market news worldwide, with a community (posts, comments, chat, profiles).
 Read `README.md` for the product and architecture, `webapp/README.md` for the
 web app, `MIGRATION.md` for accounts and deployment.
 

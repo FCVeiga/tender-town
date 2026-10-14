@@ -1147,12 +1147,12 @@
     "de": "Was ist Tender Town?",
     "it": "Che cos’è Tender Town?"
   },
-  "A radar for public tenders, grants and market news in your field. Agents search TED, national portals, news and the sources you follow every day, sort what matters, and write it up for you.": {
-    "pt": "Um radar de concursos públicos, financiamentos e notícias de mercado da sua área. Todos os dias, agentes pesquisam o TED, portais nacionais, notícias e as fontes que segue, selecionam o que importa e redigem-no para si.",
-    "es": "Un radar de licitaciones públicas, subvenciones y noticias del mercado de tu sector. Cada día, los agentes buscan en TED, portales nacionales, noticias y las fuentes que sigues, seleccionan lo importante y te lo resumen.",
-    "fr": "Un radar des appels d’offres publics, subventions et actualités du marché dans votre domaine. Chaque jour, des agents parcourent TED, les portails nationaux, l’actualité et les sources que vous suivez, trient l’essentiel et le rédigent pour vous.",
-    "de": "Ein Radar für öffentliche Ausschreibungen, Förderungen und Marktnachrichten in deinem Bereich. Agenten durchsuchen täglich TED, nationale Portale, Nachrichten und die Quellen, denen du folgst, filtern das Wichtige heraus und fassen es für dich zusammen.",
-    "it": "Un radar per gare pubbliche, finanziamenti e notizie di mercato nel tuo settore. Ogni giorno gli agenti cercano su TED, portali nazionali, notizie e le fonti che segui, selezionano ciò che conta e lo scrivono per te."
+  "A radar for public tenders, grants and market news in your field. Agents search procurement notices, news and the sources you follow every day, sort what matters, and write it up for you.": {
+    "pt": "Um radar de concursos públicos, financiamentos e notícias de mercado da sua área. Todos os dias, agentes pesquisam anúncios de contratação, notícias e as fontes que segue, selecionam o que importa e redigem-no para si.",
+    "es": "Un radar de licitaciones públicas, subvenciones y noticias del mercado de tu sector. Cada día, los agentes buscan anuncios de contratación, noticias y las fuentes que sigues, seleccionan lo importante y te lo resumen.",
+    "fr": "Un radar des appels d’offres publics, subventions et actualités du marché dans votre domaine. Chaque jour, des agents parcourent les avis de marchés, l’actualité et les sources que vous suivez, trient l’essentiel et le rédigent pour vous.",
+    "de": "Ein Radar für öffentliche Ausschreibungen, Förderungen und Marktnachrichten in deinem Bereich. Agenten durchsuchen täglich Beschaffungsbekanntmachungen, Nachrichten und die Quellen, denen du folgst, filtern das Wichtige heraus und fassen es für dich zusammen.",
+    "it": "Un radar per gare pubbliche, finanziamenti e notizie di mercato nel tuo settore. Ogni giorno gli agenti cercano avvisi di appalto, notizie e le fonti che segui, selezionano ciò che conta e lo scrivono per te."
   },
   "How is the home feed ordered?": {
     "pt": "Como é ordenado o feed inicial?",

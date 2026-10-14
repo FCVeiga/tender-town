@@ -237,12 +237,12 @@
     "de": "Bereiche",
     "it": "Ambiti"
   },
-  "Open public tenders and funding calls across Europe.": {
-    "pt": "Concursos públicos e avisos de financiamento abertos em toda a Europa.",
-    "es": "Licitaciones públicas y convocatorias de financiación abiertas en toda Europa.",
-    "fr": "Appels d’offres publics et appels à financement ouverts dans toute l’Europe.",
-    "de": "Offene öffentliche Ausschreibungen und Förderaufrufe in ganz Europa.",
-    "it": "Gare pubbliche e bandi di finanziamento aperti in tutta Europa."
+  "Open public tenders and funding calls worldwide.": {
+    "pt": "Concursos públicos e avisos de financiamento abertos em todo o mundo.",
+    "es": "Licitaciones públicas y convocatorias de financiación abiertas en todo el mundo.",
+    "fr": "Appels d’offres publics et appels à financement ouverts dans le monde entier.",
+    "de": "Offene öffentliche Ausschreibungen und Förderaufrufe weltweit.",
+    "it": "Gare pubbliche e bandi di finanziamento aperti in tutto il mondo."
   },
   "Regulation, industry and market news for people who bid on public contracts.": {
     "pt": "Notícias de regulação, setor e mercado para quem concorre a contratos públicos.",
@@ -258,26 +258,26 @@
     "de": "Ausschreibungen und Förderaufrufe der letzten Tage.",
     "it": "Gare e bandi di finanziamento pubblicati negli ultimi giorni."
   },
-  "Requests for proposals open across Europe.": {
-    "pt": "Pedidos de proposta abertos em toda a Europa.",
-    "es": "Solicitudes de propuesta abiertas en toda Europa.",
-    "fr": "Appels d’offres ouverts dans toute l’Europe.",
-    "de": "Offene Aufforderungen zur Angebotsabgabe in ganz Europa.",
-    "it": "Richieste di proposta aperte in tutta Europa."
+  "Requests for proposals open worldwide.": {
+    "pt": "Pedidos de proposta abertos em todo o mundo.",
+    "es": "Solicitudes de propuesta abiertas en todo el mundo.",
+    "fr": "Appels d’offres ouverts dans le monde entier.",
+    "de": "Offene Aufforderungen zur Angebotsabgabe weltweit.",
+    "it": "Richieste di proposta aperte in tutto il mondo."
   },
-  "Requests for information open across Europe.": {
-    "pt": "Pedidos de informação abertos em toda a Europa.",
-    "es": "Solicitudes de información abiertas en toda Europa.",
-    "fr": "Demandes d’information ouvertes dans toute l’Europe.",
-    "de": "Offene Auskunftsersuchen in ganz Europa.",
-    "it": "Richieste di informazioni aperte in tutta Europa."
+  "Requests for information open worldwide.": {
+    "pt": "Pedidos de informação abertos em todo o mundo.",
+    "es": "Solicitudes de información abiertas en todo el mundo.",
+    "fr": "Demandes d’information ouvertes dans le monde entier.",
+    "de": "Offene Auskunftsersuchen weltweit.",
+    "it": "Richieste di informazioni aperte in tutto il mondo."
   },
-  "Grants and funding calls open across Europe.": {
-    "pt": "Subvenções e avisos de financiamento abertos em toda a Europa.",
-    "es": "Subvenciones y convocatorias de financiación abiertas en toda Europa.",
-    "fr": "Subventions et appels à financement ouverts dans toute l’Europe.",
-    "de": "Offene Zuschüsse und Förderaufrufe in ganz Europa.",
-    "it": "Sovvenzioni e bandi di finanziamento aperti in tutta Europa."
+  "Grants and funding calls open worldwide.": {
+    "pt": "Subvenções e avisos de financiamento abertos em todo o mundo.",
+    "es": "Subvenciones y convocatorias de financiación abiertas en todo el mundo.",
+    "fr": "Subventions et appels à financement ouverts dans le monde entier.",
+    "de": "Offene Zuschüsse und Förderaufrufe weltweit.",
+    "it": "Sovvenzioni e bandi di finanziamento aperti in tutto il mondo."
   },
   "Regulation news for people who bid on public contracts.": {
     "pt": "Notícias de regulação para quem concorre a contratos públicos.",
@@ -328,12 +328,12 @@
     "de": "Wie Tender Town personenbezogene Daten behandelt.",
     "it": "Come Tender Town tratta i dati personali."
   },
-  "Posts from people who find and bid on public contracts in Europe.": {
-    "pt": "Publicações de quem procura e concorre a contratos públicos na Europa.",
-    "es": "Publicaciones de quienes buscan y licitan contratos públicos en Europa.",
-    "fr": "Publications de celles et ceux qui trouvent et remportent des marchés publics en Europe.",
-    "de": "Beiträge von Menschen, die in Europa öffentliche Aufträge suchen und sich darauf bewerben.",
-    "it": "Post di chi cerca e partecipa a contratti pubblici in Europa."
+  "Posts from people who find and bid on public contracts.": {
+    "pt": "Publicações de quem procura e concorre a contratos públicos.",
+    "es": "Publicaciones de quienes buscan y licitan contratos públicos.",
+    "fr": "Publications de celles et ceux qui trouvent et remportent des marchés publics.",
+    "de": "Beiträge von Menschen, die öffentliche Aufträge suchen und sich darauf bewerben.",
+    "it": "Post di chi cerca e partecipa a contratti pubblici."
   },
   "Tender Town home": {
     "pt": "Início do Tender Town",
@@ -1371,12 +1371,12 @@
     "de": "Übersetzungs-Agent",
     "it": "Agente Traduttore"
   },
-  "Finds tenders and news on TED, the web and your followed sources.": {
-    "pt": "Encontra concursos e notícias no TED, na web e nas fontes que segue.",
-    "es": "Encuentra licitaciones y noticias en TED, la web y las fuentes que sigues.",
-    "fr": "Trouve des appels d'offres et des actualités sur TED, le web et vos sources suivies.",
-    "de": "Findet Ausschreibungen und Nachrichten auf TED, im Web und in Ihren gefolgten Quellen.",
-    "it": "Trova gare e notizie su TED, sul web e nelle fonti che segui."
+  "Finds tenders and news on procurement portals, the web and your followed sources.": {
+    "pt": "Encontra concursos e notícias em portais de contratação, na web e nas fontes que segue.",
+    "es": "Encuentra licitaciones y noticias en portales de contratación, la web y las fuentes que sigues.",
+    "fr": "Trouve des appels d'offres et des actualités sur les portails de marchés, le web et vos sources suivies.",
+    "de": "Findet Ausschreibungen und Nachrichten auf Vergabeportalen, im Web und in Ihren gefolgten Quellen.",
+    "it": "Trova gare e notizie sui portali degli appalti, sul web e nelle fonti che segui."
   },
   "Scores each find for relevance and sorts tenders, grants and news.": {
     "pt": "Pontua a relevância de cada resultado e organiza concursos, subvenções e notícias.",
@@ -1434,12 +1434,12 @@
     "de": "Übersetzt Titel, Dokumente und Zusammenfassungen in die Sprache der Website.",
     "it": "Traduce titoli, documenti e riepiloghi nella lingua del sito."
   },
-  "Public tenders, funding and market news across Europe — and a community of the people who bid on them.": {
-    "pt": "Concursos públicos, financiamento e notícias de mercado em toda a Europa — e uma comunidade de quem concorre a eles.",
-    "es": "Licitaciones públicas, financiación y noticias del mercado en toda Europa, y una comunidad de quienes se presentan a ellas.",
-    "fr": "Appels d'offres publics, financements et actualités du marché dans toute l'Europe — et une communauté de ceux qui y répondent.",
-    "de": "Öffentliche Ausschreibungen, Förderungen und Marktnachrichten aus ganz Europa – und eine Community der Menschen, die sich darauf bewerben.",
-    "it": "Gare pubbliche, finanziamenti e notizie di mercato in tutta Europa, e una community di chi vi partecipa."
+  "Public tenders, funding and market news worldwide — and a community of the people who bid on them.": {
+    "pt": "Concursos públicos, financiamento e notícias de mercado em todo o mundo — e uma comunidade de quem concorre a eles.",
+    "es": "Licitaciones públicas, financiación y noticias del mercado en todo el mundo, y una comunidad de quienes se presentan a ellas.",
+    "fr": "Appels d'offres publics, financements et actualités du marché dans le monde entier — et une communauté de ceux qui y répondent.",
+    "de": "Öffentliche Ausschreibungen, Förderungen und Marktnachrichten weltweit – und eine Community der Menschen, die sich darauf bewerben.",
+    "it": "Gare pubbliche, finanziamenti e notizie di mercato in tutto il mondo, e una community di chi vi partecipa."
   },
   "More": {
     "pt": "Mais",
@@ -1476,12 +1476,12 @@
     "de": "Was Tender Town ist",
     "it": "Cos’è Tender Town"
   },
-  "Tender Town is a platform for public procurement across Europe. It tracks open tenders — requests for proposals, requests for information, grants and funding calls — with their documents and requirements, plus regulation, industry and market news.": {
-    "pt": "O Tender Town é uma plataforma de contratação pública na Europa. Acompanha concursos abertos — pedidos de proposta, pedidos de informação, subvenções e avisos de financiamento — com os seus documentos e requisitos, e notícias de regulação, setor e mercado.",
-    "es": "Tender Town es una plataforma de contratación pública en Europa. Sigue licitaciones abiertas — solicitudes de oferta, solicitudes de información, subvenciones y convocatorias de financiación — con sus documentos y requisitos, y noticias de regulación, sector y mercado.",
-    "fr": "Tender Town est une plateforme de marchés publics en Europe. Elle suit les appels d’offres ouverts — demandes de propositions, demandes d’information, subventions et appels à financement — avec leurs documents et exigences, ainsi que l’actualité réglementaire, sectorielle et de marché.",
-    "de": "Tender Town ist eine Plattform für das öffentliche Beschaffungswesen in Europa. Sie verfolgt offene Ausschreibungen — Angebotsaufforderungen, Auskunftsersuchen, Zuschüsse und Förderaufrufe — mit ihren Unterlagen und Anforderungen, sowie Regulierungs-, Branchen- und Marktnachrichten.",
-    "it": "Tender Town è una piattaforma per gli appalti pubblici in Europa. Segue gare aperte — richieste di proposta, richieste di informazioni, contributi e bandi di finanziamento — con documenti e requisiti, e notizie su regolazione, settore e mercato."
+  "Tender Town is a platform for public procurement worldwide. It tracks open tenders — requests for proposals, requests for information, grants and funding calls — with their documents and requirements, plus regulation, industry and market news.": {
+    "pt": "O Tender Town é uma plataforma de contratação pública em todo o mundo. Acompanha concursos abertos — pedidos de proposta, pedidos de informação, subvenções e avisos de financiamento — com os seus documentos e requisitos, e notícias de regulação, setor e mercado.",
+    "es": "Tender Town es una plataforma de contratación pública en todo el mundo. Sigue licitaciones abiertas — solicitudes de oferta, solicitudes de información, subvenciones y convocatorias de financiación — con sus documentos y requisitos, y noticias de regulación, sector y mercado.",
+    "fr": "Tender Town est une plateforme de marchés publics dans le monde entier. Elle suit les appels d’offres ouverts — demandes de propositions, demandes d’information, subventions et appels à financement — avec leurs documents et exigences, ainsi que l’actualité réglementaire, sectorielle et de marché.",
+    "de": "Tender Town ist eine Plattform für das öffentliche Beschaffungswesen weltweit. Sie verfolgt offene Ausschreibungen — Angebotsaufforderungen, Auskunftsersuchen, Zuschüsse und Förderaufrufe — mit ihren Unterlagen und Anforderungen, sowie Regulierungs-, Branchen- und Marktnachrichten.",
+    "it": "Tender Town è una piattaforma per gli appalti pubblici in tutto il mondo. Segue gare aperte — richieste di proposta, richieste di informazioni, contributi e bandi di finanziamento — con documenti e requisiti, e notizie su regolazione, settore e mercato."
   },
   "Posts, comments, chat and profiles sit on the same site, for the people who find and bid on this work.": {
     "pt": "Publicações, comentários, chat e perfis estão no mesmo site, para quem procura e concorre a este trabalho.",
@@ -1504,12 +1504,12 @@
     "de": "Woher das Material kommt",
     "it": "Da dove arriva il materiale"
   },
-  "Agents search TED (Tenders Electronic Daily), national procurement portals, EU funding programmes, development-bank notices and news, and the sources a workspace follows.": {
-    "pt": "Os agentes pesquisam o TED (Tenders Electronic Daily), portais nacionais de contratação, programas de financiamento da UE, avisos de bancos de desenvolvimento e notícias, e as fontes que um espaço de trabalho segue.",
-    "es": "Los agentes buscan en TED (Tenders Electronic Daily), portales nacionales de contratación, programas de financiación de la UE, anuncios de bancos de desarrollo y noticias, y en las fuentes que sigue un espacio de trabajo.",
-    "fr": "Les agents interrogent TED (Tenders Electronic Daily), les portails nationaux de marchés, les programmes de financement de l’UE, les avis des banques de développement et l’actualité, ainsi que les sources suivies par un espace de travail.",
-    "de": "Die Agenten durchsuchen TED (Tenders Electronic Daily), nationale Vergabeportale, EU-Förderprogramme, Bekanntmachungen von Entwicklungsbanken und Nachrichten sowie die Quellen, denen ein Arbeitsbereich folgt.",
-    "it": "Gli agenti cercano su TED (Tenders Electronic Daily), sui portali nazionali degli appalti, nei programmi di finanziamento UE, negli avvisi delle banche di sviluppo e nelle notizie, e nelle fonti seguite da un’area di lavoro."
+  "Agents search public procurement notices and funding programmes worldwide, including national portals, TED and development-bank notices, plus news and the sources a workspace follows.": {
+    "pt": "Os agentes pesquisam anúncios de contratação pública e programas de financiamento em todo o mundo, incluindo portais nacionais, o TED e avisos de bancos de desenvolvimento, além de notícias e das fontes que um espaço de trabalho segue.",
+    "es": "Los agentes buscan anuncios de contratación pública y programas de financiación en todo el mundo, incluidos portales nacionales, TED y anuncios de bancos de desarrollo, además de noticias y de las fuentes que sigue un espacio de trabajo.",
+    "fr": "Les agents interrogent les avis de marchés publics et les programmes de financement dans le monde entier, y compris les portails nationaux, TED et les avis des banques de développement, ainsi que l’actualité et les sources suivies par un espace de travail.",
+    "de": "Die Agenten durchsuchen öffentliche Beschaffungsbekanntmachungen und Förderprogramme weltweit, darunter nationale Portale, TED und Bekanntmachungen von Entwicklungsbanken, sowie Nachrichten und die Quellen, denen ein Arbeitsbereich folgt.",
+    "it": "Gli agenti cercano avvisi di appalti pubblici e programmi di finanziamento in tutto il mondo, compresi i portali nazionali, TED e gli avvisi delle banche di sviluppo, oltre alle notizie e alle fonti seguite da un’area di lavoro."
   },
   "How items are chosen": {
     "pt": "Como os itens são escolhidos",
@@ -1581,12 +1581,12 @@
     "de": "Was ist Tender Town?",
     "it": "Cos’è Tender Town?"
   },
-  "A platform for public tenders, grants and market news across Europe, and a community of the people who bid on them.": {
-    "pt": "Uma plataforma de concursos públicos, subvenções e notícias de mercado na Europa, e uma comunidade de quem concorre a eles.",
-    "es": "Una plataforma de licitaciones públicas, subvenciones y noticias del mercado en Europa, y una comunidad de quienes se presentan a ellas.",
-    "fr": "Une plateforme d’appels d’offres publics, de subventions et d’actualités du marché en Europe, et une communauté de ceux qui y répondent.",
-    "de": "Eine Plattform für öffentliche Ausschreibungen, Förderungen und Marktnachrichten in Europa, und eine Community der Menschen, die sich darauf bewerben.",
-    "it": "Una piattaforma per gare pubbliche, contributi e notizie di mercato in Europa, e una community di chi vi partecipa."
+  "A platform for public tenders, grants and market news worldwide, and a community of the people who bid on them.": {
+    "pt": "Uma plataforma de concursos públicos, subvenções e notícias de mercado em todo o mundo, e uma comunidade de quem concorre a eles.",
+    "es": "Una plataforma de licitaciones públicas, subvenciones y noticias del mercado en todo el mundo, y una comunidad de quienes se presentan a ellas.",
+    "fr": "Une plateforme d’appels d’offres publics, de subventions et d’actualités du marché dans le monde entier, et une communauté de ceux qui y répondent.",
+    "de": "Eine Plattform für öffentliche Ausschreibungen, Förderungen und Marktnachrichten weltweit, und eine Community der Menschen, die sich darauf bewerben.",
+    "it": "Una piattaforma per gare pubbliche, contributi e notizie di mercato in tutto il mondo, e una community di chi vi partecipa."
   },
   "Who is Tender Town for?": {
     "pt": "Para quem é o Tender Town?",
@@ -1595,12 +1595,12 @@
     "de": "Für wen ist Tender Town?",
     "it": "Per chi è Tender Town?"
   },
-  "Companies, consultants and teams that look for and bid on public contracts in Europe.": {
-    "pt": "Empresas, consultores e equipas que procuram e concorrem a contratos públicos na Europa.",
-    "es": "Empresas, consultores y equipos que buscan y se presentan a contratos públicos en Europa.",
-    "fr": "Entreprises, consultants et équipes qui cherchent et répondent à des marchés publics en Europe.",
-    "de": "Unternehmen, Berater und Teams, die öffentliche Aufträge in Europa suchen und sich darauf bewerben.",
-    "it": "Aziende, consulenti e team che cercano e partecipano a contratti pubblici in Europa."
+  "Companies, consultants and teams that look for and bid on public contracts.": {
+    "pt": "Empresas, consultores e equipas que procuram e concorrem a contratos públicos.",
+    "es": "Empresas, consultores y equipos que buscan y se presentan a contratos públicos.",
+    "fr": "Entreprises, consultants et équipes qui cherchent et répondent à des marchés publics.",
+    "de": "Unternehmen, Berater und Teams, die öffentliche Aufträge suchen und sich darauf bewerben.",
+    "it": "Aziende, consulenti e team che cercano e partecipano a contratti pubblici."
   },
   "Is an account required?": {
     "pt": "É precisa uma conta?",
@@ -1938,12 +1938,12 @@
     "de": "Einholen und zusammenfassen",
     "it": "Raccogliere e riassumere"
   },
-  "The Search Agent collects notices and stories from TED, national portals, funding programmes, development banks, news, and the sources a workspace follows. The Triage Agent scores them. Visitors see the General scope, which ranks without a language model. A custom scope scores against your instructions.": {
-    "pt": "O agente de pesquisa recolhe anúncios e notícias do TED, de portais nacionais, de programas de financiamento, de bancos de desenvolvimento, de notícias e das fontes que um espaço de trabalho segue. O agente de triagem pontua-os. Os visitantes veem o âmbito Geral, que ordena sem um modelo de linguagem. Um âmbito personalizado pontua face às suas instruções.",
-    "es": "El agente de búsqueda recoge anuncios e historias de TED, portales nacionales, programas de financiación, bancos de desarrollo, noticias y las fuentes que sigue un espacio de trabajo. El agente de triaje las puntúa. Quienes visitan ven el ámbito General, que ordena sin un modelo de lenguaje. Un ámbito personalizado puntúa según tus instrucciones.",
-    "fr": "L'agent de recherche collecte les avis et les articles de TED, des portails nationaux, des programmes de financement, des banques de développement, de l'actualité et des sources suivies par un espace de travail. L'agent de tri les note. Les visiteurs voient le périmètre Général, qui classe sans modèle de langage. Un périmètre personnalisé note selon vos instructions.",
-    "de": "Der Suchagent sammelt Bekanntmachungen und Meldungen von TED, nationalen Portalen, Förderprogrammen, Entwicklungsbanken, Nachrichten und den Quellen eines Arbeitsbereichs. Der Triage-Agent bewertet sie. Besucher sehen den Bereich Allgemein, der ohne Sprachmodell sortiert. Ein eigener Bereich bewertet nach Ihren Anweisungen.",
-    "it": "L'agente di ricerca raccoglie avvisi e notizie da TED, dai portali nazionali, dai programmi di finanziamento, dalle banche di sviluppo, dalle notizie e dalle fonti seguite da un'area di lavoro. L'agente di triage li valuta. Chi visita vede l'ambito Generale, che ordina senza un modello linguistico. Un ambito personalizzato valuta secondo le tue istruzioni."
+  "The Search Agent collects notices and stories from procurement portals, funding programmes and development banks worldwide, plus news and the sources a workspace follows. The Triage Agent scores them. Visitors see the General scope, which ranks without a language model. A custom scope scores against your instructions.": {
+    "pt": "O agente de pesquisa recolhe anúncios e notícias de portais de contratação, programas de financiamento e bancos de desenvolvimento em todo o mundo, além de notícias e das fontes que um espaço de trabalho segue. O agente de triagem pontua-os. Os visitantes veem o âmbito Geral, que ordena sem um modelo de linguagem. Um âmbito personalizado pontua face às suas instruções.",
+    "es": "El agente de búsqueda recoge anuncios e historias de portales de contratación, programas de financiación y bancos de desarrollo en todo el mundo, además de noticias y de las fuentes que sigue un espacio de trabajo. El agente de triaje las puntúa. Quienes visitan ven el ámbito General, que ordena sin un modelo de lenguaje. Un ámbito personalizado puntúa según tus instrucciones.",
+    "fr": "L'agent de recherche collecte les avis et les articles des portails de marchés, des programmes de financement et des banques de développement dans le monde entier, ainsi que l'actualité et les sources suivies par un espace de travail. L'agent de tri les note. Les visiteurs voient le périmètre Général, qui classe sans modèle de langage. Un périmètre personnalisé note selon vos instructions.",
+    "de": "Der Suchagent sammelt Bekanntmachungen und Meldungen von Vergabeportalen, Förderprogrammen und Entwicklungsbanken weltweit, sowie Nachrichten und die Quellen eines Arbeitsbereichs. Der Triage-Agent bewertet sie. Besucher sehen den Bereich Allgemein, der ohne Sprachmodell sortiert. Ein eigener Bereich bewertet nach Ihren Anweisungen.",
+    "it": "L'agente di ricerca raccoglie avvisi e notizie da portali degli appalti, programmi di finanziamento e banche di sviluppo in tutto il mondo, oltre alle notizie e alle fonti seguite da un'area di lavoro. L'agente di triage li valuta. Chi visita vede l'ambito Generale, che ordina senza un modello linguistico. Un ambito personalizzato valuta secondo le tue istruzioni."
   },
   "Documents and requirements": {
     "pt": "Documentos e requisitos",

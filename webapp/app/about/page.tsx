@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { siteOrigin } from '@/lib/auth';
 import { getT, getTSync } from '@/lib/i18n/server';
+import { pageMeta } from '@/lib/seo';
 
-const LEAD = 'Public tenders, funding and market news across Europe — and a community of the people who bid on them.';
+const LEAD = 'Public tenders, funding and market news worldwide — and a community of the people who bid on them.';
 const META = 'Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs.';
 
 const QUESTIONS: [string, string][] = [
-  ['What is Tender Town?', 'A platform for public tenders, grants and market news across Europe, and a community of the people who bid on them.'],
-  ['Who is Tender Town for?', 'Companies, consultants and teams that look for and bid on public contracts in Europe.'],
+  ['What is Tender Town?', 'A platform for public tenders, grants and market news worldwide, and a community of the people who bid on them.'],
+  ['Who is Tender Town for?', 'Companies, consultants and teams that look for and bid on public contracts.'],
   ['What do the agents do?', 'They fetch tenders and news, summarise them, pull the documents, and list the requirements. Tender Evaluation scores how well a tender fits your context: 1 a month on Starter, 5 on Pro, unlimited on Teams. Proposal briefs are on Teams. You configure each agent, per scope, in plain language.'],
   ['Can I configure the agents?', 'Yes, on Starter, Pro and Teams. Each scope has its own agents. You switch them on or off and tell them, in plain language, what to look for and how to work. Search, triage, document collection and requirements are on those plans. Tender Evaluation starts on Starter. Proposal briefs are on Teams. The News Report Agent is on Pro and Teams.'],
   ['Does Tender Town pull the tender documents?', 'Yes. The documents agent collects the notices and files, starting from the first publication of the procedure and including later updates such as deadline extensions.'],
@@ -23,15 +24,7 @@ const QUESTIONS: [string, string][] = [
 
 export async function generateMetadata() {
   const t = await getT();
-  const origin = siteOrigin();
-  const description = t(META);
-  const title = `${t('About')} — Tender Town`;
-  return {
-    title,
-    description,
-    alternates: { canonical: `${origin}/about`, types: { 'application/rss+xml': `${origin}/feed.xml` } },
-    openGraph: { title, description, url: `${origin}/about`, siteName: 'Tender Town', type: 'website' },
-  };
+  return pageMeta({ title: `${t('About')} — Tender Town`, description: t(META), path: '/about' });
 }
 
 export default function AboutPage() {
@@ -74,7 +67,7 @@ export default function AboutPage() {
       <p className="page-sub">{t(LEAD)}</p>
       <div className="legal-body">
         <h2>{t('What Tender Town is')}</h2>
-        <p>{t('Tender Town is a platform for public procurement across Europe. It tracks open tenders — requests for proposals, requests for information, grants and funding calls — with their documents and requirements, plus regulation, industry and market news.')}</p>
+        <p>{t('Tender Town is a platform for public procurement worldwide. It tracks open tenders — requests for proposals, requests for information, grants and funding calls — with their documents and requirements, plus regulation, industry and market news.')}</p>
         <p>{t('Posts, comments, chat and profiles sit on the same site, for the people who find and bid on this work.')}</p>
 
         <h2>{t('Your own agent')}</h2>
@@ -88,7 +81,7 @@ export default function AboutPage() {
         <h2>{t('Agents you configure')}</h2>
         <p>{t('Each scope has its own agents, and you set them in plain language: what to look for, how to score it, and what to do with it. They fetch tenders and news, summarise them, pull the documents, list the requirements, judge how well a tender fits your context, and outline how you could approach a proposal.')}</p>
         <h3>{t('Fetch and summarise')}</h3>
-        <p>{t('The Search Agent collects notices and stories from TED, national portals, funding programmes, development banks, news, and the sources a workspace follows. The Triage Agent scores them. Visitors see the General scope, which ranks without a language model. A custom scope scores against your instructions.')}</p>
+        <p>{t('The Search Agent collects notices and stories from procurement portals, funding programmes and development banks worldwide, plus news and the sources a workspace follows. The Triage Agent scores them. Visitors see the General scope, which ranks without a language model. A custom scope scores against your instructions.')}</p>
         <h3>{t('Documents and requirements')}</h3>
         <p>{t('A tender page starts from the first publication of the procedure — the original request, grant or contract notice — and then the changes since, including deadline extensions. Agents pull the documents, write a summary and list the requirements.')}</p>
         <h3>{t('Fit and the proposal')}</h3>
@@ -98,7 +91,7 @@ export default function AboutPage() {
 
         <h2>{t('How it works')}</h2>
         <h3>{t('Where the material comes from')}</h3>
-        <p>{t('Agents search TED (Tenders Electronic Daily), national procurement portals, EU funding programmes, development-bank notices and news, and the sources a workspace follows.')}</p>
+        <p>{t('Agents search public procurement notices and funding programmes worldwide, including national portals, TED and development-bank notices, plus news and the sources a workspace follows.')}</p>
         <h3>{t('How items are chosen')}</h3>
         <p>{t('Each result is scored. Visitors and new accounts see the General scope. It ranks tenders by contract value, the standing of the buyer, how widely the opportunity applies and the time left to bid, without a language model. News is ranked by the outlet, how widely the story is covered and how recent it is. A custom scope scores results against the instructions of that workspace.')}</p>
         <h3>{t('From the first notice to the latest update')}</h3>
