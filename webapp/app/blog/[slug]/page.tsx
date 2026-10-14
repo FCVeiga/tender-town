@@ -15,6 +15,8 @@ const TAGS: Record<string, string> = {
   proposal: '/skills/proposal-draft',
   guide: '/mcp',
   skills: '/skills.md',
+  check: '/blog/how-to-check-if-your-company-can-bid',
+  account: '/signup',
 };
 
 function rich(text: string) {
