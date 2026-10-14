@@ -49,7 +49,7 @@ export async function GET() {
     `- [News](${origin}/news): regulation, industry and market news, one page per story at /news/{id}`,
     `- [Community](${origin}/community): posts from members, one page per post at /posts/{id}`,
     `- [About](${origin}/about)`,
-    `- [Pricing](${origin}/pricing): Free, Starter (€49/month), Pro (€89/month), Teams (€139/month). A year is eleven months.`,
+    `- [Pricing](${origin}/pricing): Free, Starter (€29/month), Pro (€59/month), Teams (€99/month). A year is eleven months.`,
     `- [Help](${origin}/help)`,
     `- [Blog](${origin}/blog): how to find a notice, score a fit and draft a brief`,
     '',
