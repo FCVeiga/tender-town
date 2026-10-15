@@ -5,7 +5,8 @@ export type PostBlock =
   | { type: 'h3'; text: string }
   | { type: 'p'; text: string }
   | { type: 'ul'; items: string[] }
-  | { type: 'img'; src: string; alt: string };
+  | { type: 'img'; src: string; alt: string }
+  | { type: 'cta'; kind: 'account' | 'example' | 'agents' };
 
 export type Post = {
   slug: string;
@@ -68,7 +69,9 @@ const WORTH_IT: Post = {
     { type: 'p', text: 'Some of the cost is reused: the registered company, the accounts, the certificates, and a login on the portal that actually takes the offer. The buyer’s clock is not reused. Questions, the deadline, the eligibility check and then the scoring still run. Spending that clock on a familiar title, and learning the eligibility result at the end, is the expensive version of the same weeks.' },
     { type: 'h2', text: 'Two notices, one week' },
     { type: 'p', text: 'This example is fictional. Both notices describe the same maintenance work. Notice A asks for turnover and a certificate you hold, and one reference at a value you can show. The deadline is 18 days away, and the company is already registered on the submission portal. Notice B asks for three references, each above a value your largest contract does not reach, and it does not allow another entity to supply that experience. Notice A is the bid. Notice B is the one that feels familiar and will not be scored.' },
-    { type: 'p', text: 'Tender Town lists the requirements from the notice and the documents it fetches, with the figures still attached. <fit>Fit analysis</fit> sets those lines against the company evidence on a scope, and a line the file does not cover stays unknown. <example>See that check on a real notice</example>.' },
+    { type: 'h2', text: 'How Tender Town checks whether the bid is worth the days' },
+    { type: 'p', text: 'Tender Town lists the requirements from the notice and the documents it fetches, with the figures still attached. <fit>Fit analysis</fit> sets those lines against the company evidence on a scope, and a line the file does not cover stays unknown.' },
+    { type: 'cta', kind: 'account' },
   ],
 };
 
@@ -101,7 +104,9 @@ const WHERE_TO_FIND: Post = {
       'Save the notice, any amendment, and the annex that holds the selection criteria.',
       'Check those criteria against the company before anyone starts a draft.',
     ] },
-    { type: 'p', text: 'Tender Town searches public procurement notices and funding programmes, including national portals, TED and development-bank notices, plus news and the sources a workspace follows. It does not file the offer. You still submit on the portal the notice names. <example>See how one collected notice is read</example>.' },
+    { type: 'h2', text: 'How Tender Town finds the notice' },
+    { type: 'p', text: 'Tender Town searches public procurement notices and funding programmes, including national portals, TED and development-bank notices, plus news and the sources a workspace follows. It does not file the offer. You still submit on the portal the notice names.' },
+    { type: 'cta', kind: 'example' },
   ],
 };
 
@@ -129,7 +134,9 @@ const SMALL_BUSINESS: Post = {
       'Does the notice allow another entity to cover a missing line, and must that entity do the work?',
       'Is the submission portal one the company can register on before the deadline?',
     ] },
-    { type: 'p', text: 'Tender Town lists those lines from the documents on the notice, including which of them are mandatory. <fit>Fit analysis</fit> compares them with the company evidence on a scope. A reference under the stated value stays a gap. <example>See the check on a real notice</example>.' },
+    { type: 'h2', text: 'How Tender Town marks the line a small company can meet' },
+    { type: 'p', text: 'Tender Town lists those lines from the documents on the notice, including which of them are mandatory. <fit>Fit analysis</fit> compares them with the company evidence on a scope. A reference under the stated value stays a gap.' },
+    { type: 'cta', kind: 'account' },
   ],
 };
 
@@ -161,7 +168,9 @@ const HOW_IT_WORKS: Post = {
     { type: 'p', text: `This example is fictional. A city publishes an open procedure for a three-year maintenance service with an estimated value of €400,000, net of VAT. That sits above the 2026 sub-central services threshold, so the notice is on TED. Selection asks for average annual turnover of €700,000 over three years, two similar contracts in the last five years, and ISO 9001 held by the bidder. The company has the turnover and the certificate, and one similar contract. The reference line is not met. [Article 63](${DIR}) allows reliance on another entity’s professional experience only where that entity will perform the services those references relate to, and the bidder can prove the commitment. A named partner, with no commitment and no qualifying contract, does not close the line.` },
     { type: 'h2', text: 'What the buyer does after the deadline' },
     { type: 'p', text: `A late tender is out. The buyer checks exclusion and selection, then scores the tenders that remain, on price or on price and quality as the notice states. For procedures covered by the [EU remedies rules](${REMEDIES}), the contract may not be signed until at least 10 calendar days have passed from the day after the award decision is sent electronically, with stated exceptions. A World Bank-financed contract that uses the Bank’s standard documents has a different clock: ten business days after the borrower sends the notification of intention to award, and that period does not apply to every method, including direct selection.` },
-    { type: 'p', text: 'Tender Town keeps a notice together with the documents and later changes it fetches, and lists the requirements from that file. <fit>Fit analysis</fit> compares those lines with the company evidence saved on a scope. A line the file does not cover stays unknown. <example>See the same pass on a real notice</example>.' },
+    { type: 'h2', text: 'How Tender Town keeps the notice and the lines together' },
+    { type: 'p', text: 'Tender Town keeps a notice together with the documents and later changes it fetches, and lists the requirements from that file. <fit>Fit analysis</fit> compares those lines with the company evidence saved on a scope. A line the file does not cover stays unknown.' },
+    { type: 'cta', kind: 'example' },
   ],
 };
 
@@ -193,7 +202,9 @@ const CAN_BID: Post = {
     ] },
     { type: 'p', text: 'For professional experience, Article 63 allows reliance only where the other entity will perform the works or services that experience relates to. You have to prove the commitment, for example with a written undertaking. A partner in the same trade, missing the same reference, does not change the result. A suggested name is not that undertaking.' },
     { type: 'p', text: 'This example is fictional. The notice requires three contracts, each worth at least €2 million, completed in the last three years for a public client. The company has two contracts. The larger is €1.4 million, and the client was private. That line does not meet. A second company with one public contract of €2.2 million could matter only if the notice allows reliance for that experience and that company will perform the related part of the work. Without both, the status stays "does not meet". If the accounts on file do not state turnover for the years the notice asks for, that line is unknown, not a pass.' },
-    { type: 'p', text: '<fit>Fit analysis</fit> sets each requirement taken from the notice against the company evidence on the scope, and it leaves a silent line unknown. A proposal brief, on a plan that includes one, is written from that evaluation and keeps the lines that are not met. <example>See a worked evaluation</example>.' },
+    { type: 'h2', text: 'How Tender Town marks each mandatory line' },
+    { type: 'p', text: '<fit>Fit analysis</fit> sets each requirement taken from the notice against the company evidence on the scope, and it leaves a silent line unknown. A proposal brief, on a plan that includes one, is written from that evaluation and keeps the lines that are not met.' },
+    { type: 'cta', kind: 'example' },
   ],
 };
 
@@ -213,7 +224,10 @@ const THREE_SKILLS: Post = {
     { type: 'p', text: 'The verdicts are bid, bid with a partner, consider, or no bid. Consider means open questions still decide it. It is not a pass. A mandatory line that the company cannot meet, and that a partner is not allowed to meet, is a reason not to draft.' },
     { type: 'h2', text: 'Draft only after that verdict, and keep the gap' },
     { type: 'p', text: '<proposal>Proposal draft</proposal> waits until an evaluation exists for the same scope and tender. Proposal briefs are on Teams. The brief should still show the unmet line and the evidence that was missing. It is a working note for the bid team. It is not sent to the buyer, and it does not turn a missing certificate into a paragraph about quality.' },
-    { type: 'p', text: 'That order is the whole job. Put the evidence in the file, mark each line, and write only when the mandatory lines are met or can be met on the conditions in the notice. <example>See the order on a real notice</example>.' },
+    { type: 'p', text: 'That order is the whole job. Put the evidence in the file, mark each line, and write only when the mandatory lines are met or can be met on the conditions in the notice.' },
+    { type: 'h2', text: 'How Tender Town runs that order' },
+    { type: 'p', text: 'Tender Town keeps the company file on a scope, marks each requirement against that file, and writes a proposal brief only after the evaluation. The brief keeps the unmet lines. It does not file the offer.' },
+    { type: 'cta', kind: 'agents' },
   ],
 };
 
@@ -239,7 +253,9 @@ const CHAT_GPT: Post = {
       'Then <fit>fit analysis</fit>, on the official notice, the amendments and the annex that holds the selection criteria. Each requirement is set against that file. A project under the minimum stays a gap. Where the notice allows another entity to cover professional experience, that entity has to perform the related work.',
       '<proposal>Proposal draft</proposal> starts only after that evaluation exists for the same scope and tender. The brief keeps the unmet lines. It is a note for the bid team. It is not sent to the buyer. Proposal briefs are on Teams.',
     ] },
-    { type: 'p', text: 'Tender Town is the platform that runs that order. It scouts public tenders, grants and funding calls from procurement portals, TED and development banks, and it keeps signals that a named buyer has announced a procurement that is not open yet. A pipeline runs every four hours, and each scope refreshes as often as its plan allows, so the check continues after the chat is closed. On a notice it has collected, it fetches the documents, lists the requirements, scores the fit against the company evidence on the scope, and prepares a proposal brief from that evaluation. It does not file the offer. Point ChatGPT, or another agent, at <skills>these skills</skills>. <example>See the order on a real notice</example>.' },
+    { type: 'h2', text: 'How Tender Town makes the model useful' },
+    { type: 'p', text: 'Tender Town is the platform that runs that order. It scouts public tenders, grants and funding calls from procurement portals, TED and development banks, and it keeps signals that a named buyer has announced a procurement that is not open yet. A pipeline runs every four hours, and each scope refreshes as often as its plan allows, so the check continues after the chat is closed. On a notice it has collected, it fetches the documents, lists the requirements, scores the fit against the company evidence on the scope, and prepares a proposal brief from that evaluation. It does not file the offer.' },
+    { type: 'cta', kind: 'agents' },
   ],
 };
 

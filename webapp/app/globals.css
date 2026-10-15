@@ -1486,6 +1486,8 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .blog-article .legal-body ul { list-style: disc; margin: 0 0 16px; padding-left: 1.3em; }
 .blog-article .legal-body li { margin: 0 0 8px; }
 .blog-article .legal-body li:last-child { margin-bottom: 0; }
+.blog-article .blog-cta { margin: 2px 0 18px; }
+.blog-article .blog-cta .btn { min-height: 44px; padding: 0 18px; }
 .blog-article #comments { margin-top: 28px; }
 .blog-actions { display: flex; align-items: center; gap: 2px; }
 .blog-actions button, .blog-actions a { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 8px; border: 0; border-radius: 999px; background: none; color: var(--subtle); font: inherit; font-size: 13px; cursor: pointer; text-decoration: none; }

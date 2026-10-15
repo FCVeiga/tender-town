@@ -9,6 +9,12 @@ import { blogEngagement } from '@/lib/blog-engagement';
 import { getLang, getLocale, getT, getTSync } from '@/lib/i18n/server';
 import { pageMeta } from '@/lib/seo';
 
+const CTA = {
+  account: { href: '/signup', label: 'Create a free account' },
+  example: { href: '/example', label: 'See an example' },
+  agents: { href: '/mcp', label: 'Connect your own agents' },
+} as const;
+
 const TAGS: Record<string, string> = {
   configure: '/skills/configure-scope',
   fit: '/skills/fit-analysis',
@@ -130,7 +136,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             : block.type === 'h3' ? <h3 key={i}>{t(block.text)}</h3>
               : block.type === 'ul' ? <ul key={i}>{block.items.map((item) => <li key={item}>{rich(t(item))}</li>)}</ul>
                 : block.type === 'img' ? <figure key={i} className="blog-figure"><img src={block.src} alt={t(block.alt)} width={1280} height={720} /></figure>
-                  : <p key={i}>{rich(t(block.text))}</p>
+                  : block.type === 'cta' ? <p key={i} className="blog-cta"><Link className="btn primary" href={CTA[block.kind].href}>{t(CTA[block.kind].label)}</Link></p>
+                    : <p key={i}>{rich(t(block.text))}</p>
         ))}
       </div>
       <CommentsSection itemType="blog" itemId={post.slug} loginNext={href} />
