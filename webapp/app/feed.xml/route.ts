@@ -1,4 +1,5 @@
 import { siteOrigin } from '@/lib/auth';
+import { posts as blogPosts } from '@/lib/blog';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
@@ -38,6 +39,12 @@ export async function GET() {
       link: `${origin}/posts/${r.id}`,
       date: r.created_at,
       description: r.body || '',
+    })),
+    ...blogPosts.map((post) => ({
+      title: post.title,
+      link: `${origin}/blog/${post.slug}`,
+      date: post.date,
+      description: post.description,
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 

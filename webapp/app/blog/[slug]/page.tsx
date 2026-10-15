@@ -63,7 +63,7 @@ function articleGraph(post: Post, origin: string, title: string, description: st
         inLanguage: lang,
         mainEntityOfPage: url,
         url,
-        image: `${origin}${post.image}`,
+        image: { '@type': 'ImageObject', url: `${origin}${post.image}`, width: 1280, height: 720 },
         author: { '@type': 'Organization', name: 'Tender Town', url: origin },
         publisher: { '@type': 'Organization', name: 'Tender Town', url: origin },
       },
@@ -93,9 +93,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     type: 'article',
     image: post.image,
   });
+  const image = { url: post.image, width: 1280, height: 720, alt: t(post.imageAlt) };
   return {
     ...meta,
-    openGraph: { ...meta.openGraph, publishedTime: post.date },
+    openGraph: { ...meta.openGraph, publishedTime: post.date, images: [image] },
+    twitter: { ...meta.twitter, images: [image] },
   };
 }
 

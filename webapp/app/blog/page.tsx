@@ -1,15 +1,17 @@
 import Link from 'next/link';
 import BlogActions from '@/components/blog/BlogActions';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, siteOrigin } from '@/lib/auth';
 import { BLOG_LEAD, posts } from '@/lib/blog';
 import { blogEngagement } from '@/lib/blog-engagement';
 import { getLocale, getT, getTSync } from '@/lib/i18n/server';
 import { pageMeta } from '@/lib/seo';
 
+const INDEX_TITLE = 'How to find and bid on government tenders';
+
 export async function generateMetadata() {
   const t = await getT();
   return pageMeta({
-    title: `${t('Blog')} — Tender Town`,
+    title: `${t(INDEX_TITLE)} — Tender Town`,
     description: t(BLOG_LEAD),
     path: '/blog',
   });
@@ -22,10 +24,28 @@ function written(date: string, locale: string) {
 export default async function BlogPage() {
   const t = getTSync();
   const locale = getLocale();
+  const origin = siteOrigin();
   const user = await getCurrentUser();
   const counts = await blogEngagement(posts.map((post) => post.slug), user?.id ?? null);
+  const graph = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: t(INDEX_TITLE),
+    description: t(BLOG_LEAD),
+    url: `${origin}/blog`,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: posts.map((post, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${origin}/blog/${post.slug}`,
+        name: t(post.title),
+      })),
+    },
+  };
   return (
     <article className="legal blog-index">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph).replace(/</g, '\\u003c') }} />
       <h1 className="opps-h1">{t('Blog')}</h1>
       {posts.length === 0 ? (
         <p className="muted">{t('No posts yet.')}</p>

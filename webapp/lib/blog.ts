@@ -26,7 +26,6 @@ const WORTH_FLOW_ALT = 'A notice, a check of one line, then two paths: a handsha
 const FIND_ALT = 'A person with a folder faces five different doorways in a city square.';
 const SMALL_ALT = 'A small studio, a prototype on the bench, two ticked slips and a long slip set aside, with a large public building outside.';
 const CHAT_ALT = 'A person faces a bright chat on a laptop while a wall of notices stays dark behind them, one line marked on a page they are not reading.';
-const CHAT_FLOW_ALT = 'One path turns a notice into a single checked reply. The other splits it into a tick, a cross, two people, and a blank slip.';
 
 const DIR = 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02014L0024-20220101';
 const THRESHOLDS = 'https://single-market-economy.ec.europa.eu/single-market/public-procurement/legal-rules-and-implementation/thresholds_en';
@@ -137,7 +136,7 @@ const SMALL_BUSINESS: Post = {
 const HOW_IT_WORKS: Post = {
   slug: 'how-government-tenders-work',
   title: 'How government tenders work, and who can apply',
-  description: 'A public buyer publishes a notice and takes offers. You can apply when the procedure allows it and the company can evidence the selection criteria in that notice.',
+  description: 'A public buyer publishes a notice and takes offers. You can apply when the procedure allows it and the company can evidence the selection criteria.',
   date: '2026-10-15',
   image: '/blog/how-tenders-work.jpg',
   imageAlt: HOW_ALT,
@@ -169,7 +168,7 @@ const HOW_IT_WORKS: Post = {
 const CAN_BID: Post = {
   slug: 'how-to-check-if-your-company-can-bid',
   title: 'How to check if you meet the eligibility criteria on a public tender',
-  description: 'Match the company to each mandatory line in the notice. A similar project, or a sentence about a certificate, does not meet a line that asks for a figure or a document.',
+  description: 'Match the company to each mandatory line. A similar project, or a sentence about a certificate, does not meet a line that asks for a figure or a document.',
   date: '2026-10-15',
   image: '/blog/eligibility-line.jpg',
   imageAlt: ELIGIBILITY_ALT,
@@ -219,34 +218,32 @@ const THREE_SKILLS: Post = {
 };
 
 const CHAT_GPT: Post = {
-  slug: 'why-chatgpt-is-a-bad-way-to-find-government-tenders',
-  title: 'Why ChatGPT is a bad way to find government tenders',
-  description: 'A chat can summarise pages you give it. It does not, by itself, recheck the boards, the amendments, or the selection lines in an annex you left out.',
+  slug: 'why-llms-fall-short-on-government-tenders',
+  title: 'Why LLMs fall short on government tenders, and how to make them useful',
+  description: 'An LLM can summarise a notice you paste in. It becomes useful on a bid with the company file, each line checked, and a draft that starts only after the gaps.',
   date: '2026-10-15',
   image: '/blog/chatgpt-radar.jpg',
   imageAlt: CHAT_ALT,
   blocks: [
-    { type: 'p', text: 'A general chatbot can summarise a notice you paste in, and it can suggest how to describe the company. That reply does not show that the boards for your market were checked, that later amendments were read, or that the selection lines in an annex were in the prompt. Those three decide whether the bid is worth starting.' },
+    { type: 'p', text: 'A general LLM can summarise a notice you paste in, and it can suggest how to describe the company. It falls short of a bid until the boards for your market are checked, later amendments are read, and the selection lines in an annex are in the prompt. Give it those three before anyone drafts, and it can be useful.' },
     { type: 'h2', text: 'One reply is not a watch on the boards' },
     { type: 'p', text: `[TED](${TED}), a national portal, [Find a Tender](${FIND}), [SAM.gov](${SAM}) and a development-bank site are different boards, and a notice can be on only one of them. A chat answers from the text in the conversation and from pages it opened in that sitting. It does not, as part of that reply, check those boards again tomorrow. A title, a buyer and a deadline in the answer still have to be opened on the official notice. If that notice was not retrieved, the details are unsupported.` },
-    { type: 'img', src: '/blog/chatgpt-radar-flow.jpg', alt: CHAT_FLOW_ALT },
     { type: 'h2', text: 'The annex is where offers are rejected' },
     { type: 'p', text: 'The title and the short description are the pages a chatbot summarises well. Selection usually sits further in: a turnover figure, sometimes an average of stated years and sometimes only the field of the contract; a reference above a set value, for a set kind of client, finished inside a set period; a certificate in force, in the company’s name. Similar work under the figure does not clear the reference. A sentence about a quality system is not the certificate. Leave the annex out of the paste and it is out of the analysis, while the reply can still sound finished.' },
     { type: 'h2', text: 'Do not let the model fill a hole in the company file' },
     { type: 'p', text: `If the prompt describes the company in a paragraph, that paragraph is the file the model has. A certificate you did not mention should stay unknown. A project under the minimum should stay under the minimum. A larger firm in the same sector is not yet a partner. Under [Article 63 of Directive 2014/24/EU](${DIR}), reliance on another entity’s professional experience is allowed only where that entity will perform the related work, and you can prove you will have the resources. A suggested name proves neither.` },
-    { type: 'h2', text: 'Give an agent the file a bidder would collect' },
+    { type: 'h2', text: 'Give the agent three skills, in this order' },
+    { type: 'p', text: 'A paragraph in the prompt is not a procedure. Give the agent these three skills, and do not let it draft before the first two are done.' },
     { type: 'ul', items: [
-      'The official notice, and the portal where the offer is uploaded.',
-      'Amendments, questions and answers, and any revised specification.',
-      'Company evidence: turnover for the years asked, references with client, dates and value, and certificates with the holder and the expiry.',
-      'The clause on relying on another entity, before any draft.',
-      'An instruction to mark a silent line unknown, and not to treat unknown as a match.',
+      '<configure>Configure a scope</configure> first: what you sell, where you bid, the certificates, and the reference projects with their clients, dates and values. A line that is not in that file stays unknown. Unknown is not a match.',
+      'Then <fit>fit analysis</fit>, on the official notice, the amendments and the annex that holds the selection criteria. Each requirement is set against that file. A project under the minimum stays a gap. Where the notice allows another entity to cover professional experience, that entity has to perform the related work.',
+      '<proposal>Proposal draft</proposal> starts only after that evaluation exists for the same scope and tender. The brief keeps the unmet lines. It is a note for the bid team. It is not sent to the buyer. Proposal briefs are on Teams.',
     ] },
-    { type: 'p', text: 'Tender Town searches public notices on a schedule, including national portals, TED and development-bank notices, and lists requirements from the documents it fetches. <fit>Fit analysis</fit> compares those lines with the evidence saved on a scope and does not fill a figure the file does not contain. <example>See that distinction on a real notice</example>.' },
+    { type: 'p', text: 'Tender Town is the platform that runs that order. It scouts public tenders, grants and funding calls from procurement portals, TED and development banks, and it keeps signals that a named buyer has announced a procurement that is not open yet. A pipeline runs every four hours, and each scope refreshes as often as its plan allows, so the check continues after the chat is closed. On a notice it has collected, it fetches the documents, lists the requirements, scores the fit against the company evidence on the scope, and prepares a proposal brief from that evaluation. It does not file the offer. Point ChatGPT, or another agent, at <skills>these skills</skills>. <example>See the order on a real notice</example>.' },
   ],
 };
 
-export const BLOG_LEAD = 'Notes on finding tenders, scoring a fit and drafting a bid.';
+export const BLOG_LEAD = 'How to find a government notice, check whether you can bid, and draft only after the gaps are known.';
 
 export const posts: Post[] = [CHAT_GPT, SMALL_BUSINESS, WHERE_TO_FIND, WORTH_IT, HOW_IT_WORKS, CAN_BID, THREE_SKILLS];
 

@@ -26,6 +26,7 @@ const nextConfig = {
       { source: '/workspace', destination: '/workspaces', permanent: true },
       { source: '/workspace/:path*', destination: '/workspaces/:path*', permanent: true },
       { source: '/settings/scopes/:id', destination: '/workspaces/scopes/:id', permanent: true },
+      { source: '/blog/why-chatgpt-is-a-bad-way-to-find-government-tenders', destination: '/blog/why-llms-fall-short-on-government-tenders', permanent: true },
     ];
   },
 };

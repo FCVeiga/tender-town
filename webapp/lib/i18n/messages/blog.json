@@ -1,24 +1,31 @@
 {
-  "Notes on finding tenders, scoring a fit and drafting a bid.": {
-    "pt": "Notas sobre como encontrar concursos, avaliar o enquadramento e redigir uma proposta.",
-    "es": "Notas sobre cómo encontrar licitaciones, valorar el encaje y redactar una oferta.",
-    "fr": "Notes sur la recherche de marchés, l’évaluation de l’adéquation et la rédaction d’une offre.",
-    "de": "Hinweise zum Finden von Ausschreibungen, zur Eignungsbewertung und zum Schreiben eines Angebots.",
-    "it": "Note su come trovare gare, valutare l’idoneità e scrivere un’offerta."
+  "How to find a government notice, check whether you can bid, and draft only after the gaps are known.": {
+    "pt": "Como encontrar um anúncio público, verificar se pode concorrer, e redigir só depois de conhecer as lacunas.",
+    "es": "Cómo encontrar un anuncio público, comprobar si puedes licitar, y redactar solo cuando ya conoces las brechas.",
+    "fr": "Comment trouver un avis public, vérifier si vous pouvez soumissionner, et rédiger seulement une fois les manques connus.",
+    "de": "Wie du eine öffentliche Bekanntmachung findest, prüfst, ob du bieten kannst, und erst entwirfst, wenn die Lücken bekannt sind.",
+    "it": "Come trovare un avviso pubblico, verificare se puoi partecipare, e scrivere solo dopo aver conosciuto le lacune."
   },
-  "Why ChatGPT is a bad way to find government tenders": {
-    "pt": "Porque o ChatGPT é uma má forma de encontrar concursos públicos",
-    "es": "Por qué ChatGPT es una mala forma de encontrar licitaciones públicas",
-    "fr": "Pourquoi ChatGPT est une mauvaise façon de trouver des marchés publics",
-    "de": "Warum ChatGPT ein schlechter Weg ist, öffentliche Ausschreibungen zu finden",
-    "it": "Perché ChatGPT è un cattivo modo di trovare gare pubbliche"
+  "How to find and bid on government tenders": {
+    "pt": "Como encontrar concursos públicos e concorrer",
+    "es": "Cómo encontrar licitaciones públicas y licitar",
+    "fr": "Comment trouver des marchés publics et soumissionner",
+    "de": "Öffentliche Ausschreibungen finden und darauf bieten",
+    "it": "Come trovare gare pubbliche e partecipare"
   },
-  "A chat can summarise pages you give it. It does not, by itself, recheck the boards, the amendments, or the selection lines in an annex you left out.": {
-    "pt": "Um chat pode resumir páginas que lhe dá. Não volta, por si, a verificar as plataformas, as retificações, nem as linhas de seleção num anexo que ficou de fora.",
-    "es": "Un chat puede resumir páginas que le das. No vuelve, por sí solo, a comprobar los tablones, las modificaciones ni las líneas de selección de un anexo que dejaste fuera.",
-    "fr": "Un chat peut résumer des pages que vous lui donnez. Il ne revérifie pas, à lui seul, les sites, les modifications, ni les lignes de sélection d’une annexe que vous avez laissée de côté.",
-    "de": "Ein Chat kann Seiten zusammenfassen, die du ihm gibst. Er prüft von sich aus nicht erneut die Plattformen, die Änderungen oder die Eignungszeilen in einem Anhang, den du weggelassen hast.",
-    "it": "Una chat può riassumere pagine che le dai. Da sola non ricontrolla le bacheche, le modifiche, né le righe di selezione in un allegato che hai lasciato fuori."
+  "Why LLMs fall short on government tenders, and how to make them useful": {
+    "pt": "Porque os LLMs ficam aquém nos concursos públicos, e como torná-los úteis",
+    "es": "Por qué los LLM se quedan cortos en las licitaciones públicas, y cómo hacerlos útiles",
+    "fr": "Pourquoi les LLM ne suffisent pas pour les marchés publics, et comment les rendre utiles",
+    "de": "Warum LLMs bei öffentlichen Ausschreibungen zu kurz greifen, und wie du sie nützlich machst",
+    "it": "Perché gli LLM non bastano per le gare pubbliche, e come renderli utili"
+  },
+  "An LLM can summarise a notice you paste in. It becomes useful on a bid with the company file, each line checked, and a draft that starts only after the gaps.": {
+    "pt": "Um LLM pode resumir um anúncio que cola. Torna-se útil numa proposta com o processo da empresa, cada linha verificada, e um rascunho que só começa depois das lacunas.",
+    "es": "Un LLM puede resumir un anuncio que pegas. Se vuelve útil en una oferta con el expediente de la empresa, cada línea comprobada, y un borrador que solo empieza después de las brechas.",
+    "fr": "Un LLM peut résumer un avis que vous collez. Il devient utile pour une offre avec le dossier de l’entreprise, chaque ligne vérifiée, et un brouillon qui ne commence qu’après les manques.",
+    "de": "Ein LLM kann eine Bekanntmachung zusammenfassen, die du einfügst. Es wird für ein Angebot nützlich mit der Unternehmensakte, jeder geprüften Zeile und einem Entwurf, der erst nach den Lücken beginnt.",
+    "it": "Un LLM può riassumere un avviso che incolli. Diventa utile per un’offerta con il fascicolo dell’azienda, ogni riga controllata, e una bozza che inizia solo dopo le lacune."
   },
   "A person faces a bright chat on a laptop while a wall of notices stays dark behind them, one line marked on a page they are not reading.": {
     "pt": "Uma pessoa olha para um chat brilhante num portátil, enquanto uma parede de anúncios fica escura atrás dela, com uma linha marcada numa página que não está a ler.",
@@ -27,12 +34,12 @@
     "de": "Eine Person sieht auf einen hellen Chat auf einem Laptop, während eine Wand von Bekanntmachungen hinter ihr im Dunkeln bleibt, eine Zeile markiert auf einer Seite, die sie nicht liest.",
     "it": "Una persona guarda una chat luminosa su un portatile, mentre un muro di avvisi resta al buio dietro di lei, una riga segnata su una pagina che non sta leggendo."
   },
-  "A general chatbot can summarise a notice you paste in, and it can suggest how to describe the company. That reply does not show that the boards for your market were checked, that later amendments were read, or that the selection lines in an annex were in the prompt. Those three decide whether the bid is worth starting.": {
-    "pt": "Um chatbot geral pode resumir um anúncio que cola, e pode sugerir como descrever a empresa. Essa resposta não mostra que as plataformas do seu mercado foram verificadas, que as retificações posteriores foram lidas, ou que as linhas de seleção de um anexo estavam no pedido. São essas três coisas que decidem se a proposta vale a pena começar.",
-    "es": "Un chatbot general puede resumir un anuncio que pegas, y puede sugerir cómo describir la empresa. Esa respuesta no demuestra que se hayan comprobado los tablones de tu mercado, que se hayan leído las modificaciones posteriores, o que las líneas de selección de un anexo estuvieran en la petición. Esas tres cosas deciden si merece la pena empezar la oferta.",
-    "fr": "Un chatbot général peut résumer un avis que vous collez, et suggérer comment décrire l’entreprise. Cette réponse ne montre pas que les sites de votre marché ont été vérifiés, que les modifications ultérieures ont été lues, ou que les lignes de sélection d’une annexe figuraient dans la demande. Ce sont ces trois points qui décident si l’offre vaut d’être commencée.",
-    "de": "Ein allgemeiner Chatbot kann eine Bekanntmachung zusammenfassen, die du einfügst, und vorschlagen, wie das Unternehmen zu beschreiben ist. Diese Antwort zeigt nicht, dass die Plattformen deines Marktes geprüft wurden, dass spätere Änderungen gelesen wurden oder dass die Eignungszeilen eines Anhangs in der Anfrage standen. Diese drei Punkte entscheiden, ob sich der Beginn eines Angebots lohnt.",
-    "it": "Un chatbot generico può riassumere un avviso che incolli, e può suggerire come descrivere l’azienda. Quella risposta non dimostra che le bacheche del tuo mercato siano state controllate, che le modifiche successive siano state lette, o che le righe di selezione di un allegato fossero nella richiesta. Sono queste tre cose a decidere se vale la pena iniziare l’offerta."
+  "A general LLM can summarise a notice you paste in, and it can suggest how to describe the company. It falls short of a bid until the boards for your market are checked, later amendments are read, and the selection lines in an annex are in the prompt. Give it those three before anyone drafts, and it can be useful.": {
+    "pt": "Um LLM geral pode resumir um anúncio que cola, e pode sugerir como descrever a empresa. Fica aquém de uma proposta até as plataformas do seu mercado serem verificadas, as retificações posteriores serem lidas, e as linhas de seleção de um anexo estarem no pedido. Dê-lhe essas três coisas antes de alguém redigir, e pode ser útil.",
+    "es": "Un LLM general puede resumir un anuncio que pegas, y puede sugerir cómo describir la empresa. Se queda corto para una oferta hasta que se comprueban los tablones de tu mercado, se leen las modificaciones posteriores y las líneas de selección de un anexo están en la petición. Dale esas tres cosas antes de que nadie redacte, y puede ser útil.",
+    "fr": "Un LLM général peut résumer un avis que vous collez, et suggérer comment décrire l’entreprise. Il ne suffit pas pour une offre tant que les sites de votre marché n’ont pas été vérifiés, que les modifications ultérieures n’ont pas été lues, et que les lignes de sélection d’une annexe ne figurent pas dans la demande. Donnez-lui ces trois éléments avant que quiconque rédige, et il peut être utile.",
+    "de": "Ein allgemeines LLM kann eine Bekanntmachung zusammenfassen, die du einfügst, und vorschlagen, wie das Unternehmen zu beschreiben ist. Es greift für ein Angebot zu kurz, bis die Plattformen deines Marktes geprüft sind, spätere Änderungen gelesen wurden und die Eignungszeilen eines Anhangs in der Anfrage stehen. Gib ihm diese drei Punkte, bevor jemand entwirft, und es kann nützlich sein.",
+    "it": "Un LLM generico può riassumere un avviso che incolli, e può suggerire come descrivere l’azienda. Non basta per un’offerta finché le bacheche del tuo mercato non sono controllate, le modifiche successive non sono lette, e le righe di selezione di un allegato non sono nella richiesta. Dagli queste tre cose prima che qualcuno scriva, e può essere utile."
   },
   "One reply is not a watch on the boards": {
     "pt": "Uma resposta não é uma vigilância das plataformas",
@@ -47,13 +54,6 @@
     "fr": "Le [TED](https://ted.europa.eu/en/simap/european-public-procurement), un portail national, [Find a Tender](https://www.find-tender.service.gov.uk/), [SAM.gov](https://sam.gov/opportunities) et un site de banque de développement sont des sites différents, et un avis peut ne figurer que sur l’un d’eux. Un chat répond à partir du texte de la conversation et des pages qu’il a ouvertes dans cette session. Il ne revérifie pas, dans cette réponse, ces sites le lendemain. Un titre, un acheteur et une date limite dans la réponse doivent être ouverts sur l’avis officiel. Si cet avis n’a pas été récupéré, les détails ne sont pas étayés.",
     "de": "[TED](https://ted.europa.eu/en/simap/european-public-procurement), ein nationales Portal, [Find a Tender](https://www.find-tender.service.gov.uk/), [SAM.gov](https://sam.gov/opportunities) und eine Seite einer Entwicklungsbank sind verschiedene Plattformen, und eine Bekanntmachung kann nur auf einer davon stehen. Ein Chat antwortet aus dem Text des Gesprächs und aus Seiten, die er in dieser Sitzung geöffnet hat. Er prüft diese Plattformen nicht, als Teil dieser Antwort, am nächsten Tag erneut. Ein Titel, ein Auftraggeber und eine Frist in der Antwort müssen in der amtlichen Bekanntmachung geöffnet werden. Wenn diese Bekanntmachung nicht abgerufen wurde, sind die Angaben nicht belegt.",
     "it": "Il [TED](https://ted.europa.eu/en/simap/european-public-procurement), un portale nazionale, [Find a Tender](https://www.find-tender.service.gov.uk/), [SAM.gov](https://sam.gov/opportunities) e un sito di una banca di sviluppo sono bacheche diverse, e un avviso può stare solo su una di esse. Una chat risponde dal testo della conversazione e dalle pagine che ha aperto in quella sessione. Non ricontrolla, come parte di quella risposta, quelle bacheche il giorno dopo. Un titolo, un committente e un termine nella risposta vanno aperti sull’avviso ufficiale. Se quell’avviso non è stato recuperato, i dati non sono sostenuti."
-  },
-  "One path turns a notice into a single checked reply. The other splits it into a tick, a cross, two people, and a blank slip.": {
-    "pt": "Um caminho transforma um anúncio numa única resposta assinalada. O outro divide-o num visto, numa cruz, em duas pessoas e num papel em branco.",
-    "es": "Un camino convierte un anuncio en una sola respuesta marcada. El otro lo divide en un tic, una cruz, dos personas y un papel en blanco.",
-    "fr": "Un chemin transforme un avis en une seule réponse cochée. L’autre le sépare en une coche, une croix, deux personnes et une feuille blanche.",
-    "de": "Ein Weg macht aus einer Bekanntmachung eine einzige abgehakte Antwort. Der andere teilt sie in einen Haken, ein Kreuz, zwei Personen und einen leeren Zettel.",
-    "it": "Un percorso trasforma un avviso in una sola risposta spuntata. L’altro lo divide in una spunta, una croce, due persone e un foglio bianco."
   },
   "The annex is where offers are rejected": {
     "pt": "O anexo é onde as propostas são rejeitadas",
@@ -83,54 +83,47 @@
     "de": "Wenn die Anfrage das Unternehmen in einem Absatz beschreibt, ist dieser Absatz die Akte, die das Modell hat. Ein Zertifikat, das du nicht genannt hast, muss unbekannt bleiben. Ein Projekt unter dem Minimum muss unter dem Minimum bleiben. Ein größeres Unternehmen derselben Branche ist noch kein Partner. Nach [Artikel 63 der Richtlinie 2014/24/EU](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02014L0024-20220101) ist das Stützen auf die berufliche Erfahrung eines anderen Unternehmens nur zulässig, wenn dieses Unternehmen die zugehörige Leistung erbringt und du nachweisen kannst, dass dir die Mittel zur Verfügung stehen. Ein vorgeschlagener Name beweist keines von beidem.",
     "it": "Se la richiesta descrive l’azienda in un paragrafo, quel paragrafo è il fascicolo che il modello ha. Un certificato che non hai citato deve restare sconosciuto. Un progetto sotto il minimo deve restare sotto il minimo. Un’azienda più grande dello stesso settore non è ancora un partner. Ai sensi dell’[articolo 63 della direttiva 2014/24/UE](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02014L0024-20220101), fare affidamento sull’esperienza professionale di un’altra entità è consentito solo se quell’entità eseguirà il lavoro corrispondente, e se puoi provare che avrai le risorse. Un nome suggerito non prova né l’una né l’altra cosa."
   },
-  "Give an agent the file a bidder would collect": {
-    "pt": "Dê ao agente o processo que um concorrente reuniria",
-    "es": "Dale al agente el expediente que reuniría quien licita",
-    "fr": "Donnez à l’agent le dossier qu’un soumissionnaire rassemblerait",
-    "de": "Gib dem Agenten die Akte, die ein Bieter zusammenstellen würde",
-    "it": "Dai all’agente il fascicolo che riunirebbe chi partecipa"
+  "Give the agent three skills, in this order": {
+    "pt": "Dê ao agente três instruções, por esta ordem",
+    "es": "Dale al agente tres instrucciones, en este orden",
+    "fr": "Donnez à l’agent trois instructions, dans cet ordre",
+    "de": "Gib dem Agenten drei Anleitungen, in dieser Reihenfolge",
+    "it": "Dai all’agente tre istruzioni, in quest’ordine"
   },
-  "The official notice, and the portal where the offer is uploaded.": {
-    "pt": "O anúncio oficial e o portal onde a proposta é carregada.",
-    "es": "El anuncio oficial y el portal donde se carga la oferta.",
-    "fr": "L’avis officiel, et le portail où l’offre est déposée.",
-    "de": "Die amtliche Bekanntmachung und das Portal, auf dem das Angebot hochgeladen wird.",
-    "it": "L’avviso ufficiale e il portale dove si carica l’offerta."
+  "A paragraph in the prompt is not a procedure. Give the agent these three skills, and do not let it draft before the first two are done.": {
+    "pt": "Um parágrafo no pedido não é um procedimento. Dê ao agente estas três instruções, e não o deixe redigir antes de as duas primeiras estarem feitas.",
+    "es": "Un párrafo en la petición no es un procedimiento. Dale al agente estas tres instrucciones, y no dejes que redacte antes de que las dos primeras estén hechas.",
+    "fr": "Un paragraphe dans la demande n’est pas une procédure. Donnez à l’agent ces trois instructions, et ne le laissez pas rédiger avant que les deux premières soient faites.",
+    "de": "Ein Absatz in der Anfrage ist kein Verfahren. Gib dem Agenten diese drei Anleitungen, und lass ihn nicht entwerfen, bevor die ersten beiden erledigt sind.",
+    "it": "Un paragrafo nella richiesta non è una procedura. Dai all’agente queste tre istruzioni, e non lasciargli scrivere prima che le prime due siano fatte."
   },
-  "Amendments, questions and answers, and any revised specification.": {
-    "pt": "Retificações, perguntas e respostas, e qualquer especificação revista.",
-    "es": "Modificaciones, preguntas y respuestas, y cualquier especificación revisada.",
-    "fr": "Modifications, questions et réponses, et toute spécification révisée.",
-    "de": "Änderungen, Fragen und Antworten und jede überarbeitete Leistungsbeschreibung.",
-    "it": "Modifiche, domande e risposte, e qualsiasi specifica rivista."
+  "<configure>Configure a scope</configure> first: what you sell, where you bid, the certificates, and the reference projects with their clients, dates and values. A line that is not in that file stays unknown. Unknown is not a match.": {
+    "pt": "<configure>Configurar um âmbito</configure> primeiro: o que vende, onde concorre, os certificados e os projetos de referência com os seus clientes, datas e valores. Uma linha que não está nesse processo fica desconhecida. Desconhecido não é cumprimento.",
+    "es": "<configure>Configurar un ámbito</configure> primero: qué vendes, dónde licitas, los certificados y los proyectos de referencia con sus clientes, fechas y valores. Una línea que no está en ese expediente queda desconocida. Desconocido no es un cumplimiento.",
+    "fr": "<configure>Configurer un périmètre</configure> d’abord : ce que vous vendez, où vous soumissionnez, les certificats et les projets de référence avec leurs clients, dates et valeurs. Une ligne qui n’est pas dans ce dossier reste inconnue. Inconnu n’est pas une satisfaction.",
+    "de": "<configure>Einen Bereich einrichten</configure> zuerst: was du verkaufst, wo du bietest, die Zertifikate und die Referenzprojekte mit Auftraggebern, Daten und Werten. Eine Zeile, die nicht in dieser Akte steht, bleibt unbekannt. Unbekannt ist nicht erfüllt.",
+    "it": "<configure>Configurare un ambito</configure> per primo: cosa vendi, dove partecipi, i certificati e i progetti di riferimento con i clienti, le date e i valori. Una riga che non è in quel fascicolo resta sconosciuta. Sconosciuto non è un requisito soddisfatto."
   },
-  "Company evidence: turnover for the years asked, references with client, dates and value, and certificates with the holder and the expiry.": {
-    "pt": "Prova da empresa: volume de negócios dos anos pedidos, referências com cliente, datas e valor, e certificados com o titular e a validade.",
-    "es": "Prueba de la empresa: facturación de los años pedidos, referencias con cliente, fechas y valor, y certificados con el titular y el vencimiento.",
-    "fr": "Preuves de l’entreprise : chiffre d’affaires des années demandées, références avec le client, les dates et la valeur, et certificats avec le titulaire et l’échéance.",
-    "de": "Unternehmensnachweise: Umsatz der verlangten Jahre, Referenzen mit Auftraggeber, Daten und Wert, und Zertifikate mit Inhaber und Ablauf.",
-    "it": "Prove dell’azienda: fatturato degli anni richiesti, referenze con cliente, date e valore, e certificati con il titolare e la scadenza."
+  "Then <fit>fit analysis</fit>, on the official notice, the amendments and the annex that holds the selection criteria. Each requirement is set against that file. A project under the minimum stays a gap. Where the notice allows another entity to cover professional experience, that entity has to perform the related work.": {
+    "pt": "Depois, a <fit>análise de enquadramento</fit>, sobre o anúncio oficial, as retificações e o anexo que contém os critérios de seleção. Cada requisito é confrontado com esse processo. Um projeto abaixo do mínimo fica uma lacuna. Quando o anúncio permite que outra entidade cubra a experiência profissional, essa entidade tem de executar o trabalho correspondente.",
+    "es": "Después, el <fit>análisis de encaje</fit>, sobre el anuncio oficial, las modificaciones y el anexo que contiene los criterios de selección. Cada requisito se confronta con ese expediente. Un proyecto por debajo del mínimo queda como una brecha. Cuando el anuncio permite que otra entidad cubra la experiencia profesional, esa entidad tiene que ejecutar el trabajo correspondiente.",
+    "fr": "Ensuite, l’<fit>analyse d’adéquation</fit>, sur l’avis officiel, les modifications et l’annexe qui contient les critères de sélection. Chaque exigence est confrontée à ce dossier. Un projet sous le minimum reste un manque. Lorsque l’avis permet à une autre entité de couvrir l’expérience professionnelle, cette entité doit exécuter le travail correspondant.",
+    "de": "Dann die <fit>Eignungsanalyse</fit>, an der amtlichen Bekanntmachung, den Änderungen und dem Anhang mit den Eignungskriterien. Jede Anforderung wird gegen diese Akte gesetzt. Ein Projekt unter dem Minimum bleibt eine Lücke. Wenn die Bekanntmachung zulässt, dass ein anderes Unternehmen die berufliche Erfahrung abdeckt, muss dieses Unternehmen die zugehörige Leistung erbringen.",
+    "it": "Poi l’<fit>analisi di idoneità</fit>, sull’avviso ufficiale, le modifiche e l’allegato che contiene i criteri di selezione. Ogni requisito viene confrontato con quel fascicolo. Un progetto sotto il minimo resta una lacuna. Quando l’avviso consente a un’altra entità di coprire l’esperienza professionale, quell’entità deve eseguire il lavoro corrispondente."
   },
-  "The clause on relying on another entity, before any draft.": {
-    "pt": "A cláusula sobre recorrer a outra entidade, antes de qualquer rascunho.",
-    "es": "La cláusula sobre basarse en otra entidad, antes de cualquier borrador.",
-    "fr": "La clause sur le recours à une autre entité, avant tout brouillon.",
-    "de": "Die Klausel zum Stützen auf ein anderes Unternehmen, vor jedem Entwurf.",
-    "it": "La clausola sul fare affidamento su un’altra entità, prima di qualsiasi bozza."
+  "<proposal>Proposal draft</proposal> starts only after that evaluation exists for the same scope and tender. The brief keeps the unmet lines. It is a note for the bid team. It is not sent to the buyer. Proposal briefs are on Teams.": {
+    "pt": "O <proposal>rascunho de proposta</proposal> só começa depois de existir essa avaliação para o mesmo âmbito e o mesmo concurso. O brief mantém as linhas por cumprir. É uma nota para a equipa da proposta. Não é enviado ao adjudicante. Os briefs de proposta estão no plano Teams.",
+    "es": "El <proposal>borrador de propuesta</proposal> solo empieza cuando existe esa evaluación para el mismo ámbito y la misma licitación. El brief mantiene las líneas no cumplidas. Es una nota para el equipo de la oferta. No se envía al comprador. Los briefs de propuesta están en el plan Teams.",
+    "fr": "L’<proposal>ébauche de proposition</proposal> ne commence qu’une fois cette évaluation existante pour le même périmètre et le même marché. La note conserve les lignes non satisfaites. C’est une note pour l’équipe d’offre. Elle n’est pas envoyée à l’acheteur. Les notes de proposition sont sur le plan Teams.",
+    "de": "Der <proposal>Angebotsentwurf</proposal> beginnt erst, wenn diese Bewertung für denselben Bereich und dieselbe Ausschreibung vorliegt. Das Briefing behält die unerfüllten Zeilen. Es ist eine Notiz für das Angebotsteam. Es geht nicht an den Auftraggeber. Angebotsbriefs gibt es im Plan Teams.",
+    "it": "La <proposal>bozza di offerta</proposal> inizia solo dopo che quella valutazione esiste per lo stesso ambito e la stessa gara. Il brief mantiene le righe non soddisfatte. È una nota per il team dell’offerta. Non viene mandata al committente. I brief di proposta sono nel piano Teams."
   },
-  "An instruction to mark a silent line unknown, and not to treat unknown as a match.": {
-    "pt": "Uma instrução para marcar uma linha silenciosa como desconhecida, e para não tratar desconhecido como cumprimento.",
-    "es": "Una instrucción para marcar una línea en silencio como desconocida, y para no tratar lo desconocido como un cumplimiento.",
-    "fr": "Une instruction pour marquer une ligne silencieuse comme inconnue, et pour ne pas traiter l’inconnu comme une satisfaction.",
-    "de": "Eine Anweisung, eine stumme Zeile als unbekannt zu markieren und Unbekannt nicht als erfüllt zu behandeln.",
-    "it": "Un’istruzione per segnare una riga silenziosa come sconosciuta, e per non trattare lo sconosciuto come un requisito soddisfatto."
-  },
-  "Tender Town searches public notices on a schedule, including national portals, TED and development-bank notices, and lists requirements from the documents it fetches. <fit>Fit analysis</fit> compares those lines with the evidence saved on a scope and does not fill a figure the file does not contain. <example>See that distinction on a real notice</example>.": {
-    "pt": "O Tender Town pesquisa anúncios públicos com regularidade, incluindo portais nacionais, o TED e anúncios de bancos de desenvolvimento, e lista os requisitos a partir dos documentos que obtém. A <fit>análise de enquadramento</fit> compara essas linhas com a prova guardada num âmbito e não preenche um valor que o processo não contém. <example>Veja essa distinção num anúncio real</example>.",
-    "es": "Tender Town busca anuncios públicos con una cadencia, incluidos portales nacionales, TED y anuncios de bancos de desarrollo, y lista los requisitos a partir de los documentos que obtiene. El <fit>análisis de encaje</fit> compara esas líneas con la prueba guardada en un ámbito y no rellena una cifra que el expediente no contiene. <example>Mira esa distinción en un anuncio real</example>.",
-    "fr": "Tender Town recherche des avis publics selon un calendrier, y compris les portails nationaux, TED et les avis des banques de développement, et liste les exigences à partir des documents qu’il récupère. L’<fit>analyse d’adéquation</fit> compare ces lignes aux preuves enregistrées sur un périmètre et ne complète pas un chiffre que le dossier ne contient pas. <example>Voir cette distinction sur un avis réel</example>.",
-    "de": "Tender Town durchsucht öffentliche Bekanntmachungen nach einem Zeitplan, einschließlich nationaler Portale, TED und Bekanntmachungen von Entwicklungsbanken, und listet die Anforderungen aus den Dokumenten, die es holt. Die <fit>Eignungsanalyse</fit> vergleicht diese Zeilen mit den Nachweisen, die in einem Bereich gespeichert sind, und füllt keine Zahl, die die Akte nicht enthält. <example>Diesen Unterschied an einer echten Bekanntmachung ansehen</example>.",
-    "it": "Tender Town cerca avvisi pubblici con una cadenza, inclusi portali nazionali, TED e avvisi di banche di sviluppo, ed elenca i requisiti dai documenti che recupera. L’<fit>analisi di idoneità</fit> confronta quelle righe con le prove salvate in un ambito e non riempie una cifra che il fascicolo non contiene. <example>Vedi questa distinzione su un avviso reale</example>."
+  "Tender Town is the platform that runs that order. It scouts public tenders, grants and funding calls from procurement portals, TED and development banks, and it keeps signals that a named buyer has announced a procurement that is not open yet. A pipeline runs every four hours, and each scope refreshes as often as its plan allows, so the check continues after the chat is closed. On a notice it has collected, it fetches the documents, lists the requirements, scores the fit against the company evidence on the scope, and prepares a proposal brief from that evaluation. It does not file the offer. Point ChatGPT, or another agent, at <skills>these skills</skills>. <example>See the order on a real notice</example>.": {
+    "pt": "O Tender Town é a plataforma que executa essa ordem. Pesquisa concursos públicos, subvenções e convites de financiamento em portais de contratação, no TED e em bancos de desenvolvimento, e guarda sinais de que um adjudicante identificado anunciou uma contratação que ainda não está aberta. Um pipeline corre de quatro em quatro horas, e cada âmbito atualiza-se tantas vezes quanto o plano permite, pelo que a verificação continua depois de o chat estar fechado. Num anúncio que já recolheu, obtém os documentos, lista os requisitos, avalia o enquadramento face à prova da empresa no âmbito e prepara um brief de proposta a partir dessa avaliação. Não submete a proposta. Aponte o ChatGPT, ou outro agente, para <skills>estas instruções</skills>. <example>Veja a ordem num anúncio real</example>.",
+    "es": "Tender Town es la plataforma que ejecuta ese orden. Busca licitaciones públicas, subvenciones y convocatorias de financiación en portales de contratación, TED y bancos de desarrollo, y guarda señales de que un comprador identificado ha anunciado una contratación que aún no está abierta. Un pipeline se ejecuta cada cuatro horas, y cada ámbito se actualiza tantas veces como permite el plan, así que la comprobación sigue después de cerrar el chat. En un anuncio que ya ha recogido, obtiene los documentos, lista los requisitos, puntúa el encaje frente a la prueba de la empresa en el ámbito y prepara un brief de propuesta a partir de esa evaluación. No presenta la oferta. Señala a ChatGPT, u otro agente, <skills>estas instrucciones</skills>. <example>Mira el orden en un anuncio real</example>.",
+    "fr": "Tender Town est la plateforme qui exécute cet ordre. Elle recherche des marchés publics, des subventions et des appels de financement sur les portails de commande, TED et les banques de développement, et elle conserve les signaux qu’un acheteur nommé a annoncé une commande qui n’est pas encore ouverte. Un pipeline tourne toutes les quatre heures, et chaque périmètre se rafraîchit aussi souvent que son plan le permet, de sorte que la vérification continue après la fermeture du chat. Sur un avis qu’elle a déjà recueilli, elle récupère les documents, liste les exigences, note l’adéquation par rapport aux preuves de l’entreprise sur le périmètre, et prépare une note de proposition à partir de cette évaluation. Elle ne dépose pas l’offre. Indiquez à ChatGPT, ou à un autre agent, <skills>ces instructions</skills>. <example>Voir l’ordre sur un avis réel</example>.",
+    "de": "Tender Town ist die Plattform, die diese Reihenfolge ausführt. Sie sucht öffentliche Ausschreibungen, Zuschüsse und Finanzierungsaufrufe auf Vergabeportalen, TED und bei Entwicklungsbanken, und sie hält Signale fest, dass ein genannter Auftraggeber eine Vergabe angekündigt hat, die noch nicht offen ist. Eine Pipeline läuft alle vier Stunden, und jeder Bereich aktualisiert sich so oft, wie sein Plan es erlaubt, sodass die Prüfung weiterläuft, nachdem der Chat geschlossen ist. Bei einer Bekanntmachung, die sie schon gesammelt hat, holt sie die Dokumente, listet die Anforderungen, bewertet die Eignung gegen die Unternehmensnachweise im Bereich und bereitet aus dieser Bewertung ein Angebotsbriefing vor. Sie reicht das Angebot nicht ein. Weise ChatGPT, oder einen anderen Agenten, auf <skills>diese Anleitungen</skills>. <example>Die Reihenfolge an einer echten Bekanntmachung ansehen</example>.",
+    "it": "Tender Town è la piattaforma che esegue quest’ordine. Cerca gare pubbliche, contributi e inviti di finanziamento su portali di appalto, TED e banche di sviluppo, e tiene i segnali che un committente indicato ha annunciato un appalto non ancora aperto. Una pipeline gira ogni quattro ore, e ogni ambito si aggiorna tante volte quante il piano consente, così il controllo continua dopo che la chat è chiusa. Su un avviso che ha già raccolto, recupera i documenti, elenca i requisiti, valuta l’idoneità rispetto alle prove dell’azienda nell’ambito e prepara un brief di proposta da quella valutazione. Non presenta l’offerta. Indica a ChatGPT, o a un altro agente, <skills>queste istruzioni</skills>. <example>Vedi l’ordine su un avviso reale</example>."
   },
   "Government contracts for small businesses": {
     "pt": "Contratos públicos para pequenas empresas",
@@ -531,12 +524,12 @@
     "de": "Wie öffentliche Ausschreibungen funktionieren, und wer sich bewerben kann",
     "it": "Come funzionano le gare pubbliche, e chi può partecipare"
   },
-  "A public buyer publishes a notice and takes offers. You can apply when the procedure allows it and the company can evidence the selection criteria in that notice.": {
-    "pt": "Um adjudicante público publica um anúncio e recebe propostas. Pode candidatar-se quando o procedimento o permite e a empresa consegue provar os critérios de seleção desse anúncio.",
-    "es": "Un comprador público publica un anuncio y recibe ofertas. Puedes presentarte cuando el procedimiento lo permite y la empresa puede acreditar los criterios de selección de ese anuncio.",
-    "fr": "Un acheteur public publie un avis et reçoit des offres. Vous pouvez vous porter candidat lorsque la procédure le permet et que l’entreprise peut justifier les critères de sélection de cet avis.",
-    "de": "Ein öffentlicher Auftraggeber veröffentlicht eine Bekanntmachung und nimmt Angebote an. Du kannst dich bewerben, wenn das Verfahren es erlaubt und das Unternehmen die Eignungskriterien dieser Bekanntmachung belegen kann.",
-    "it": "Un committente pubblico pubblica un avviso e riceve offerte. Puoi candidarti quando la procedura lo consente e l’azienda può provare i criteri di selezione di quell’avviso."
+  "A public buyer publishes a notice and takes offers. You can apply when the procedure allows it and the company can evidence the selection criteria.": {
+    "pt": "Um adjudicante público publica um anúncio e recebe propostas. Pode candidatar-se quando o procedimento o permite e a empresa consegue provar os critérios de seleção.",
+    "es": "Un comprador público publica un anuncio y recibe ofertas. Puedes presentarte cuando el procedimiento lo permite y la empresa puede acreditar los criterios de selección.",
+    "fr": "Un acheteur public publie un avis et reçoit des offres. Vous pouvez vous porter candidat lorsque la procédure le permet et que l’entreprise peut justifier les critères de sélection.",
+    "de": "Ein öffentlicher Auftraggeber veröffentlicht eine Bekanntmachung und nimmt Angebote an. Du kannst dich bewerben, wenn das Verfahren es erlaubt und das Unternehmen die Eignungskriterien belegen kann.",
+    "it": "Un committente pubblico pubblica un avviso e riceve offerte. Puoi candidarti quando la procedura lo consente e l’azienda può provare i criteri di selezione."
   },
   "A notice on a board outside a town hall, one person walking in, two sharing a folder, and one held back by a rope.": {
     "pt": "Um anúncio num painel à porta de uma câmara, uma pessoa a entrar, duas a partilhar uma pasta, e uma retida por uma corda.",
@@ -685,12 +678,12 @@
     "de": "So prüfst du, ob du die Eignungskriterien einer öffentlichen Ausschreibung erfüllst",
     "it": "Come verificare se soddisfi i criteri di idoneità di una gara pubblica"
   },
-  "Match the company to each mandatory line in the notice. A similar project, or a sentence about a certificate, does not meet a line that asks for a figure or a document.": {
-    "pt": "Faça corresponder a empresa a cada linha obrigatória do anúncio. Um projeto semelhante, ou uma frase sobre um certificado, não cumpre uma linha que pede um valor ou um documento.",
-    "es": "Haz corresponder la empresa con cada línea obligatoria del anuncio. Un proyecto similar, o una frase sobre un certificado, no cumple una línea que pide una cifra o un documento.",
-    "fr": "Faites correspondre l’entreprise à chaque ligne obligatoire de l’avis. Un projet semblable, ou une phrase sur un certificat, ne satisfait pas une ligne qui demande un chiffre ou un document.",
-    "de": "Setze das Unternehmen gegen jede Pflichtzeile der Bekanntmachung. Ein ähnliches Projekt oder ein Satz über ein Zertifikat erfüllt eine Zeile nicht, die eine Zahl oder ein Dokument verlangt.",
-    "it": "Fai corrispondere l’azienda a ogni riga obbligatoria dell’avviso. Un progetto simile, o una frase su un certificato, non soddisfa una riga che chiede una cifra o un documento."
+  "Match the company to each mandatory line. A similar project, or a sentence about a certificate, does not meet a line that asks for a figure or a document.": {
+    "pt": "Faça corresponder a empresa a cada linha obrigatória. Um projeto semelhante, ou uma frase sobre um certificado, não cumpre uma linha que pede um valor ou um documento.",
+    "es": "Haz corresponder la empresa con cada línea obligatoria. Un proyecto similar, o una frase sobre un certificado, no cumple una línea que pide una cifra o un documento.",
+    "fr": "Faites correspondre l’entreprise à chaque ligne obligatoire. Un projet semblable, ou une phrase sur un certificat, ne satisfait pas une ligne qui demande un chiffre ou un document.",
+    "de": "Setze das Unternehmen gegen jede Pflichtzeile. Ein ähnliches Projekt oder ein Satz über ein Zertifikat erfüllt eine Zeile nicht, die eine Zahl oder ein Dokument verlangt.",
+    "it": "Fai corrispondere l’azienda a ogni riga obbligatoria. Un progetto simile, o una frase su un certificato, non soddisfa una riga che chiede una cifra o un documento."
   },
   "A long notice with one line marked, a certificate and a second folder on a café table.": {
     "pt": "Um anúncio longo com uma linha assinalada, um certificado e uma segunda pasta numa mesa de café.",
