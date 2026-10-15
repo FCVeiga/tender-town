@@ -17,23 +17,28 @@ const TAGS: Record<string, string> = {
   skills: '/skills.md',
   check: '/blog/how-to-check-if-your-company-can-bid',
   account: '/signup',
+  example: '/example',
 };
 
 function rich(text: string) {
   const parts: React.ReactNode[] = [];
-  const re = /<(\w+)>(.*?)<\/\1>/g;
+  const re = /<(\w+)>(.*?)<\/\1>|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   let last = 0;
   let match: RegExpExecArray | null;
   let i = 0;
   while ((match = re.exec(text))) {
     if (match.index > last) parts.push(text.slice(last, match.index));
-    const href = TAGS[match[1]];
-    const label = match[2];
-    parts.push(href
-      ? (match[1] === 'skills'
-        ? <a key={i++} href={href}>{label}</a>
-        : <Link key={i++} href={href}>{label}</Link>)
-      : <Fragment key={i++}>{match[0]}</Fragment>);
+    if (match[1]) {
+      const href = TAGS[match[1]];
+      const label = match[2];
+      parts.push(href
+        ? (match[1] === 'skills'
+          ? <a key={i++} href={href}>{label}</a>
+          : <Link key={i++} href={href}>{label}</Link>)
+        : <Fragment key={i++}>{match[0]}</Fragment>);
+    } else {
+      parts.push(<a key={i++} href={match[4]}>{match[3]}</a>);
+    }
     last = match.index + match[0].length;
   }
   if (last < text.length) parts.push(text.slice(last));
@@ -125,10 +130,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 : block.type === 'img' ? <figure key={i} className="blog-figure"><img src={block.src} alt={t(block.alt)} width={1280} height={720} /></figure>
                   : <p key={i}>{rich(t(block.text))}</p>
         ))}
-        <div className="blog-cta">
-          <Link className="btn primary" href="/signup">{t('Create an account')}</Link>
-          <Link className="btn" href="/mcp">{t('Connect your own agents')}</Link>
-        </div>
       </div>
       <CommentsSection itemType="blog" itemId={post.slug} loginNext={href} />
     </article>
