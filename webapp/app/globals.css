@@ -351,7 +351,7 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .key-facts li { font-size: 13.5px; color: var(--ink); line-height: 1.5; }
 .key-facts li::marker { color: var(--accent); }
 .analysis-block { border-left: 3px solid; border-image: linear-gradient(180deg, var(--brand-a), var(--brand-b)) 1; }
-#requirements > #evaluation { margin-top: 22px; padding-top: 4px; }
+#requirements > #evaluation { margin-top: 22px; padding-top: 4px; border-left: 0; border-image: none; }
 .verdict { font-family: var(--font-mono-stack); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 999px; }
 .verdict.act { background: var(--brand-gradient); color: var(--ink); }
 .verdict.consider { background: var(--warn-soft); color: var(--warn); }
@@ -909,14 +909,14 @@ tr.data-row:hover td { background: #FAFBFD; }
 .tender-jump {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 22px;
 }
-.tender-jump a {
-  display: flex; align-items: center; justify-content: center; text-align: center; min-height: 44px; padding: 8px 12px;
+.tender-jump :is(a, button) {
+  display: flex; align-items: center; justify-content: center; width: 100%; text-align: center; min-height: 44px; padding: 8px 12px;
   border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--ink);
-  font-size: 13px; font-weight: 600; text-decoration: none; line-height: 1.25;
+  font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; line-height: 1.25; cursor: pointer;
 }
-.tender-jump a:hover { border-color: var(--border-strong); background: var(--surface-2); }
-.tender-jump a.is-primary { background: var(--brand-a); border-color: var(--brand-a); color: #fff; }
-.tender-jump a.is-primary:hover { background: #1554E0; }
+.tender-jump :is(a, button):hover { border-color: var(--border-strong); background: var(--surface-2); }
+.tender-jump :is(a, button).is-primary { background: var(--brand-a); border-color: var(--brand-a); color: #fff; }
+.tender-jump :is(a, button).is-primary:hover { background: #1554E0; }
 @media (min-width: 860px) {
   .tender-jump { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
@@ -1044,9 +1044,9 @@ tr.data-row:hover td { background: #FAFBFD; }
 /* Opportunity page: Tender Evaluation Agent + requirements */
 .summary-note { font-size: 12px !important; color: var(--subtle) !important; }
 .eval-run { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
-.btn-agent { font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); background: var(--brand-gradient); border: 0; border-radius: 999px; padding: 9px 18px; cursor: pointer; box-shadow: 0 3px 10px rgba(47, 107, 255, 0.3); }
-.btn-agent:hover:not(:disabled) { filter: brightness(1.05); }
-.btn-agent:disabled { background: var(--surface-2); color: var(--subtle); box-shadow: none; cursor: not-allowed; }
+.btn-agent { font: inherit; font-size: 13px; font-weight: 600; color: #fff; background: var(--brand-a); border: 1px solid var(--brand-a); border-radius: 999px; padding: 9px 18px; cursor: pointer; }
+.btn-agent:hover:not(:disabled) { background: #1554E0; border-color: #1554E0; }
+.btn-agent:disabled { background: var(--surface-2); color: var(--subtle); border-color: var(--border); cursor: not-allowed; }
 .eval-note { font-size: 12px; color: var(--subtle); }
 .eval-report { margin-bottom: 16px; }
 .eval-report h3 { font-size: 12.5px; font-weight: 600; color: var(--ink); margin: 12px 0 6px; }
@@ -2219,6 +2219,10 @@ table.data-table th { background: none; }
 :root[data-theme="dark"] .btn.primary, :root[data-theme="dark"] .filter-link.active, :root[data-theme="dark"] .chip.active, :root[data-theme="dark"] .feed-sort-link.active, :root[data-theme="dark"] .tag.updated,
 :root[data-theme="dark"] .chat-tabs button.on, :root[data-theme="dark"] .chat-msg.mine p, :root[data-theme="dark"] .ni-badge.social { background: #F5F5F5; border-color: #F5F5F5; color: #000000; }
 :root[data-theme="dark"] .btn.primary:hover { background: #FFFFFF; }
+:root[data-theme="dark"] .btn-agent:not(:disabled) { background: #F5F5F5; border-color: #F5F5F5; color: #000000; }
+:root[data-theme="dark"] .btn-agent:not(:disabled):hover { background: #FFFFFF; }
+:root[data-theme="dark"] .tender-jump :is(a, button).is-primary { background: #F5F5F5; border-color: #F5F5F5; color: #000000; }
+:root[data-theme="dark"] .tender-jump :is(a, button).is-primary:hover { background: #FFFFFF; }
 :root[data-theme="dark"] .filter-link.active .tab-count { background: rgba(0, 0, 0, 0.12); color: #000000; }
 :root[data-theme="dark"] .live-panel { background: #141414; border-color: #262626; }
 :root[data-theme="dark"] .live-head { background: #000000; color: #fff; border-bottom: 1px solid #262626; }
@@ -2235,6 +2239,10 @@ table.data-table th { background: none; }
 :root[data-theme="auto"] .btn.primary, :root[data-theme="auto"] .filter-link.active, :root[data-theme="auto"] .chip.active, :root[data-theme="auto"] .feed-sort-link.active, :root[data-theme="auto"] .tag.updated,
 :root[data-theme="auto"] .chat-tabs button.on, :root[data-theme="auto"] .chat-msg.mine p, :root[data-theme="auto"] .ni-badge.social { background: #F5F5F5; border-color: #F5F5F5; color: #000000; }
 :root[data-theme="auto"] .btn.primary:hover { background: #FFFFFF; }
+:root[data-theme="auto"] .btn-agent:not(:disabled) { background: #F5F5F5; border-color: #F5F5F5; color: #000000; }
+:root[data-theme="auto"] .btn-agent:not(:disabled):hover { background: #FFFFFF; }
+:root[data-theme="auto"] .tender-jump :is(a, button).is-primary { background: #F5F5F5; border-color: #F5F5F5; color: #000000; }
+:root[data-theme="auto"] .tender-jump :is(a, button).is-primary:hover { background: #FFFFFF; }
 :root[data-theme="auto"] .filter-link.active .tab-count { background: rgba(0, 0, 0, 0.12); color: #000000; }
 :root[data-theme="auto"] .live-panel { background: #141414; border-color: #262626; }
 :root[data-theme="auto"] .live-head { background: #000000; color: #fff; border-bottom: 1px solid #262626; }

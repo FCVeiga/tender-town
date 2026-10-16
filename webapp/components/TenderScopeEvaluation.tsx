@@ -13,7 +13,7 @@ const VERDICTS: Record<string, string> = { bid: 'Bid', bid_with_partner: 'Bid wi
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 
 type ScopeEvalProps = {
-  opportunityId: string; scope: { id: string; name: string }; row: any; showName: boolean; canRun: boolean; signedIn: boolean;
+  opportunityId: string; scope: { id: string; name: string }; row: any; canRun: boolean; signedIn: boolean;
   locked?: 'plan' | 'member' | null;
   evaluatorOn: boolean; proposerOn: boolean; analysedAt: string | null;
   lead?: string | null;
@@ -26,9 +26,9 @@ type ScopeEvalProps = {
   quotaLimit?: number | null;
 };
 
-function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, signedIn: boolean, locked: 'plan' | 'member' | null) {
+function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, signedIn: boolean, locked: 'plan' | 'member' | null, loginLabel: string) {
   if (!signedIn) {
-    return <p className="muted"><Link href={`/login?next=/tenders/${opportunityId}`}>{t('Log in')}</Link> {t('and create a scope to evaluate tenders against your own context.')}</p>;
+    return <p className="eval-run"><Link className="btn primary" href={`/login?next=/tenders/${opportunityId}`}>{t(loginLabel)}</Link></p>;
   }
   if (locked === 'member') return <p className="muted">{t('Run by your workspace\u2019s admins.')}</p>;
   if (locked === 'plan') return <p className="muted"><Link href="/settings/account?plan=1">{t('Upgrade')}</Link> {t('to evaluate tenders against your own scope\u2019s context.')}</p>;
@@ -36,7 +36,7 @@ function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, sign
 }
 
 /** One scope's evaluation of a tender. The proposal brief is a separate section. */
-export default function TenderScopeEvaluation({ opportunityId, scope, row, showName, canRun, signedIn, evaluatorOn, analysedAt, locked = null, lead = null, archived = false, contextHref = null, runsLeft = null, runsLimit = null, quotaLimit = null }: ScopeEvalProps) {
+export default function TenderScopeEvaluation({ opportunityId, scope, row, canRun, signedIn, evaluatorOn, analysedAt, locked = null, lead = null, archived = false, contextHref = null, runsLeft = null, runsLimit = null, quotaLimit = null }: ScopeEvalProps) {
   const t = getTSync();
   const evaluation = (row?.evaluation ?? null) as Evaluation | null;
   const running = !!row?.evaluation_started_at && Date.now() - new Date(row.evaluation_started_at).getTime() < 5 * 60_000;
@@ -46,7 +46,7 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, showN
       <div className="agent-head">
         <AgentAvatar agent="tender_evaluation" working={running} off={!evaluatorOn} />
         <div className="agent-id">
-          <h2>{t('Tender Evaluation')}{showName && <span className="scope-name-chip">{scope.name}</span>}</h2>
+          <h2>{t('Tender Evaluation')}</h2>
           {row?.evaluated_at && <span className="agent-name">{t('report from {date}', { date: fmtDate(row.evaluated_at) })}</span>}
         </div>
         {evaluation && <span className={`verdict eval-${evaluation.verdict}`}>{VERDICTS[evaluation.verdict] ? t(VERDICTS[evaluation.verdict]) : evaluation.verdict}</span>}
@@ -77,7 +77,7 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, showN
         : quotaLimit != null ? (
           <p className="muted">{t('This workspace has used its {n} tender evaluations for this month.', { n: quotaLimit })} <Link href="/settings/account?plan=1">{t('Upgrade')}</Link></p>
         )
-        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked)
+        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked, 'Log in to run the agent')
           : (
             <>
               {runsLeft != null && runsLimit != null && (
@@ -107,7 +107,7 @@ export function ProposalSlot({ opportunityId, scope, row, showName, canRun, sign
         </div>
       )}
       {!proposerOn ? <p className="muted">{t('Agent off for this scope.')}</p>
-        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked)
+        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked, 'Log in to run this agent')
           : <ProposalRunner opportunityId={opportunityId} scopeId={scope.id} proposalAt={row?.proposal_at ?? null} running={proposing} lastError={row?.proposal_error ?? null} />}
     </div>
   );

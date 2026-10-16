@@ -1559,5 +1559,26 @@
     "fr": "Révisé",
     "de": "Überarbeitet",
     "it": "Rivisto"
+  },
+  "Get the requirements and eligibility criteria, and a fit assessment against your company information.": {
+    "pt": "Obtenha os requisitos e os critérios de elegibilidade, e uma avaliação de adequação face à informação da sua empresa.",
+    "es": "Obtén los requisitos y los criterios de elegibilidad, y una evaluación de encaje con la información de tu empresa.",
+    "fr": "Obtenez les exigences et les critères d’éligibilité, ainsi qu’une évaluation de l’adéquation avec les informations de votre entreprise.",
+    "de": "Erhalte die Anforderungen und die Eignungskriterien sowie eine Passungsbewertung anhand der Angaben deines Unternehmens.",
+    "it": "Ottieni i requisiti e i criteri di idoneità, e una valutazione di idoneità rispetto alle informazioni della tua azienda."
+  },
+  "Log in to run the agent": {
+    "pt": "Inicie sessão para executar o agente",
+    "es": "Inicia sesión para ejecutar el agente",
+    "fr": "Connectez-vous pour lancer l’agent",
+    "de": "Melde dich an, um den Agenten auszuführen",
+    "it": "Accedi per eseguire l’agente"
+  },
+  "Log in to run this agent": {
+    "pt": "Inicie sessão para executar este agente",
+    "es": "Inicia sesión para ejecutar este agente",
+    "fr": "Connectez-vous pour lancer cet agent",
+    "de": "Melde dich an, um diesen Agenten auszuführen",
+    "it": "Accedi per eseguire questo agente"
   }
 }

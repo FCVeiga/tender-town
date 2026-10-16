@@ -17,7 +17,7 @@ import { getCurrentUser, siteOrigin } from '@/lib/auth';
 import { getScopeItems, getViewScopes } from '@/lib/scopes';
 import { getContext, getPersonalAccount } from '@/lib/accounts';
 import TenderScopeEvaluation, { ProposalSlot } from '@/components/TenderScopeEvaluation';
-import TenderJump from '@/components/TenderJump';
+import TenderView from '@/components/TenderView';
 import TenderHistory from '@/components/TenderHistory';
 import PostMarkdown from '@/components/social/PostMarkdown';
 import CommentsSection from '@/components/social/CommentsSection';
@@ -135,7 +135,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     const rows = (scopeEvals || []).filter((r: any) => r.scope_id === scopeId);
     return (wsId && rows.find((r: any) => r.workspace_id === wsId)) || rows.find((r: any) => !r.workspace_id) || null;
   };
-  const evaluatedScopes = viewScopes.filter((s) => evalOf(s.id)?.evaluation);
+  const evaluatedScopes = user ? viewScopes.filter((s) => evalOf(s.id)?.evaluation) : [];
   const scopeItems = await getScopeItems('tender');
   const relevance = scopeItems?.relevance.get(params.id) ?? o.opportunity_relevance_score;
   const fits = evaluatedScopes.map((s) => evalOf(s.id).evaluation.fit_score as number);
@@ -180,7 +180,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     .sort((a, b) => (a.publication_date || '').localeCompare(b.publication_date || '') || (a.name || '').localeCompare(b.name || ''));
   const submitDocs = ((documents || []) as Doc[]).filter((d) => d.document_type === 'FORM' || d.document_type === 'FINANCIAL_PROPOSAL');
   const docCount = (documents || []).length;
-  const compare = t('Compare the tender requirements with your company evidence to identify matches, gaps and partner needs.');
+  const compare = t('Get the requirements and eligibility criteria, and a fit assessment against your company information.');
   const briefLead = t('Build a starting brief from your evaluation, including evidence, unresolved requirements and roles a partner needs to cover.');
   const scopeCanRun = (scope: { id: string; isDefault: boolean }) => canRun && (!scope.isDefault || !!ctx?.isPlatformAdmin);
 
@@ -242,92 +242,114 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
           <div className={`stat-num ${fits.length ? '' : 'small'}`}>{fits.length ? Math.max(...fits) : t('Not assessed')}</div>
         </div>
       </div>
-      <TenderJump documents={docCount} />
-
-      <div className="tender-sections">
-          {summaryRaw && (
-            <section className="detail-block" id="summary">
-              <h2>{t('Summary')}</h2>
-              <PostMarkdown>{summaryRaw}</PostMarkdown>
-              {o.tender_summary
-                ? <p className="summary-note">{t('Tender Analysis Agent')} · {o.official_url?.includes('ted.europa.eu') ? t('from the notice and the tender documents') : t('from the notice and the tender page')}</p>
-                : summaryRaw ? <p className="summary-note">{t('Preliminary summary.')}</p> : null}
-              {o.official_url && <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>}
-            </section>
-          )}
-
-          <section className="detail-block" id="requirements">
-            <h2>{evaluatedScopes.length ? t('Requirements & Match Status') : t('Requirements')} {reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
-            {reqs.length === 0 ? (
-              o.tender_analysed_at ? <p className="muted">{t('None published yet.')}</p> : null
-            ) : REQ_GROUPS.map((g) => ({ ...g, rows: reqs.filter((r) => groupOf(r) === g.key) })).filter((g) => g.rows.length).map((g) => (
-              <div key={g.key} className="req-category-block">
-                <h3 className="req-category-title">{t(g.label)} <span className="uc-count">{g.rows.length}</span></h3>
-                <div className="req-table-wrap">
-                  <table className="req-table">
-                    <thead><tr><th>{t('Requirement')}</th><th>{t('Threshold')}</th><th>{t('Mandatory')}</th>{evaluatedScopes.map((sc) => <th key={sc.id}>{evaluatedScopes.length > 1 ? `${t('Match')} · ${sc.name}` : t('Match')}</th>)}</tr></thead>
-                    <tbody>
-                      {g.rows.map((r) => (
-                        <tr key={r.requirement_id}>
-                          <td>
-                            {r.requirement_text}
-                            {firstInLanguage(r.evidence_required) && <div className="req-evidence">{t('Evidence:')} {r.evidence_required}</div>}
-                            {r.document && <div className="req-source">{r.document}</div>}
-                            {r.confidence && r.confidence !== 'CONFIRMED' && CONFIDENCE[r.confidence] && <div className="req-source">{t(CONFIDENCE[r.confidence])}</div>}
-                          </td>
-                          <td>{firstInLanguage(r.threshold) ?? ''}</td>
-                          <td>{r.mandatory ? <span className="mand-yes">{t('Mandatory')}</span> : <span className="mand-no">{t('Optional')}</span>}</td>
-                          {evaluatedScopes.map((sc) => {
-                            const m = matchOf(r, sc.id);
-                            return (
-                              <td key={sc.id}>
-                                <span className={`badge-match ${matchClass(m?.match_status)}`}>{t(matchLabel(m?.match_status))}</span>
-                                {m?.notes && <div className="req-match-note">{m.notes}</div>}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-            {(award || []).length > 0 && (
-              <div className="req-category-block">
-                <h3 className="req-category-title">{t('Award criteria')}</h3>
-                <div className="award-list">
-                  {(award || []).map((a: any) => {
-                    const what = firstInLanguage(a.subcriteria?.name_en, a.subcriteria?.name, a.subcriteria?.description_en, a.subcriteria?.description);
-                    return (
-                      <div key={a.id} className="award-row">
-                        <span className="award-label">{a.criterion}{what ? <em> — {what}</em> : null}</span>
-                        <span className="award-bar">{a.weight != null ? <span style={{ width: `${a.weight}%` }} /> : null}</span>
-                        <span className="award-weight">{a.weight != null ? `${a.weight}%` : '—'}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+      <TenderView
+        documentCount={docCount}
+        summary={(
+          <>
+            {summaryRaw && (
+              <section className="detail-block" id="summary">
+                <h2>{t('Summary')}</h2>
+                <PostMarkdown>{summaryRaw}</PostMarkdown>
+                {o.tender_summary
+                  ? <p className="summary-note">{t('Tender Analysis Agent')} · {o.official_url?.includes('ted.europa.eu') ? t('from the notice and the tender documents') : t('from the notice and the tender page')}</p>
+                  : summaryRaw ? <p className="summary-note">{t('Preliminary summary.')}</p> : null}
+                {o.official_url && <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>}
+              </section>
             )}
-            {submitDocs.length > 0 && (
-              <div className="req-category-block">
-                <h3 className="req-category-title">{t('Documents to submit')} <span className="uc-count">{submitDocs.length}</span></h3>
-                <ul className="submit-docs">
-                  {submitDocs.map((d) => (
-                    <li key={d.document_id}>
-                      {d.url
-                        ? <a href={d.url} target="_blank" rel="noopener noreferrer">{firstInLanguage(d.name_en) ?? d.name}</a>
-                        : <span>{firstInLanguage(d.name_en) ?? d.name}</span>}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <TenderHistory
+              notices={notices}
+              changes={(changes || []) as UpdateEvent[]}
+              archived={stage === 'closed'}
+              evidence={o.status_evidence}
+              verifiedAt={o.verified_at}
+              note={stage === 'uncertain' ? t('The bidding status is not confirmed.') : null}
+            />
+            <section className="detail-block" id="sources">
+              <h2>{t('Source')}</h2>
+              {o.official_url
+                ? <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>
+                : <p className="mono">{t('Not recorded')}</p>}
+              <ItemSources type="tender" id={o.opportunity_id} skip={o.official_url} />
+            </section>
+          </>
+        )}
+        fit={(
+          <section className="detail-block" id="requirements">
+            {evaluatedScopes.length > 0 && (
+              <>
+                <h2>{t('Requirements & Match Status')} {reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
+                {reqs.length === 0 ? (
+                  <p className="muted">{t('None published yet.')}</p>
+                ) : REQ_GROUPS.map((g) => ({ ...g, rows: reqs.filter((r) => groupOf(r) === g.key) })).filter((g) => g.rows.length).map((g) => (
+                  <div key={g.key} className="req-category-block">
+                    <h3 className="req-category-title">{t(g.label)} <span className="uc-count">{g.rows.length}</span></h3>
+                    <div className="req-table-wrap">
+                      <table className="req-table">
+                        <thead><tr><th>{t('Requirement')}</th><th>{t('Threshold')}</th><th>{t('Mandatory')}</th>{evaluatedScopes.map((sc) => <th key={sc.id}>{evaluatedScopes.length > 1 ? `${t('Match')} · ${sc.name}` : t('Match')}</th>)}</tr></thead>
+                        <tbody>
+                          {g.rows.map((r) => (
+                            <tr key={r.requirement_id}>
+                              <td>
+                                {r.requirement_text}
+                                {firstInLanguage(r.evidence_required) && <div className="req-evidence">{t('Evidence:')} {r.evidence_required}</div>}
+                                {r.document && <div className="req-source">{r.document}</div>}
+                                {r.confidence && r.confidence !== 'CONFIRMED' && CONFIDENCE[r.confidence] && <div className="req-source">{t(CONFIDENCE[r.confidence])}</div>}
+                              </td>
+                              <td>{firstInLanguage(r.threshold) ?? ''}</td>
+                              <td>{r.mandatory ? <span className="mand-yes">{t('Mandatory')}</span> : <span className="mand-no">{t('Optional')}</span>}</td>
+                              {evaluatedScopes.map((sc) => {
+                                const m = matchOf(r, sc.id);
+                                return (
+                                  <td key={sc.id}>
+                                    <span className={`badge-match ${matchClass(m?.match_status)}`}>{t(matchLabel(m?.match_status))}</span>
+                                    {m?.notes && <div className="req-match-note">{m.notes}</div>}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+                {(award || []).length > 0 && (
+                  <div className="req-category-block">
+                    <h3 className="req-category-title">{t('Award criteria')}</h3>
+                    <div className="award-list">
+                      {(award || []).map((a: any) => {
+                        const what = firstInLanguage(a.subcriteria?.name_en, a.subcriteria?.name, a.subcriteria?.description_en, a.subcriteria?.description);
+                        return (
+                          <div key={a.id} className="award-row">
+                            <span className="award-label">{a.criterion}{what ? <em> — {what}</em> : null}</span>
+                            <span className="award-bar">{a.weight != null ? <span style={{ width: `${a.weight}%` }} /> : null}</span>
+                            <span className="award-weight">{a.weight != null ? `${a.weight}%` : '—'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {submitDocs.length > 0 && (
+                  <div className="req-category-block">
+                    <h3 className="req-category-title">{t('Documents to submit')} <span className="uc-count">{submitDocs.length}</span></h3>
+                    <ul className="submit-docs">
+                      {submitDocs.map((d) => (
+                        <li key={d.document_id}>
+                          {d.url
+                            ? <a href={d.url} target="_blank" rel="noopener noreferrer">{firstInLanguage(d.name_en) ?? d.name}</a>
+                            : <span>{firstInLanguage(d.name_en) ?? d.name}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
             )}
             <div className="analysis-block" id="evaluation">
               {evaluationAllowed && viewScopes.length > 0 ? viewScopes.map((scope, index) => (
                 <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
-                  row={evalOf(scope.id)} showName={viewScopes.length > 1 || !own} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
+                  row={user ? evalOf(scope.id) : null} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
                   evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
                   analysedAt={o.tender_analysed_at ?? null}
                   lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed'}
@@ -343,12 +365,13 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                   </div>
                   <p className="agent-intro">{compare}</p>
                   {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
-                  <UpgradeReport signedIn={!!user} title="Add your company information to assess your fit" note={t('This reads the tender and scores your fit. It needs an account, your company information, and a plan that includes evaluations.')} />
+                  <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run the agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
                 </>
               )}
             </div>
           </section>
-
+        )}
+        brief={(
           <section className="detail-block analysis-block" id="proposal-brief">
             <div className="agent-head">
               <AgentAvatar agent="proposal_manager" size={36} />
@@ -357,43 +380,25 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
             <p className="agent-intro">{briefLead}</p>
             {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
             {!proposalsAllowed ? (
-              <UpgradeReport signedIn={!!user} title="The brief is written after an evaluation" note={t('It lists what you can answer, what stays open, and what a partner covers. It needs an evaluation first, and a plan that includes proposal briefs.')} />
+              <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run this agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
             ) : (
               <>
-                {!evaluatedScopes.length && <p><a className="btn" href="#evaluation">{t('Assess my fit first')}</a></p>}
+                {!evaluatedScopes.length && <p><a className="btn primary" href="#evaluation">{t('Assess my fit first')}</a></p>}
                 {viewScopes.filter((scope) => evalOf(scope.id)?.evaluation).map((scope) => (
                   <ProposalSlot key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
                     row={evalOf(scope.id)} showName={viewScopes.length > 1 || !own} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
                     proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed} />
                 ))}
                 {evaluatedScopes.length > 0 && viewScopes.some((scope) => !evalOf(scope.id)?.evaluation) && (
-                  <p><a className="btn" href="#evaluation">{t('Assess my fit first')}</a></p>
+                  <p><a className="btn primary" href="#evaluation">{t('Assess my fit first')}</a></p>
                 )}
               </>
             )}
           </section>
-
-          <TenderDocuments docs={(documents || []) as Doc[]} />
-
-          <TenderHistory
-            notices={notices}
-            changes={(changes || []) as UpdateEvent[]}
-            archived={stage === 'closed'}
-            evidence={o.status_evidence}
-            verifiedAt={o.verified_at}
-            note={stage === 'uncertain' ? t('The bidding status is not confirmed.') : null}
-          />
-
-          <section className="detail-block" id="sources">
-            <h2>{t('Source')}</h2>
-            {o.official_url
-              ? <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>
-              : <p className="mono">{t('Not recorded')}</p>}
-            <ItemSources type="tender" id={o.opportunity_id} skip={o.official_url} />
-          </section>
-
-          <CommentsSection itemType="tender" itemId={o.opportunity_id} loginNext={`/tenders/${o.opportunity_id}`} />
-      </div>
+        )}
+        documents={<TenderDocuments docs={(documents || []) as Doc[]} />}
+        comments={<CommentsSection itemType="tender" itemId={o.opportunity_id} loginNext={`/tenders/${o.opportunity_id}`} />}
+      />
     </div>
   );
 }

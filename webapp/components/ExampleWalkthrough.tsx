@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import AgentAvatar from '@/components/AgentAvatar';
 import { EXAMPLE_EVAL, exampleBrief, exampleMatch, type ExampleMatch } from '@/lib/exampleRun';
 import { useT } from '@/lib/i18n/client';
+import TenderView from '@/components/TenderView';
 
 export type ExampleRequirement = {
   id: string;
@@ -41,14 +42,14 @@ function briefMarkdown(deadline: string) {
 }
 
 /** The same sections as a tender page. The buttons play a finished evaluation and brief for the sample company. */
-export default function ExampleWalkthrough({ requirements, deadline, archived, relevance, valueText, valueNote, jump, summary, documents, history, sources }: {
+export default function ExampleWalkthrough({ requirements, deadline, archived, relevance, valueText, valueNote, documentCount, summary, documents, history, sources }: {
   requirements: ExampleRequirement[];
   deadline: string;
   archived: boolean;
   relevance: number | null;
   valueText: string;
   valueNote: string | null;
-  jump: ReactNode;
+  documentCount: number;
   summary: ReactNode;
   documents: ReactNode;
   history: ReactNode;
@@ -99,11 +100,20 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
           <div className={`stat-num ${evaluated ? '' : 'small'}`}>{evaluated ? EXAMPLE_EVAL.fit_score : t('Not assessed')}</div>
         </div>
       </div>
-      {jump}
-      <div className="tender-sections">
-        {summary}
+      <TenderView
+        documentCount={documentCount}
+        summary={(
+          <>
+            {summary}
+            {history}
+            {sources}
+          </>
+        )}
+        fit={(
         <section className="detail-block" id="requirements">
-          <h2>{evaluated ? t('Requirements & Match Status') : t('Requirements')} {requirements.length > 0 && <span className="uc-count">{requirements.length}</span>}</h2>
+          {evaluated && (
+          <>
+          <h2>{t('Requirements & Match Status')} {requirements.length > 0 && <span className="uc-count">{requirements.length}</span>}</h2>
           {groups.map((group) => (
             <div key={group.key} className="req-category-block">
               <h3 className="req-category-title">{t(group.label)} <span className="uc-count">{group.rows.length}</span></h3>
@@ -143,15 +153,17 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
               </div>
             </div>
           ))}
+          </>
+          )}
           <div className="analysis-block" id="evaluation">
           <div className="agent-head">
             <AgentAvatar agent="tender_evaluation" working={phase === 'evaluating'} />
             <div className="agent-id">
-              <h2>{t('Tender Evaluation')}<span className="scope-name-chip">{t('Sample company')}</span></h2>
+              <h2>{t('Tender Evaluation')}</h2>
             </div>
             {evaluated && <span className={`verdict eval-${EXAMPLE_EVAL.verdict}`}>{t('Bid with a partner')}</span>}
           </div>
-          <p className="agent-intro">{t('Compare the tender requirements with your company evidence to identify matches, gaps and partner needs.')}</p>
+          <p className="agent-intro">{t('Get the requirements and eligibility criteria, and a fit assessment against your company information.')}</p>
           <p>{t('This run uses Harborline Identity, a sample company. It is not your account.')}</p>
           <p>{t('Harborline holds ISO 27001, turns over €4.1 million a year, and has delivered two identity-wallet projects worth €3.7 million together. It has no staff in Malta, and its cyber insurance is €2 million.')}</p>
           {evaluated && (
@@ -175,7 +187,8 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
           )}
           </div>
         </section>
-
+        )}
+        brief={(
         <section className="detail-block analysis-block" id="proposal-brief">
           <div className="agent-head">
             <AgentAvatar agent="proposal_manager" size={36} working={phase === 'briefing'} />
@@ -183,7 +196,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
           </div>
           <p className="agent-intro">{t('Build a starting brief from your evaluation, including evidence, unresolved requirements and roles a partner needs to cover.')}</p>
           {!evaluated ? (
-            <p><a className="btn" href="#evaluation">{t('Assess my fit first')}</a></p>
+            <p><a className="btn primary" href="#evaluation">{t('Assess my fit first')}</a></p>
           ) : phase === 'briefed' ? (
             <>
               {exampleBrief(deadline).map((section) => (
@@ -194,7 +207,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
               ))}
               <div className="eval-run">
                 <button type="button" className="btn-agent" onClick={download}>{t('Download proposal brief (.md)')}</button>
-                <button type="button" className="btn" onClick={runBrief}>{t('Regenerate')}</button>
+                <button type="button" className="btn-agent" onClick={runBrief}>{t('Regenerate')}</button>
               </div>
             </>
           ) : phase === 'briefing' ? (
@@ -205,11 +218,9 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
             </div>
           )}
         </section>
-
-        {documents}
-        {history}
-        {sources}
-      </div>
+        )}
+        documents={documents}
+      />
     </>
   );
 }

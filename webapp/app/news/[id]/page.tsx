@@ -144,13 +144,13 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
             <div className="agent-head">
               <AgentAvatar agent="news_report" working={!analysis && agentOn && !allowance.block} off={allowance.block === 'plan' || (!agentOn && !analysis)} />
               <div className="agent-id">
-                <h2>{t('News report')}{viewScopes.length > 1 && <span className="scope-name-chip">{scope.name}</span>}</h2>
+                <h2>{t('News report')}</h2>
                 {r?.analysed_at && <span className="agent-name">{t('Report from {date}', { date: fmtDate(r.analysed_at) })}</span>}
               </div>
               {analysis && allowance.block !== 'plan' && <span className={`verdict ${analysis.verdict}`} title={VERDICTS[analysis.verdict] ? t(VERDICTS[analysis.verdict].note) : undefined}>{VERDICTS[analysis.verdict] ? t(VERDICTS[analysis.verdict].label) : null}</span>}
             </div>
             {allowance.block === 'plan' && (
-              <UpgradeReport signedIn={likes.signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} />
+              <UpgradeReport signedIn={likes.signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} actionLabel={likes.signedIn ? undefined : 'Log in to run this agent'} loginHref={likes.signedIn ? undefined : `/login?next=/news/${n.news_id}`} />
             )}
             {allowance.block !== 'plan' && !analysis && allowance.block === 'quota' && (
               <p className="muted">{t('This workspace has used its 50 news reports for this month.')}</p>

@@ -352,7 +352,7 @@ export async function getTender(id: string) {
   return {
     id: o.opportunity_id, title: titleOf(o), buyer: buyerOf(o), country: o.country, type: o.opportunity_type, status: o.status,
     summary: publicText(o.tender_summary || o.summary || ''), deadline: o.deadline, value: o.estimated_value, currency: o.currency, published: o.publication_date, url: o.official_url,
-    requirements, evaluation, proposal, comments: comments.tree, commentCount: comments.total,
+    requirements: evaluation ? requirements : [], evaluation, proposal, comments: comments.tree, commentCount: comments.total,
   };
 }
 

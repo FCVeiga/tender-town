@@ -8,7 +8,6 @@ import { EXAMPLE_TENDER_ID } from '@/lib/exampleRun';
 import { StatusTags } from '@/components/OpportunityCard';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
 import TenderHistory from '@/components/TenderHistory';
-import TenderJump from '@/components/TenderJump';
 import ExampleWalkthrough from '@/components/ExampleWalkthrough';
 import PostMarkdown from '@/components/social/PostMarkdown';
 import { UpdateEvent } from '@/components/UpdateComment';
@@ -101,7 +100,7 @@ export default async function ExamplePage() {
         relevance={o.opportunity_relevance_score}
         valueText={valueText}
         valueNote={valueNote}
-        jump={<TenderJump documents={(documents || []).length} />}
+        documentCount={(documents || []).length}
         summary={summaryRaw ? (
           <section className="detail-block" id="summary">
             <h2>{t('Summary')}</h2>
