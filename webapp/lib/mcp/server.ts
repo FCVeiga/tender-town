@@ -94,7 +94,7 @@ export function createMcpServer(origin: string) {
   }, async ({ workspace_id, email, role }) => call(workspace_id, () => ops.inviteMember(workspace_id, email ?? null, role ?? 'member'), 'invite_member'));
 
   server.registerTool('list_scopes', {
-    description: 'General, catalog scopes and this workspace’s own scopes, and how many scope slots the plan has left.',
+    description: 'General, catalog scopes and this workspace’s own scopes, and how many default and custom scopes the plan has left.',
     inputSchema: { workspace_id: workspace },
   }, async ({ workspace_id }) => call(workspace_id, async () => {
     const id = workspace_id || (await getContext())?.workspace.id;
@@ -103,7 +103,7 @@ export function createMcpServer(origin: string) {
   }, 'list_scopes'));
 
   server.registerTool('create_scope', {
-    description: 'Create a custom scope in a workspace. Counts toward the plan. Not included on Free; Free can turn on one catalog scope instead.',
+    description: 'Create a custom scope in a workspace. Counts toward the custom-scope limit. Not included on Free. Free can turn on 1 default scope instead.',
     inputSchema: { workspace_id: z.string(), name: z.string(), instructions: z.string().optional() },
   }, async ({ workspace_id, name, instructions }) => call(workspace_id, () => ops.createScope(workspace_id, name, instructions), 'create_scope'));
 
@@ -113,7 +113,7 @@ export function createMcpServer(origin: string) {
   }, async ({ workspace_id, scope_id, name, instructions, active }) => call(workspace_id, () => ops.updateScope(scope_id, { name, instructions, active }), 'update_scope'));
 
   server.registerTool('set_catalog_scope', {
-    description: 'Turn a shared catalog scope on or off for a workspace. It uses a scope slot. On a one-slot plan, turning another catalog scope on replaces the one already on.',
+    description: 'Turn a shared catalog scope on or off for a workspace. It uses a default-scope slot. General does not. Refuses when the plan’s default scopes are already in use.',
     inputSchema: { workspace_id: z.string(), scope_id: z.string(), enabled: z.boolean() },
   }, async ({ workspace_id, scope_id, enabled }) => call(workspace_id, () => ops.setCatalogScope(workspace_id, scope_id, enabled), 'set_catalog_scope'));
 

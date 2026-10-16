@@ -6,7 +6,11 @@ export type PlanKey = 'free' | 'starter' | 'pro' | 'teams';
 
 export type Plan = {
   key: PlanKey; name: string; priceEur: number; kind: 'personal' | 'team';
-  workspaces: number | null; scopes: number; members: number | null; runsPerDay: number;
+  workspaces: number | null; members: number | null; runsPerDay: number;
+  /** Catalog scopes a workspace may turn on. General does not count. `null` is unlimited. */
+  defaultScopes: number | null;
+  /** Custom scopes a workspace may create. `0` is not included, `null` is unlimited. */
+  customScopes: number | null;
   customize: boolean;
   /** Tender Evaluation runs per month. `0` is not on the plan, `null` is unlimited. */
   evaluationsPerMonth: number | null;
@@ -25,30 +29,35 @@ export function planIncludes(limit: number | null | undefined): boolean {
   return limit !== 0 && limit !== undefined;
 }
 
+/** True while `used` is still under `limit`. `null` is unlimited. */
+export function scopeRoom(used: number, limit: number | null): boolean {
+  return limit == null || used < limit;
+}
+
 export const PLANS: Plan[] = [
   {
-    key: 'free', name: 'Free', priceEur: 0, kind: 'personal', workspaces: 1, scopes: 1, members: 1, runsPerDay: 1, customize: false,
+    key: 'free', name: 'Free', priceEur: 0, kind: 'personal', workspaces: 1, defaultScopes: 1, customScopes: 0, members: 1, runsPerDay: 1, customize: false,
     evaluationsPerMonth: 1, proposalsPerMonth: 0, newsReportsPerMonth: 0,
-    blurb: 'One template scope besides General.',
-    features: ['One workspace', 'One template scope besides General', 'Creating your own scope is not included', '1 tender evaluation a month', 'Agents update tenders and news once a day', 'Community, chat and notifications'],
+    blurb: '1 default scope.',
+    features: ['One workspace', '1 default scope', 'Custom scopes are not included', '1 tender evaluation a month', 'Agents update tenders and news once a day', 'Community, chat and notifications'],
   },
   {
-    key: 'starter', name: 'Starter', priceEur: 29, kind: 'personal', workspaces: 1, scopes: 1, members: 1, runsPerDay: 2, customize: true,
+    key: 'starter', name: 'Starter', priceEur: 29, kind: 'personal', workspaces: 1, defaultScopes: 3, customScopes: 1, members: 1, runsPerDay: 2, customize: true,
     evaluationsPerMonth: 5, proposalsPerMonth: 0, newsReportsPerMonth: 0,
-    blurb: 'One scope you can create.',
-    features: ['One workspace', 'One scope besides General, which you can create', '5 tender evaluations a month', 'Agents update twice a day'],
+    blurb: '3 default scopes and 1 custom scope.',
+    features: ['One workspace', 'Up to 3 default scopes', '1 custom scope', '5 tender evaluations a month', 'Agents update twice a day'],
   },
   {
-    key: 'pro', name: 'Pro', priceEur: 59, kind: 'personal', workspaces: 1, scopes: 5, members: 1, runsPerDay: 3, customize: true,
+    key: 'pro', name: 'Pro', priceEur: 59, kind: 'personal', workspaces: 1, defaultScopes: 10, customScopes: 5, members: 1, runsPerDay: 3, customize: true,
     evaluationsPerMonth: 10, proposalsPerMonth: 0, newsReportsPerMonth: 50,
-    blurb: 'Several markets or projects at once.',
-    features: ['One workspace', 'Up to 5 scopes besides General', '10 tender evaluations a month', 'News Report Agent, 50 reports a month', 'Agents update three times a day'],
+    blurb: '10 default scopes and 5 custom scopes.',
+    features: ['One workspace', 'Up to 10 default scopes', '5 custom scopes', '10 tender evaluations a month', 'News Report Agent, 50 reports a month', 'Agents update three times a day'],
   },
   {
-    key: 'teams', name: 'Teams', priceEur: 99, kind: 'team', workspaces: null, scopes: 1000, members: null, runsPerDay: 6, customize: true,
+    key: 'teams', name: 'Teams', priceEur: 99, kind: 'team', workspaces: null, defaultScopes: null, customScopes: null, members: null, runsPerDay: 6, customize: true,
     evaluationsPerMonth: null, proposalsPerMonth: null, newsReportsPerMonth: null,
     blurb: 'For firms with departments and projects.',
-    features: ['Unlimited workspaces', 'Unlimited team members (admins configure, members see results)', 'Unlimited scopes', 'Unlimited tender evaluations', 'Proposal briefs', 'News Report Agent, unlimited reports', 'Agents update six times a day'],
+    features: ['Unlimited workspaces', 'Unlimited team members (admins configure, members see results)', 'Unlimited default scopes', 'Unlimited custom scopes', 'Unlimited tender evaluations', 'Proposal briefs', 'News Report Agent, unlimited reports', 'Agents update six times a day'],
   },
 ];
 

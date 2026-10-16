@@ -43,10 +43,16 @@ export function BannerJobs() {
   );
 }
 
-function limitText(t: (k: string, v?: Record<string, string | number>) => string, allowance: number | null, used: number, planName: string) {
-  if (!allowance) return t('The Free plan includes only General.');
-  if (allowance === 1) return t('The {plan} plan includes 1 scope besides General. This workspace is already using {used}.', { plan: planName, used });
-  return t('The {plan} plan includes {n} scopes besides General. This workspace is already using {used}.', { plan: planName, n: allowance, used });
+function limitText(
+  t: (k: string, v?: Record<string, string | number>) => string,
+  pool: 'default' | 'custom', allowance: number | null, used: number, planName: string,
+) {
+  if (pool === 'custom') {
+    if (allowance === 1) return t('The {plan} plan includes 1 custom scope. This workspace is already using {used}.', { plan: planName, used });
+    return t('The {plan} plan includes {n} custom scopes. This workspace is already using {used}.', { plan: planName, n: allowance ?? 0, used });
+  }
+  if (allowance === 1) return t('The {plan} plan includes 1 default scope. This workspace is already using {used}.', { plan: planName, used });
+  return t('The {plan} plan includes {n} default scopes. This workspace is already using {used}.', { plan: planName, n: allowance ?? 0, used });
 }
 
 function BannerArt() {
@@ -342,7 +348,8 @@ function GateModal({ gate, model, onClose }: { gate: Gate; model: FocusModel; on
   const permission = gate.kind === 'permission';
   const signup = gate.kind === 'signup' || (!model.signedIn && gate.action === 'create');
   const title = signup || gate.action === 'create' ? t('Create your own scope') : permission ? t('Scope unavailable') : t('Unlock more scopes');
-  const freeCreate = t('The Free plan includes one template scope besides General. Creating your own scope starts on Starter.');
+  const freeCreate = t('The Free plan includes 1 default scope. Custom scopes start on Starter.');
+  const pool = model.choices.find((c) => c.id === gate.scopeId)?.group === 'yours' ? 'custom' : 'default';
   const body = signup
     ? freeCreate
     : permission
@@ -351,7 +358,9 @@ function GateModal({ gate, model, onClose }: { gate: Gate; model: FocusModel; on
         : t('This scope is not on in your workspace. Ask a workspace administrator to turn it on.'))
       : gate.action === 'create' && gate.kind === 'plan'
         ? freeCreate
-        : limitText(t, model.allowance, model.used, model.planName);
+        : gate.action === 'create'
+          ? limitText(t, 'custom', model.customAllowance, model.customUsed, model.planName)
+          : limitText(t, pool, pool === 'custom' ? model.customAllowance : model.defaultAllowance, pool === 'custom' ? model.customUsed : model.defaultUsed, model.planName);
   const next = '/settings/account?plan=1&intent=create';
   const upgrade = () => start(async () => {
     const intent = gate.action === 'switch' && gate.scopeId ? `switch:${gate.scopeId}` : 'create';

@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getCurrentUser, siteOrigin } from '@/lib/auth';
 import { getContext, getPersonalAccount, getWorkspaceContext, getMyWorkspaces } from '@/lib/accounts';
 import {
-  SCOPE_AGENT_KEYS, getCatalogScopes, getEditableScope, getScopeAgents, getViewScopes, getViewableScope, getWorkspaceScopes, replacesCatalogPick, workspaceScopeUse,
+  SCOPE_AGENT_KEYS, getCatalogScopes, getEditableScope, getScopeAgents, getViewScopes, getViewableScope, getWorkspaceScopes, workspaceScopeUse,
 } from '@/lib/scopes';
 import { AGENTS } from '@/lib/agents';
 import { planIncludes } from '@/lib/plans';
@@ -56,7 +56,8 @@ export async function getAccount() {
     planStatus: account.planStatus,
     limits: {
       workspaces: plan.workspaces,
-      scopes: plan.scopes >= 1000 ? null : plan.scopes,
+      defaultScopes: plan.defaultScopes,
+      customScopes: plan.customScopes,
       members: plan.members,
       customize: plan.customize,
       evaluations: room(plan.evaluationsPerMonth, usage.evaluations),
@@ -129,8 +130,10 @@ export async function listScopes(workspaceId: string) {
   const otherOn = custom.some((s) => s.active) || picked.size > 0;
   const generalOn = ws?.show_default !== false || !otherOn;
   return {
-    planScopes: ctx.plan.scopes >= 1000 ? null : ctx.plan.scopes,
-    used: use.custom + use.pickIds.length,
+    defaultScopes: ctx.isDefault ? null : ctx.plan.defaultScopes,
+    defaultUsed: use.pickIds.length,
+    customScopes: ctx.isDefault ? null : ctx.plan.customScopes,
+    customUsed: use.custom,
     canCustomize: ctx.canCustomize,
     scopes: [
       ...(general ? [{ id: general.id, name: general.name, kind: 'general', active: generalOn, editable: false }] : []),
@@ -142,10 +145,11 @@ export async function listScopes(workspaceId: string) {
 
 export async function createScope(workspaceId: string, name: string, instructions?: string) {
   const ctx = await workspaceOf(workspaceId);
-  if (!ctx.canCustomize) throw new McpDenied('Custom scopes start on Starter.');
+  if (!ctx.canCustomize || ctx.plan.customScopes === 0) throw new McpDenied('Custom scopes start on Starter.');
   const use = await workspaceScopeUse(workspaceId);
-  if (!ctx.isDefault && use.custom + use.pickIds.length >= ctx.plan.scopes) {
-    throw new McpDenied(`The ${ctx.plan.name} plan includes ${ctx.plan.scopes} scope${ctx.plan.scopes === 1 ? '' : 's'} besides General.`);
+  const customLimit = ctx.isDefault ? null : ctx.plan.customScopes;
+  if (customLimit != null && use.custom >= customLimit) {
+    throw new McpDenied(`The ${ctx.plan.name} plan includes ${customLimit} custom scope${customLimit === 1 ? '' : 's'}.`);
   }
   const label = name.trim().slice(0, 120);
   if (!label) throw new McpDenied('Give the scope a name.');
@@ -200,14 +204,9 @@ export async function setCatalogScope(workspaceId: string, scopeId: string, enab
   }
   const use = await workspaceScopeUse(workspaceId);
   if (use.pickIds.includes(scopeId)) return { scopeId, enabled: true };
-  const limit = ctx.isDefault ? 1000 : ctx.plan.scopes;
-  const replacing = replacesCatalogPick(limit, use.custom, use.pickIds.length);
-  if (!replacing && use.custom + use.pickIds.length >= limit) {
-    throw new McpDenied(`The ${ctx.plan.name} plan includes ${ctx.plan.scopes} scope${ctx.plan.scopes === 1 ? '' : 's'} besides General.`);
-  }
-  if (replacing) {
-    const { error: removed } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
-    if (removed) throw new McpDenied(removed.message);
+  const defaultLimit = ctx.isDefault ? null : ctx.plan.defaultScopes;
+  if (defaultLimit != null && use.pickIds.length >= defaultLimit) {
+    throw new McpDenied(`The ${ctx.plan.name} plan includes ${defaultLimit} default scope${defaultLimit === 1 ? '' : 's'}.`);
   }
   const { error } = await db().from('workspace_scope_picks').upsert(
     { workspace_id: workspaceId, scope_id: scopeId }, { onConflict: 'workspace_id,scope_id', ignoreDuplicates: true });

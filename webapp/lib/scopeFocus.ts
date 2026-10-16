@@ -13,11 +13,10 @@ import { getCurrentUser } from '@/lib/auth';
 import {
   FOCUS_COOKIE, FOCUS_USER_COOKIE, GUEST_GENERAL, SCOPE_QUERY_HEADER, scopeSlug,
 } from '@/lib/guestScope';
+import { scopeRoom } from '@/lib/plans';
 import {
-  getCatalogScopes, getGeneralScope, getViewScopes, getWorkspaceScopes, replacesCatalogPick, workspaceScopeUse, type Scope,
+  getCatalogScopes, getGeneralScope, getViewScopes, getWorkspaceScopes, workspaceScopeUse, type Scope,
 } from '@/lib/scopes';
-
-const UNLIMITED = 1000;
 
 export function scopeLock(input: { entitled: boolean; general: boolean; isAdmin: boolean; room: boolean }): null | 'plan' | 'permission' {
   if (input.general || input.entitled) return null;
@@ -45,8 +44,12 @@ export type FocusModel = {
   create: 'ok' | 'signup' | 'plan' | 'limit' | 'permission';
   workspaceId: string | null;
   planName: string;
-  allowance: number | null;
-  used: number;
+  /** Catalog scopes the plan allows. `null` is unlimited. General does not count. */
+  defaultAllowance: number | null;
+  defaultUsed: number;
+  /** Custom scopes the plan allows. `0` is not included, `null` is unlimited. */
+  customAllowance: number | null;
+  customUsed: number;
   deny: null | { kind: 'plan' | 'permission'; scopeId: string; scopeName: string };
 };
 
@@ -85,7 +88,8 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
       choices: publics.map((s) => ({
         id: s.id, name: s.name, description: blurb(s.instructions), slug: scopeSlug(s.name), group: 'public', locked: null,
       })),
-      signedIn: false, create: 'signup', workspaceId: null, planName: 'Free', allowance: 0, used: 0, deny: null,
+      signedIn: false, create: 'signup', workspaceId: null, planName: 'Free',
+      defaultAllowance: 1, defaultUsed: 0, customAllowance: 0, customUsed: 0, deny: null,
     };
   }
 
@@ -97,15 +101,11 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
   ]);
   const entitled = new Set(view.map((s) => s.id));
   if (general) entitled.add(general.id);
-  const limit = !ctx || ctx.isDefault ? UNLIMITED : ctx.plan.scopes;
-  const unlimited = limit >= UNLIMITED;
-  const used = use.custom + use.pickIds.length;
+  const defaultLimit = !ctx || ctx.isDefault ? null : ctx.plan.defaultScopes;
+  const customLimit = !ctx || ctx.isDefault ? null : ctx.plan.customScopes;
   const isAdmin = !!ctx?.isAdmin;
-  const slotFree = unlimited || used < limit;
-  // A template uses a slot on every plan, including Free. On a one-slot plan the
-  // picker can replace the template already on. Creating a scope still needs a plan that allows it.
-  const catalogRoom = isAdmin && (slotFree || replacesCatalogPick(limit, use.custom, use.pickIds.length));
-  const customRoom = isAdmin && !!ctx?.canCustomize && slotFree;
+  const catalogRoom = isAdmin && scopeRoom(use.pickIds.length, defaultLimit);
+  const customRoom = isAdmin && customLimit !== 0 && scopeRoom(use.custom, customLimit);
   const custom = own.filter((s) => !s.isDefault && !s.catalog);
   const pool = [...publics, ...custom];
 
@@ -134,8 +134,8 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
 
   const create = !ctx ? 'permission'
     : !isAdmin ? 'permission'
-    : !ctx.canCustomize ? 'plan'
-    : !unlimited && used >= limit ? 'limit'
+    : customLimit === 0 || !ctx.canCustomize ? 'plan'
+    : !scopeRoom(use.custom, customLimit) ? 'limit'
     : 'ok';
 
   const showing = hold || current;
@@ -144,7 +144,9 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
     publicSlug: showing && (showing.isDefault || showing.catalog) ? scopeSlug(showing.name) : (current && (current.isDefault || current.catalog) ? scopeSlug(current.name) : null),
     choices: [...publics.map((s) => choice(s, 'public')), ...custom.map((s) => choice(s, 'yours'))],
     signedIn: true, create, workspaceId: ctx?.workspace.id ?? null,
-    planName: ctx?.plan.name ?? 'Free', allowance: unlimited ? null : limit, used, deny,
+    planName: ctx?.plan.name ?? 'Free',
+    defaultAllowance: defaultLimit, defaultUsed: use.pickIds.length,
+    customAllowance: customLimit, customUsed: use.custom, deny,
   };
 });
 

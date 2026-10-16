@@ -29,9 +29,9 @@ If the user has not said what they sell, which countries they bid in, and what t
 Call \`list_scopes\`.
 
 - Match the need to a catalog scope by the name \`list_scopes\` returns. Do not invent an id.
-- Free cannot create a scope. Turn on one catalog scope with \`set_catalog_scope\`. General stays available and does not use the slot.
-- On a plan with one scope besides General, turning another catalog scope on replaces the catalog pick. Say that, and do it only after the user agrees. Do not turn a custom scope off to free the slot.
-- Create a custom scope only when \`canCustomize\` is true, a catalog scope does not fit, and \`used\` is below \`planScopes\` (\`null\` means unlimited). \`create_scope\` needs \`workspace_id\`, a short name, and instructions.
+- Free cannot create a custom scope. It can turn on 1 catalog scope with \`set_catalog_scope\`. General stays available and does not use a default-scope slot.
+- \`defaultScopes\` is how many catalog scopes the plan allows (\`null\` means unlimited). \`defaultUsed\` is how many are on. At the limit, \`set_catalog_scope\` is refused. Turn one off first. Do not turn a custom scope off to free a default-scope slot.
+- Create a custom scope only when \`canCustomize\` is true, a catalog scope does not fit, and \`customUsed\` is below \`customScopes\` (\`null\` means unlimited, \`0\` means not included). \`create_scope\` needs \`workspace_id\`, a short name, and instructions.
 - Catalog scopes and General cannot take new instructions.
 
 ## What to write

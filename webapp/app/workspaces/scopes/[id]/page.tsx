@@ -13,7 +13,7 @@ import FollowingSection from '@/components/settings/FollowingSection';
 import { getCountryOptions, getFollowedSourceIds, getSources } from '@/lib/sources';
 import { getT } from '@/lib/i18n/server';
 import { newsReportAllowance } from '@/lib/newsQuota';
-import { planIncludes } from '@/lib/plans';
+import { planIncludes, scopeRoom } from '@/lib/plans';
 
 // The Config Agent runs inside this page's server actions: give it time.
 export const maxDuration = 300;
@@ -62,8 +62,8 @@ export default async function ScopePage({ params, searchParams }: { params: { id
       scopeOn = use.pickIds.includes(scope.id);
       canToggle = ws.isAdmin;
       catalogFor = ws.workspace.id;
-      const limit = ws.isDefault ? Infinity : ws.plan.scopes;
-      atLimit = !scopeOn && use.custom + use.pickIds.length >= limit;
+      const defaultLimit = ws.isDefault ? null : ws.plan.defaultScopes;
+      atLimit = !scopeOn && !scopeRoom(use.pickIds.length, defaultLimit);
     }
   }
 

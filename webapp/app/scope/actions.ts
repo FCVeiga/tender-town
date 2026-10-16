@@ -8,6 +8,7 @@ import { gateScope } from '@/lib/scopeFocus';
 import { getCurrentUser } from '@/lib/auth';
 import { getContext } from '@/lib/accounts';
 import { workspaceScopeUse } from '@/lib/scopes';
+import { scopeRoom } from '@/lib/plans';
 import { createScope, setCatalogPick, setScopeActive } from '@/app/workspaces/actions';
 
 const year = { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' as const, httpOnly: true };
@@ -61,8 +62,8 @@ export async function resumeScopeIntent(): Promise<{ wait?: boolean }> {
     const ctx = await getContext();
     if (!ctx?.canCustomize) return { wait: true };
     const use = await workspaceScopeUse(ctx.workspace.id);
-    const limit = ctx.isDefault ? 1000 : ctx.plan.scopes;
-    if (use.custom + use.pickIds.length >= limit) return { wait: true };
+    const customLimit = ctx.isDefault ? null : ctx.plan.customScopes;
+    if (!scopeRoom(use.custom, customLimit)) return { wait: true };
     cookies().set(INTENT_COOKIE, '', { path: '/', maxAge: 0 });
     await createScope(ctx.workspace.id);
   }

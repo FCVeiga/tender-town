@@ -1517,5 +1517,103 @@
     "fr": "Un espace de travail regroupe vos périmètres. Chaque compte a General et les périmètres modèles. Free peut activer un périmètre modèle en plus de General et ne peut pas créer le sien. Starter peut activer un périmètre en plus de General, et ce périmètre peut être un périmètre que vous créez. Pro peut en activer jusqu’à cinq. Teams ajoute des espaces de travail illimités, chacun avec ses membres (les administrateurs configurent, les membres voient les résultats). Créez des espaces de travail et ajoutez des membres dans <workspaces>Espaces de travail</workspaces>, changez d’offre dans <settings>Paramètres</settings> et passez d’un espace de travail à l’autre depuis le menu de votre compte.",
     "de": "Ein Arbeitsbereich enthält deine Bereiche. Jedes Konto hat General und die Vorlagen-Bereiche. Mit Free kannst du einen Vorlagen-Bereich neben General einschalten und keinen eigenen erstellen. Mit Starter kannst du einen Bereich neben General einschalten, und dieser Bereich kann einer sein, den du erstellst. Mit Pro kannst du bis zu fünf einschalten. Teams bietet unbegrenzte Arbeitsbereiche mit jeweils eigenen Teammitgliedern (Admins konfigurieren, Mitglieder sehen die Ergebnisse). Arbeitsbereiche erstellen und Mitglieder hinzufügen kannst du unter <workspaces>Arbeitsbereiche</workspaces>, deinen Tarif änderst du in den <settings>Einstellungen</settings>, und zwischen Arbeitsbereichen wechselst du im Kontomenü.",
     "it": "Un’area di lavoro raccoglie i tuoi ambiti. Ogni account ha General e gli ambiti modello. Free può attivare un ambito modello oltre a General e non può crearne uno proprio. Starter può attivare un ambito oltre a General, e quell’ambito può essere uno che crei. Pro può attivarne fino a cinque. Teams aggiunge aree di lavoro illimitate, ognuna con i propri membri (gli amministratori configurano, i membri vedono i risultati). Crea aree di lavoro e aggiungi membri in <workspaces>Aree di lavoro</workspaces>, cambia piano nelle <settings>Impostazioni</settings> e passa da un’area di lavoro all’altra dal menu dell’account."
+  },
+  "Default scopes": {
+    "pt": "Âmbitos predefinidos",
+    "es": "Ámbitos predeterminados",
+    "fr": "Périmètres par défaut",
+    "de": "Standardbereiche",
+    "it": "Ambiti predefiniti"
+  },
+  "Custom scopes": {
+    "pt": "Âmbitos personalizados",
+    "es": "Ámbitos personalizados",
+    "fr": "Périmètres personnalisés",
+    "de": "Eigene Bereiche",
+    "it": "Ambiti personalizzati"
+  },
+  "1 default scope": {
+    "pt": "1 âmbito predefinido",
+    "es": "1 ámbito predeterminado",
+    "fr": "1 périmètre par défaut",
+    "de": "1 Standardbereich",
+    "it": "1 ambito predefinito"
+  },
+  "1 default scope.": {
+    "pt": "1 âmbito predefinido.",
+    "es": "1 ámbito predeterminado.",
+    "fr": "1 périmètre par défaut.",
+    "de": "1 Standardbereich.",
+    "it": "1 ambito predefinito."
+  },
+  "Up to 3 default scopes": {
+    "pt": "Até 3 âmbitos predefinidos",
+    "es": "Hasta 3 ámbitos predeterminados",
+    "fr": "Jusqu’à 3 périmètres par défaut",
+    "de": "Bis zu 3 Standardbereiche",
+    "it": "Fino a 3 ambiti predefiniti"
+  },
+  "1 custom scope": {
+    "pt": "1 âmbito personalizado",
+    "es": "1 ámbito personalizado",
+    "fr": "1 périmètre personnalisé",
+    "de": "1 eigener Bereich",
+    "it": "1 ambito personalizzato"
+  },
+  "3 default scopes and 1 custom scope.": {
+    "pt": "3 âmbitos predefinidos e 1 âmbito personalizado.",
+    "es": "3 ámbitos predeterminados y 1 ámbito personalizado.",
+    "fr": "3 périmètres par défaut et 1 périmètre personnalisé.",
+    "de": "3 Standardbereiche und 1 eigener Bereich.",
+    "it": "3 ambiti predefiniti e 1 ambito personalizzato."
+  },
+  "Up to 10 default scopes": {
+    "pt": "Até 10 âmbitos predefinidos",
+    "es": "Hasta 10 ámbitos predeterminados",
+    "fr": "Jusqu’à 10 périmètres par défaut",
+    "de": "Bis zu 10 Standardbereiche",
+    "it": "Fino a 10 ambiti predefiniti"
+  },
+  "5 custom scopes": {
+    "pt": "5 âmbitos personalizados",
+    "es": "5 ámbitos personalizados",
+    "fr": "5 périmètres personnalisés",
+    "de": "5 eigene Bereiche",
+    "it": "5 ambiti personalizzati"
+  },
+  "10 default scopes and 5 custom scopes.": {
+    "pt": "10 âmbitos predefinidos e 5 âmbitos personalizados.",
+    "es": "10 ámbitos predeterminados y 5 ámbitos personalizados.",
+    "fr": "10 périmètres par défaut et 5 périmètres personnalisés.",
+    "de": "10 Standardbereiche und 5 eigene Bereiche.",
+    "it": "10 ambiti predefiniti e 5 ambiti personalizzati."
+  },
+  "Custom scopes are not included": {
+    "pt": "Os âmbitos personalizados não estão incluídos",
+    "es": "Los ámbitos personalizados no están incluidos",
+    "fr": "Les périmètres personnalisés ne sont pas inclus",
+    "de": "Eigene Bereiche sind nicht enthalten",
+    "it": "Gli ambiti personalizzati non sono inclusi"
+  },
+  "Unlimited default scopes": {
+    "pt": "Âmbitos predefinidos ilimitados",
+    "es": "Ámbitos predeterminados ilimitados",
+    "fr": "Périmètres par défaut illimités",
+    "de": "Unbegrenzte Standardbereiche",
+    "it": "Ambiti predefiniti illimitati"
+  },
+  "Unlimited custom scopes": {
+    "pt": "Âmbitos personalizados ilimitados",
+    "es": "Ámbitos personalizados ilimitados",
+    "fr": "Périmètres personnalisés illimités",
+    "de": "Unbegrenzte eigene Bereiche",
+    "it": "Ambiti personalizzati illimitati"
+  },
+  "A workspace holds your scopes. Every account has General. Default scopes are the shared scopes Tender Town publishes. Custom scopes are ones you create. Free can turn on 1 default scope and cannot create a custom scope. Starter can turn on up to 3 default scopes and 1 custom scope. Pro can turn on up to 10 default scopes and 5 custom scopes. Teams is unlimited on both, and adds unlimited workspaces, each with its own team members (admins configure, members see the results). Create workspaces and add members on <workspaces>Workspaces</workspaces>, change your plan in <settings>Settings</settings>, and switch workspaces from your account menu.": {
+    "pt": "Um espaço de trabalho reúne os seus âmbitos. Todas as contas têm o General. Os âmbitos predefinidos são os âmbitos partilhados que a Tender Town publica. Os âmbitos personalizados são os que cria. O Free pode ativar 1 âmbito predefinido e não pode criar um âmbito personalizado. O Starter pode ativar até 3 âmbitos predefinidos e 1 âmbito personalizado. O Pro pode ativar até 10 âmbitos predefinidos e 5 âmbitos personalizados. O Teams é ilimitado nos dois e acrescenta espaços de trabalho ilimitados, cada um com os seus membros (os administradores configuram, os membros veem os resultados). Crie espaços de trabalho e adicione membros em <workspaces>Espaços de trabalho</workspaces>, mude de plano nas <settings>Definições</settings> e alterne entre espaços de trabalho no menu da conta.",
+    "es": "Un espacio de trabajo agrupa tus ámbitos. Todas las cuentas tienen General. Los ámbitos predeterminados son los ámbitos compartidos que publica Tender Town. Los ámbitos personalizados son los que creas. Free puede activar 1 ámbito predeterminado y no puede crear un ámbito personalizado. Starter puede activar hasta 3 ámbitos predeterminados y 1 ámbito personalizado. Pro puede activar hasta 10 ámbitos predeterminados y 5 ámbitos personalizados. Teams es ilimitado en ambos y añade espacios de trabajo ilimitados, cada uno con sus miembros (los administradores configuran, los miembros ven los resultados). Crea espacios de trabajo y añade miembros en <workspaces>Espacios de trabajo</workspaces>, cambia de plan en <settings>Configuración</settings> y cambia de espacio de trabajo desde el menú de tu cuenta.",
+    "fr": "Un espace de travail regroupe vos périmètres. Chaque compte a General. Les périmètres par défaut sont les périmètres partagés que Tender Town publie. Les périmètres personnalisés sont ceux que vous créez. Free peut activer 1 périmètre par défaut et ne peut pas créer de périmètre personnalisé. Starter peut activer jusqu’à 3 périmètres par défaut et 1 périmètre personnalisé. Pro peut activer jusqu’à 10 périmètres par défaut et 5 périmètres personnalisés. Teams est illimité pour les deux et ajoute des espaces de travail illimités, chacun avec ses membres (les administrateurs configurent, les membres voient les résultats). Créez des espaces de travail et ajoutez des membres dans <workspaces>Espaces de travail</workspaces>, changez d’offre dans <settings>Paramètres</settings> et passez d’un espace de travail à l’autre depuis le menu de votre compte.",
+    "de": "Ein Arbeitsbereich enthält deine Bereiche. Jedes Konto hat General. Standardbereiche sind die gemeinsamen Bereiche, die Tender Town veröffentlicht. Eigene Bereiche sind die, die du erstellst. Mit Free kannst du 1 Standardbereich einschalten und keinen eigenen Bereich erstellen. Mit Starter kannst du bis zu 3 Standardbereiche und 1 eigenen Bereich einschalten. Mit Pro kannst du bis zu 10 Standardbereiche und 5 eigene Bereiche einschalten. Teams ist bei beiden unbegrenzt und bietet unbegrenzte Arbeitsbereiche mit jeweils eigenen Teammitgliedern (Admins konfigurieren, Mitglieder sehen die Ergebnisse). Arbeitsbereiche erstellen und Mitglieder hinzufügen kannst du unter <workspaces>Arbeitsbereiche</workspaces>, deinen Tarif änderst du in den <settings>Einstellungen</settings>, und zwischen Arbeitsbereichen wechselst du im Kontomenü.",
+    "it": "Un’area di lavoro raccoglie i tuoi ambiti. Ogni account ha General. Gli ambiti predefiniti sono gli ambiti condivisi che Tender Town pubblica. Gli ambiti personalizzati sono quelli che crei. Free può attivare 1 ambito predefinito e non può creare un ambito personalizzato. Starter può attivare fino a 3 ambiti predefiniti e 1 ambito personalizzato. Pro può attivare fino a 10 ambiti predefiniti e 5 ambiti personalizzati. Teams è illimitato su entrambi e aggiunge aree di lavoro illimitate, ognuna con i propri membri (gli amministratori configurano, i membri vedono i risultati). Crea aree di lavoro e aggiungi membri in <workspaces>Aree di lavoro</workspaces>, cambia piano nelle <settings>Impostazioni</settings> e passa da un’area di lavoro all’altra dal menu dell’account."
   }
 }

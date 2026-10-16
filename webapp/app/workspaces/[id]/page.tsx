@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { getContext, getMyWorkspaces, getPersonalAccount, getWorkspaceContext } from '@/lib/accounts';
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { SCOPE_AGENT_KEYS, getCatalogScopes, getWorkspaceScopes, replacesCatalogPick, workspaceScopeUse } from '@/lib/scopes';
+import { SCOPE_AGENT_KEYS, getCatalogScopes, getWorkspaceScopes, workspaceScopeUse } from '@/lib/scopes';
+import { scopeRoom } from '@/lib/plans';
 import ScopeCard from '@/components/settings/ScopeCard';
 import { AddMemberButton, DeleteWorkspace, MemberRow, RevokeInviteButton, WorkspaceName } from '@/components/settings/WorkspaceControls';
 import { createScope, switchWorkspace } from '../actions';
@@ -72,10 +73,10 @@ export default async function WorkspaceDetailPage({ params }: { params: { id: st
   const count = (rows: any[] | null, id: string) => (rows || []).filter((r) => r.scope_id === id).length;
   const docCount = (id: string, shared: boolean) => (docs || []).filter((r: any) => r.scope_id === id && (shared ? r.workspace_id === wsId : !r.workspace_id)).length;
   const plan = ctx.plan;
-  const limit = ctx.isDefault ? Infinity : plan.scopes;
-  const slotsUsed = use.custom + use.pickIds.length;
-  const canAdd = ctx.canCustomize && slotsUsed < limit;
-  const showSlots = Number.isFinite(limit) && limit < 1000;
+  const defaultLimit = ctx.isDefault ? null : plan.defaultScopes;
+  const customLimit = ctx.isDefault ? null : plan.customScopes;
+  const canAdd = ctx.canCustomize && scopeRoom(use.custom, customLimit);
+  const defaultFull = !scopeRoom(use.pickIds.length, defaultLimit);
   const viewerPlan = { key: account?.planKey ?? 'free', status: account?.planStatus ?? 'active', periodEnd: account?.periodEnd ?? null, hasBilling: !!account?.stripeCustomerId };
   const owned = mine.filter((m) => m.workspace.ownerId === user.id && !m.isDefault);
   const addScope = createScope.bind(null, wsId);
@@ -93,7 +94,7 @@ export default async function WorkspaceDetailPage({ params }: { params: { id: st
         canToggle={isDefaultCard ? ctx.isAdmin && otherActive : isCatalog ? ctx.isAdmin : undefined}
         showDefaultFor={isDefaultCard ? wsId : null}
         catalogFor={isCatalog ? wsId : null}
-        atLimit={isCatalog && !s.active && slotsUsed >= limit && !replacesCatalogPick(limit, use.custom, use.pickIds.length)}
+        atLimit={isCatalog && !s.active && defaultFull}
         upgrade={ctx.isAdmin ? { userId: user.id, admin: ctx.isPlatformAdmin, plan: viewerPlan } : null}
         scope={{ id: s.id, name: s.name, instructions: s.instructions, active: isDefaultCard ? showDefault : s.active, isDefault: s.isDefault, catalog: s.catalog, topic: s.searchConfig?.topic ?? null }}
         docs={docCount(s.id, isDefaultCard || isCatalog)} agentsOn={on} agentsTotal={SCOPE_AGENT_KEYS.length} items={count(items, s.id)} />
@@ -118,7 +119,7 @@ export default async function WorkspaceDetailPage({ params }: { params: { id: st
       {/* ---------- Scopes ---------- */}
       <section className="detail-block" id="scopes">
         <div className="section-head">
-          <h2>{t('Scopes')} {showSlots && <span className="uc-count">{slotsUsed}/{limit}</span>}</h2>
+          <h2>{t('Scopes')}</h2>
           {scopes.length > 0 && (canAdd
             ? <form action={addScope}><button type="submit" className="btn primary">{t('New scope')}</button></form>
             : ctx.isAdmin && <PlanUpgradeButton label={t('New scope')} userId={user.id} admin={ctx.isPlatformAdmin} plan={viewerPlan} />)}

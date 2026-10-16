@@ -106,16 +106,12 @@ export async function workspaceScopeUse(workspaceId: string): Promise<{ custom: 
   return { custom: count ?? 0, pickIds: (picks || []).map((p: any) => p.scope_id) };
 }
 
-/** A one-slot plan switches its template by replacing the catalog scope already on. A custom scope still holds the slot. */
-export function replacesCatalogPick(limit: number, custom: number, picks: number): boolean {
-  return limit === 1 && custom === 0 && picks > 0;
-}
-
 /**
  * The scopes whose results this viewer sees. General is in every account (and
- * what visitors see). A workspace then turns on shared catalog scopes and its
- * own scopes, up to what its plan allows. `own` = at least one of those is on;
- * `canRun` = an admin on a plan that allows customizing may run on-click agents.
+ * what visitors see) and does not use a default-scope slot. A workspace then
+ * turns on shared catalog scopes up to `defaultScopes`, and its own scopes up
+ * to `customScopes`. `own` = at least one of those is on; `canRun` = an admin
+ * on a plan that allows customizing may run on-click agents.
  */
 export const getViewScopes = cache(async (): Promise<{ scopes: Scope[]; own: boolean; canRun: boolean }> => {
   const ctx = await getContext();
@@ -126,17 +122,16 @@ export const getViewScopes = cache(async (): Promise<{ scopes: Scope[]; own: boo
     const guest = (await getCurrentUser()) ? defaults : await guestView(defaults);
     return { scopes: guest, own: false, canRun: false };
   }
-  const limit = ctx.isDefault ? 1000 : ctx.plan.scopes;
+  const defaultLimit = ctx.isDefault ? null : ctx.plan.defaultScopes;
+  const customLimit = ctx.isDefault ? null : ctx.plan.customScopes;
   const [{ data: ownRows }, use, { data: ws }] = await Promise.all([
     db.from('scopes').select('*').eq('workspace_id', ctx.workspace.id).order('created_at'),
     workspaceScopeUse(ctx.workspace.id),
     db.from('workspaces').select('show_default').eq('id', ctx.workspace.id).maybeSingle(),
   ]);
   const activeOwn = (ownRows || []).filter((s: any) => s.active && !s.is_default && !s.catalog).map(toScope);
-  const inactiveCustom = (ownRows || []).filter((s: any) => !s.active && !s.is_default && !s.catalog).length;
-  const budget = Math.max(0, limit - inactiveCustom);
-  const own = activeOwn.slice(0, budget);
-  const pickIds = use.pickIds.slice(0, Math.max(0, budget - own.length));
+  const own = customLimit == null ? activeOwn : activeOwn.slice(0, Math.max(0, customLimit));
+  const pickIds = defaultLimit == null ? use.pickIds : use.pickIds.slice(0, Math.max(0, defaultLimit));
   let catalog: Scope[] = [];
   if (pickIds.length) {
     const { data: catRows } = await db.from('scopes').select('*').in('id', pickIds).eq('catalog', true).eq('active', true);

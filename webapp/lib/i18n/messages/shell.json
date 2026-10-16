@@ -2407,5 +2407,47 @@
     "fr": "Un instant. Nos agents travaillent pour vous.",
     "de": "Einen Moment. Unsere Agenten arbeiten für dich.",
     "it": "Un attimo. I nostri agenti stanno lavorando per te."
+  },
+  "The {plan} plan includes 1 default scope. This workspace is already using {used}.": {
+    "pt": "O plano {plan} inclui 1 âmbito predefinido. Este espaço de trabalho já está a utilizar {used}.",
+    "es": "El plan {plan} incluye 1 ámbito predeterminado. Este espacio de trabajo ya está usando {used}.",
+    "fr": "L’offre {plan} comprend 1 périmètre par défaut. Cet espace de travail en utilise déjà {used}.",
+    "de": "Der Tarif {plan} enthält 1 Standardbereich. Dieser Arbeitsbereich nutzt bereits {used}.",
+    "it": "Il piano {plan} include 1 ambito predefinito. Quest’area di lavoro ne sta già usando {used}."
+  },
+  "The {plan} plan includes {n} default scopes. This workspace is already using {used}.": {
+    "pt": "O plano {plan} inclui {n} âmbitos predefinidos. Este espaço de trabalho já está a utilizar {used}.",
+    "es": "El plan {plan} incluye {n} ámbitos predeterminados. Este espacio de trabajo ya está usando {used}.",
+    "fr": "L’offre {plan} comprend {n} périmètres par défaut. Cet espace de travail en utilise déjà {used}.",
+    "de": "Der Tarif {plan} enthält {n} Standardbereiche. Dieser Arbeitsbereich nutzt bereits {used}.",
+    "it": "Il piano {plan} include {n} ambiti predefiniti. Quest’area di lavoro ne sta già usando {used}."
+  },
+  "The {plan} plan includes 1 custom scope. This workspace is already using {used}.": {
+    "pt": "O plano {plan} inclui 1 âmbito personalizado. Este espaço de trabalho já está a utilizar {used}.",
+    "es": "El plan {plan} incluye 1 ámbito personalizado. Este espacio de trabajo ya está usando {used}.",
+    "fr": "L’offre {plan} comprend 1 périmètre personnalisé. Cet espace de travail en utilise déjà {used}.",
+    "de": "Der Tarif {plan} enthält 1 eigenen Bereich. Dieser Arbeitsbereich nutzt bereits {used}.",
+    "it": "Il piano {plan} include 1 ambito personalizzato. Quest’area di lavoro ne sta già usando {used}."
+  },
+  "The {plan} plan includes {n} custom scopes. This workspace is already using {used}.": {
+    "pt": "O plano {plan} inclui {n} âmbitos personalizados. Este espaço de trabalho já está a utilizar {used}.",
+    "es": "El plan {plan} incluye {n} ámbitos personalizados. Este espacio de trabajo ya está usando {used}.",
+    "fr": "L’offre {plan} comprend {n} périmètres personnalisés. Cet espace de travail en utilise déjà {used}.",
+    "de": "Der Tarif {plan} enthält {n} eigene Bereiche. Dieser Arbeitsbereich nutzt bereits {used}.",
+    "it": "Il piano {plan} include {n} ambiti personalizzati. Quest’area di lavoro ne sta già usando {used}."
+  },
+  "The Free plan includes 1 default scope. Custom scopes start on Starter.": {
+    "pt": "O plano Free inclui 1 âmbito predefinido. Os âmbitos personalizados começam no Starter.",
+    "es": "El plan Free incluye 1 ámbito predeterminado. Los ámbitos personalizados empiezan en Starter.",
+    "fr": "L’offre Free comprend 1 périmètre par défaut. Les périmètres personnalisés commencent avec Starter.",
+    "de": "Der Tarif Free enthält 1 Standardbereich. Eigene Bereiche gibt es ab Starter.",
+    "it": "Il piano Free include 1 ambito predefinito. Gli ambiti personalizzati iniziano con Starter."
+  },
+  "Free includes General and 1 default scope, and cannot create a custom scope. It includes 1 tender evaluation a month. Starter includes up to 3 default scopes and 1 custom scope, and 5 tender evaluations a month. Pro includes up to 10 default scopes, 5 custom scopes, 10 evaluations a month and 50 news reports a month, at €59 a month. Teams includes unlimited default scopes, custom scopes, evaluations and proposal briefs, for several workspaces and members, at €99 a month. A year costs eleven months.": {
+    "pt": "O Free inclui o General e 1 âmbito predefinido, e não pode criar um âmbito personalizado. Inclui 1 avaliação de concurso por mês. O Starter inclui até 3 âmbitos predefinidos e 1 âmbito personalizado, e 5 avaliações de concurso por mês. O Pro inclui até 10 âmbitos predefinidos, 5 âmbitos personalizados, 10 avaliações por mês e 50 relatórios de notícias por mês, a 59 € por mês. O Teams inclui âmbitos predefinidos, âmbitos personalizados, avaliações e briefings de proposta ilimitados, para vários espaços de trabalho e membros, a 99 € por mês. Um ano custa onze meses.",
+    "es": "Free incluye General y 1 ámbito predeterminado, y no puede crear un ámbito personalizado. Incluye 1 evaluación de licitación al mes. Starter incluye hasta 3 ámbitos predeterminados y 1 ámbito personalizado, y 5 evaluaciones de licitación al mes. Pro incluye hasta 10 ámbitos predeterminados, 5 ámbitos personalizados, 10 evaluaciones al mes y 50 informes de noticias al mes, a 59 € al mes. Teams incluye ámbitos predeterminados, ámbitos personalizados, evaluaciones y briefings de propuesta ilimitados, para varios espacios de trabajo y miembros, a 99 € al mes. Un año cuesta once meses.",
+    "fr": "Free comprend General et 1 périmètre par défaut, et ne peut pas créer de périmètre personnalisé. Il comprend 1 évaluation d’appel d’offres par mois. Starter comprend jusqu’à 3 périmètres par défaut et 1 périmètre personnalisé, et 5 évaluations d’appel d’offres par mois. Pro comprend jusqu’à 10 périmètres par défaut, 5 périmètres personnalisés, 10 évaluations par mois et 50 rapports d’actualité par mois, à 59 € par mois. Teams comprend des périmètres par défaut, des périmètres personnalisés, des évaluations et des briefs de proposition illimités, pour plusieurs espaces de travail et membres, à 99 € par mois. Une année coûte onze mois.",
+    "de": "Free enthält General und 1 Standardbereich und kann keinen eigenen Bereich erstellen. Es enthält 1 Ausschreibungsbewertung im Monat. Starter enthält bis zu 3 Standardbereiche und 1 eigenen Bereich sowie 5 Ausschreibungsbewertungen im Monat. Pro enthält bis zu 10 Standardbereiche, 5 eigene Bereiche, 10 Bewertungen im Monat und 50 Nachrichtenberichte im Monat, für 59 € im Monat. Teams enthält unbegrenzte Standardbereiche, eigene Bereiche, Bewertungen und Angebotsbriefings, für mehrere Arbeitsbereiche und Mitglieder, für 99 € im Monat. Ein Jahr kostet elf Monate.",
+    "it": "Free include General e 1 ambito predefinito, e non può creare un ambito personalizzato. Include 1 valutazione di gara al mese. Starter include fino a 3 ambiti predefiniti e 1 ambito personalizzato, e 5 valutazioni di gara al mese. Pro include fino a 10 ambiti predefiniti, 5 ambiti personalizzati, 10 valutazioni al mese e 50 rapporti di notizie al mese, a 59 € al mese. Teams include ambiti predefiniti, ambiti personalizzati, valutazioni e brief di proposta illimitati, per più aree di lavoro e membri, a 99 € al mese. Un anno costa undici mesi."
   }
 }

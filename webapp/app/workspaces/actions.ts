@@ -8,13 +8,13 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 import { AGENTS, agentByKey } from '@/lib/agents';
 import { DOC_KINDS } from '@/lib/settings';
-import { PLATFORM_AGENT_KEYS, SCOPE_AGENT_KEYS, getEditableScope, getViewableScope, replacesCatalogPick, workspaceScopeUse } from '@/lib/scopes';
+import { PLATFORM_AGENT_KEYS, SCOPE_AGENT_KEYS, getEditableScope, getViewableScope, workspaceScopeUse } from '@/lib/scopes';
 import { getContext, getMembership, getWorkspaceContext, getMyWorkspaces, getPersonalAccount, isPlatformAdmin } from '@/lib/accounts';
 import { randomBytes } from 'crypto';
 import { siteOrigin } from '@/lib/auth';
 import { getT } from '@/lib/i18n/server';
 import { newsReportAllowance } from '@/lib/newsQuota';
-import { planIncludes } from '@/lib/plans';
+import { planIncludes, scopeRoom } from '@/lib/plans';
 import { fileText } from '@/lib/fileText';
 import {
   friendlyError, parseSearchScope, tuneJson, tunePrompt, validateDocumentsConfig, validatePrompt, validateSearchConfig,
@@ -49,7 +49,8 @@ export async function createScope(workspaceId: string) {
   if (!ctx) redirect('/workspaces');
   if (!ctx.canCustomize) redirect('/settings/account?plan=1');
   const use = await workspaceScopeUse(ctx.workspace.id);
-  if (!ctx.isDefault && use.custom + use.pickIds.length >= ctx.plan.scopes) redirect('/settings/account?plan=1');
+  const customLimit = ctx.isDefault ? null : ctx.plan.customScopes;
+  if (!scopeRoom(use.custom, customLimit)) redirect('/settings/account?plan=1');
   const { data, error } = await db().from('scopes').insert({ owner_id: (await getCurrentUser())!.id, workspace_id: ctx.workspace.id, name: 'New scope', active: true })
     .select('id').single();
   if (error || !data) throw new Error(error?.message || 'Could not create the scope.');
@@ -68,7 +69,7 @@ export async function setScopeActive(scopeId: string, active: boolean): Promise<
   return {};
 }
 
-/** Turn a shared catalog scope on or off for this workspace. Uses a scope slot on every plan, including Free. */
+/** Turn a shared catalog scope on or off for this workspace. Each one uses a default-scope slot. General does not. */
 export async function setCatalogPick(workspaceId: string, scopeId: string, on: boolean): Promise<{ error?: string; upgrade?: boolean }> {
   const ctx = await getWorkspaceContext(workspaceId);
   const t = await getT();
@@ -82,13 +83,8 @@ export async function setCatalogPick(workspaceId: string, scopeId: string, on: b
   }
   const use = await workspaceScopeUse(workspaceId);
   if (use.pickIds.includes(scopeId)) return {};
-  const limit = ctx.isDefault ? 1000 : ctx.plan.scopes;
-  const replacing = replacesCatalogPick(limit, use.custom, use.pickIds.length);
-  if (!replacing && use.custom + use.pickIds.length >= limit) return { upgrade: true };
-  if (replacing) {
-    const { error: removed } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
-    if (removed) return { error: removed.message };
-  }
+  const defaultLimit = ctx.isDefault ? null : ctx.plan.defaultScopes;
+  if (!scopeRoom(use.pickIds.length, defaultLimit)) return { upgrade: true };
   const { error } = await db().from('workspace_scope_picks').upsert(
     { workspace_id: workspaceId, scope_id: scopeId }, { onConflict: 'workspace_id,scope_id', ignoreDuplicates: true });
   if (error) return { error: error.message };

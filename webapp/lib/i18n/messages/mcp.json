@@ -1090,5 +1090,82 @@
     "fr": "Un périmètre du catalogue activé utilise un emplacement de périmètre. General n’en utilise pas. Free peut activer un périmètre du catalogue, et en choisir un autre le remplace. Free ne peut pas créer de périmètre. Inviter un membre exige Teams et un administrateur de cet espace de travail. Créer ou modifier un périmètre exige un administrateur à partir de Starter. Un membre peut lire.",
     "de": "Ein eingeschalteter Katalog-Scope belegt einen Scope-Platz. General nicht. Free kann einen Katalog-Scope einschalten, und ein anderer ersetzt ihn. Free kann keinen Scope erstellen. Ein Mitglied einzuladen braucht Teams und einen Admin dieses Arbeitsbereichs. Einen Scope erstellen oder bearbeiten braucht einen Admin ab Starter. Ein Mitglied kann lesen.",
     "it": "Un ambito di catalogo attivo usa un posto ambito. General no. Free può attivare un ambito di catalogo, e sceglierne un altro lo sostituisce. Free non può crearne uno. Invitare un membro richiede Teams e un amministratore di quell’area di lavoro. Creare o modificare un ambito richiede un amministratore da Starter in su. Un membro può leggere."
+  },
+  "A catalog scope is a shared default scope Tender Town publishes. Turning it on uses one default-scope slot. It cannot be renamed. General does not use a slot.": {
+    "pt": "Um âmbito de catálogo é um âmbito predefinido partilhado que a Tender Town publica. Ligá-lo ocupa uma vaga de âmbito predefinido. Não pode ser renomeado. O General não ocupa uma vaga.",
+    "es": "Un ámbito de catálogo es un ámbito predeterminado compartido que publica Tender Town. Activarlo usa una plaza de ámbito predeterminado. No se puede renombrar. General no usa una plaza.",
+    "fr": "Un périmètre du catalogue est un périmètre par défaut partagé que Tender Town publie. L’activer utilise un emplacement de périmètre par défaut. Il ne peut pas être renommé. General n’utilise pas d’emplacement.",
+    "de": "Ein Katalog-Scope ist ein gemeinsamer Standardbereich, den Tender Town veröffentlicht. Ihn einzuschalten belegt einen Platz für Standardbereiche. Er kann nicht umbenannt werden. General belegt keinen Platz.",
+    "it": "Un ambito di catalogo è un ambito predefinito condiviso che Tender Town pubblica. Attivarlo usa un posto di ambito predefinito. Non si può rinominare. General non usa un posto."
+  },
+  "A custom scope belongs to one workspace. Free includes none. Starter includes 1, Pro includes 5, Teams is unlimited.": {
+    "pt": "Um âmbito personalizado pertence a um espaço de trabalho. O Free não inclui nenhum. O Starter inclui 1, o Pro inclui 5 e o Teams é ilimitado.",
+    "es": "Un ámbito personalizado pertenece a un espacio de trabajo. Free no incluye ninguno. Starter incluye 1, Pro incluye 5 y Teams es ilimitado.",
+    "fr": "Un périmètre personnalisé appartient à un espace de travail. Free n’en comprend aucun. Starter en comprend 1, Pro en comprend 5, Teams est illimité.",
+    "de": "Ein eigener Bereich gehört zu einem Arbeitsbereich. Free enthält keinen. Starter enthält 1, Pro enthält 5, Teams ist unbegrenzt.",
+    "it": "Un ambito personalizzato appartiene a un’area di lavoro. Free non ne include nessuno. Starter ne include 1, Pro ne include 5, Teams è illimitato."
+  },
+  "Free: 1 workspace, 1 default scope, no custom scopes, 1 evaluation a month, no proposal briefs, no news reports.": {
+    "pt": "Free: 1 espaço de trabalho, 1 âmbito predefinido, sem âmbitos personalizados, 1 avaliação por mês, sem briefings de proposta, sem relatórios de notícias.",
+    "es": "Free: 1 espacio de trabajo, 1 ámbito predeterminado, sin ámbitos personalizados, 1 evaluación al mes, sin briefings de propuesta, sin informes de noticias.",
+    "fr": "Free : 1 espace de travail, 1 périmètre par défaut, pas de périmètres personnalisés, 1 évaluation par mois, pas de briefs de proposition, pas de rapports d’actualité.",
+    "de": "Free: 1 Arbeitsbereich, 1 Standardbereich, keine eigenen Bereiche, 1 Bewertung im Monat, keine Angebotsbriefings, keine Nachrichtenberichte.",
+    "it": "Free: 1 area di lavoro, 1 ambito predefinito, nessun ambito personalizzato, 1 valutazione al mese, nessun brief di proposta, nessun rapporto di notizie."
+  },
+  "Starter: 1 workspace, up to 3 default scopes and 1 custom scope, 5 evaluations a month, no proposal briefs, no news reports.": {
+    "pt": "Starter: 1 espaço de trabalho, até 3 âmbitos predefinidos e 1 âmbito personalizado, 5 avaliações por mês, sem briefings de proposta, sem relatórios de notícias.",
+    "es": "Starter: 1 espacio de trabajo, hasta 3 ámbitos predeterminados y 1 ámbito personalizado, 5 evaluaciones al mes, sin briefings de propuesta, sin informes de noticias.",
+    "fr": "Starter : 1 espace de travail, jusqu’à 3 périmètres par défaut et 1 périmètre personnalisé, 5 évaluations par mois, pas de briefs de proposition, pas de rapports d’actualité.",
+    "de": "Starter: 1 Arbeitsbereich, bis zu 3 Standardbereiche und 1 eigener Bereich, 5 Bewertungen im Monat, keine Angebotsbriefings, keine Nachrichtenberichte.",
+    "it": "Starter: 1 area di lavoro, fino a 3 ambiti predefiniti e 1 ambito personalizzato, 5 valutazioni al mese, nessun brief di proposta, nessun rapporto di notizie."
+  },
+  "Pro: 1 workspace, up to 10 default scopes and 5 custom scopes, 10 evaluations a month, 50 news reports a month, no proposal briefs.": {
+    "pt": "Pro: 1 espaço de trabalho, até 10 âmbitos predefinidos e 5 âmbitos personalizados, 10 avaliações por mês, 50 relatórios de notícias por mês, sem briefings de proposta.",
+    "es": "Pro: 1 espacio de trabajo, hasta 10 ámbitos predeterminados y 5 ámbitos personalizados, 10 evaluaciones al mes, 50 informes de noticias al mes, sin briefings de propuesta.",
+    "fr": "Pro : 1 espace de travail, jusqu’à 10 périmètres par défaut et 5 périmètres personnalisés, 10 évaluations par mois, 50 rapports d’actualité par mois, pas de briefs de proposition.",
+    "de": "Pro: 1 Arbeitsbereich, bis zu 10 Standardbereiche und 5 eigene Bereiche, 10 Bewertungen im Monat, 50 Nachrichtenberichte im Monat, keine Angebotsbriefings.",
+    "it": "Pro: 1 area di lavoro, fino a 10 ambiti predefiniti e 5 ambiti personalizzati, 10 valutazioni al mese, 50 rapporti di notizie al mese, nessun brief di proposta."
+  },
+  "Teams: unlimited workspaces, members, default scopes, custom scopes, evaluations, proposal briefs and news reports.": {
+    "pt": "Teams: espaços de trabalho, membros, âmbitos predefinidos, âmbitos personalizados, avaliações, briefings de proposta e relatórios de notícias ilimitados.",
+    "es": "Teams: espacios de trabajo, miembros, ámbitos predeterminados, ámbitos personalizados, evaluaciones, briefings de propuesta e informes de noticias ilimitados.",
+    "fr": "Teams : espaces de travail, membres, périmètres par défaut, périmètres personnalisés, évaluations, briefs de proposition et rapports d’actualité illimités.",
+    "de": "Teams: unbegrenzte Arbeitsbereiche, Mitglieder, Standardbereiche, eigene Bereiche, Bewertungen, Angebotsbriefings und Nachrichtenberichte.",
+    "it": "Teams: aree di lavoro, membri, ambiti predefiniti, ambiti personalizzati, valutazioni, brief di proposta e rapporti di notizie illimitati."
+  },
+  "A default scope that is switched on uses one default-scope slot. General does not. A custom scope uses a custom-scope slot and does not use a default-scope slot. At the limit, turn one off before turning another on. Free cannot create a custom scope. Inviting a member needs Teams, and an admin of that workspace. Creating or editing a custom scope needs an admin on Starter or above. A member can read.": {
+    "pt": "Um âmbito predefinido ligado ocupa uma vaga de âmbito predefinido. O General não ocupa. Um âmbito personalizado ocupa uma vaga de âmbito personalizado e não ocupa uma vaga de âmbito predefinido. No limite, desligue um antes de ligar outro. O Free não pode criar um âmbito personalizado. Convidar um membro exige o Teams e um administrador desse espaço de trabalho. Criar ou editar um âmbito personalizado exige um administrador no Starter ou superior. Um membro pode ler.",
+    "es": "Un ámbito predeterminado activado usa una plaza de ámbito predeterminado. General no la usa. Un ámbito personalizado usa una plaza de ámbito personalizado y no usa una plaza de ámbito predeterminado. En el límite, desactiva uno antes de activar otro. Free no puede crear un ámbito personalizado. Invitar a un miembro exige Teams y un administrador de ese espacio de trabajo. Crear o editar un ámbito personalizado exige un administrador en Starter o superior. Un miembro puede leer.",
+    "fr": "Un périmètre par défaut activé utilise un emplacement de périmètre par défaut. General n’en utilise pas. Un périmètre personnalisé utilise un emplacement de périmètre personnalisé et n’utilise pas d’emplacement de périmètre par défaut. À la limite, désactivez-en un avant d’en activer un autre. Free ne peut pas créer de périmètre personnalisé. Inviter un membre exige Teams et un administrateur de cet espace de travail. Créer ou modifier un périmètre personnalisé exige un administrateur à partir de Starter. Un membre peut lire.",
+    "de": "Ein eingeschalteter Standardbereich belegt einen Platz für Standardbereiche. General nicht. Ein eigener Bereich belegt einen Platz für eigene Bereiche und keinen Platz für Standardbereiche. Am Limit schaltest du einen aus, bevor du einen anderen einschaltest. Free kann keinen eigenen Bereich erstellen. Ein Mitglied einzuladen braucht Teams und einen Admin dieses Arbeitsbereichs. Einen eigenen Bereich erstellen oder bearbeiten braucht einen Admin ab Starter. Ein Mitglied kann lesen.",
+    "it": "Un ambito predefinito attivo usa un posto di ambito predefinito. General no. Un ambito personalizzato usa un posto di ambito personalizzato e non usa un posto di ambito predefinito. Al limite, disattivane uno prima di attivarne un altro. Free non può creare un ambito personalizzato. Invitare un membro richiede Teams e un amministratore di quell’area di lavoro. Creare o modificare un ambito personalizzato richiede un amministratore da Starter in su. Un membro può leggere."
+  },
+  "Purpose: see General, the catalog and this workspace’s own scopes, and how many default and custom scopes are used.": {
+    "pt": "Objetivo: ver o General, o catálogo e os âmbitos deste espaço de trabalho, e quantos âmbitos predefinidos e personalizados estão em uso.",
+    "es": "Objetivo: ver General, el catálogo y los ámbitos de este espacio de trabajo, y cuántos ámbitos predeterminados y personalizados están en uso.",
+    "fr": "Objet : voir General, le catalogue et les périmètres de cet espace de travail, et combien de périmètres par défaut et personnalisés sont utilisés.",
+    "de": "Zweck: General, den Katalog und die Bereiche dieses Arbeitsbereichs sehen, und wie viele Standardbereiche und eigene Bereiche genutzt werden.",
+    "it": "Scopo: vedere General, il catalogo e gli ambiti di quest’area di lavoro, e quanti ambiti predefiniti e personalizzati sono in uso."
+  },
+  "How: optional workspace_id. You get defaultScopes and defaultUsed, customScopes and customUsed (a limit is null when unlimited, and customScopes is 0 when custom scopes are not included), canCustomize, and each scope’s id, name, kind (general, catalog or custom), whether it is active, and whether you can edit it.": {
+    "pt": "Como: workspace_id opcional. Recebe defaultScopes e defaultUsed, customScopes e customUsed (um limite é null quando é ilimitado, e customScopes é 0 quando os âmbitos personalizados não estão incluídos), canCustomize, e o id, o nome, o kind (general, catalog ou custom), se está ativo e se o pode editar, de cada âmbito.",
+    "es": "Cómo: workspace_id opcional. Obtienes defaultScopes y defaultUsed, customScopes y customUsed (un límite es null cuando es ilimitado, y customScopes es 0 cuando los ámbitos personalizados no están incluidos), canCustomize, y el id, el nombre, el kind (general, catalog o custom), si está activo y si puedes editarlo, de cada ámbito.",
+    "fr": "Comment : workspace_id facultatif. Vous obtenez defaultScopes et defaultUsed, customScopes et customUsed (une limite est null si elle est illimitée, et customScopes est 0 lorsque les périmètres personnalisés ne sont pas inclus), canCustomize, et pour chaque périmètre l’id, le nom, le kind (general, catalog ou custom), s’il est actif et si vous pouvez le modifier.",
+    "de": "So: optionale workspace_id. Du bekommst defaultScopes und defaultUsed, customScopes und customUsed (ein Limit ist null, wenn es unbegrenzt ist, und customScopes ist 0, wenn eigene Bereiche nicht enthalten sind), canCustomize und für jeden Scope Id, Name, kind (general, catalog oder custom), ob er aktiv ist und ob du ihn bearbeiten kannst.",
+    "it": "Come: workspace_id facoltativo. Ottieni defaultScopes e defaultUsed, customScopes e customUsed (un limite è null quando è illimitato, e customScopes è 0 quando gli ambiti personalizzati non sono inclusi), canCustomize, e per ogni ambito id, nome, kind (general, catalog o custom), se è attivo e se puoi modificarlo."
+  },
+  "How: workspace_id, name, and optional instructions describing what it should follow. It uses one custom-scope slot. Not included on Free. You must be an admin on a plan that allows customizing.": {
+    "pt": "Como: workspace_id, name e instruções opcionais sobre o que deve seguir. Ocupa uma vaga de âmbito personalizado. Não está incluído no Free. Tem de ser administrador num plano que permita personalizar.",
+    "es": "Cómo: workspace_id, name e instrucciones opcionales sobre lo que debe seguir. Usa una plaza de ámbito personalizado. No está incluido en Free. Tienes que ser administrador en un plan que permita personalizar.",
+    "fr": "Comment : workspace_id, name et des instructions facultatives sur ce qu’il doit suivre. Il utilise un emplacement de périmètre personnalisé. Non inclus dans Free. Vous devez être administrateur d’une offre qui permet de personnaliser.",
+    "de": "So: workspace_id, name und optionale Anweisungen, was er verfolgen soll. Er belegt einen Platz für eigene Bereiche. In Free nicht enthalten. Du musst Admin eines Tarifs sein, der Anpassen erlaubt.",
+    "it": "Come: workspace_id, name e istruzioni facoltative su cosa deve seguire. Usa un posto di ambito personalizzato. Non è incluso in Free. Devi essere amministratore di un piano che consente di personalizzare."
+  },
+  "How: workspace_id, scope_id and enabled. Turning one on uses a default-scope slot. You must be an admin. At the limit it is refused until one is turned off.": {
+    "pt": "Como: workspace_id, scope_id e enabled. Ligar um ocupa uma vaga de âmbito predefinido. Tem de ser administrador. No limite, é recusado até desligar um.",
+    "es": "Cómo: workspace_id, scope_id y enabled. Activar uno usa una plaza de ámbito predeterminado. Tienes que ser administrador. En el límite se rechaza hasta que desactives uno.",
+    "fr": "Comment : workspace_id, scope_id et enabled. En activer un utilise un emplacement de périmètre par défaut. Vous devez être administrateur. À la limite, c’est refusé tant qu’un n’est pas désactivé.",
+    "de": "So: workspace_id, scope_id und enabled. Einen einzuschalten belegt einen Platz für Standardbereiche. Du musst Admin sein. Am Limit wird es abgelehnt, bis einer ausgeschaltet ist.",
+    "it": "Come: workspace_id, scope_id e enabled. Attivarne uno usa un posto di ambito predefinito. Devi essere amministratore. Al limite viene rifiutato finché non ne disattivi uno."
   }
 }
