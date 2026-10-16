@@ -18,7 +18,7 @@ const QUESTIONS: [string, string][] = [
   ['What is the News Report Agent?', 'It reads a news story and writes a full summary plus what your team should do about it. Pro includes 50 reports a month. Teams includes unlimited reports. It is not on Free or Starter.'],
   ['Is an account required?', 'No. Tenders, news and posts can be read without one. An account is for following items, posting, chat and, on Starter and above, your own scopes.'],
   ['Can my own agent use Tender Town?', 'Yes. It searches with no account. The guide is at {origin}/mcp and the procedures are at {origin}/skills.md. You create the account. After you sign in, it can configure scopes and read what the agents on this site write.'],
-  ['Which plan should I choose?', 'Free includes General and one template scope, and cannot create its own. Starter includes one scope besides General, which you can create, and 1 tender evaluation a month. Pro adds up to five scopes, 5 evaluations a month and 50 news reports a month, at €59 a month. Teams adds unlimited evaluations and proposal briefs, for several workspaces and members, at €99 a month. A year costs eleven months.'],
+  ['Which plan should I choose?', 'Free includes General and one template scope, and cannot create its own. It includes 1 tender evaluation a month. Starter includes one scope besides General, which you can create, and 5 tender evaluations a month. Pro adds up to five scopes, 10 evaluations a month and 50 news reports a month, at €59 a month. Teams adds unlimited evaluations and proposal briefs, for several workspaces and members, at €99 a month. A year costs eleven months.'],
   ['How often does Tender Town update?', 'A pipeline runs every four hours. Each scope refreshes as often as its plan allows: once a day on Free, twice on Starter, three times on Pro and six times on Teams.'],
 ];
 
@@ -101,7 +101,7 @@ export default function AboutPage() {
 
         <h2>{t('Accounts and plans')}</h2>
         <p>
-          {t('Tenders, news and community posts can be read without an account. An account lets you follow items, keep a profile, post, comment and chat. Starter adds a scope you configure and 1 tender evaluation a month. Pro adds 5 evaluations a month and the News Report Agent. Teams adds unlimited evaluations and proposal briefs.')}
+          {t('Tenders, news and community posts can be read without an account. An account lets you follow items, keep a profile, post, comment and chat. Free includes 1 tender evaluation a month. Starter adds a scope you configure and 5 tender evaluations a month. Pro adds 10 evaluations a month and the News Report Agent. Teams adds unlimited evaluations and proposal briefs.')}
           {' '}<Link href="/pricing">{t('Pricing')}</Link>
         </p>
 

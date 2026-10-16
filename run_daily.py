@@ -29,7 +29,10 @@ from database.models import (  # noqa: E402
 )
 from agents.digest import render_daily_digest, CoverageStats  # noqa: E402
 from agents.discovery import run_discovery, build_query_combinations  # noqa: E402
-from agents.triage import heuristic_prefilter, run_triage_llm, apply_triage_result  # noqa: E402
+from agents.triage import (  # noqa: E402
+    heuristic_prefilter, run_triage_llm, run_triage_copy, needs_public_copy, apply_triage_result,
+)
+from services.llm_client import take_cache_usage  # noqa: E402
 from services.deduplicator import fingerprint, headline_key, procurement_score, same_story
 from services.facts import correct_known_facts  # noqa: E402
 from services import agent_settings as S  # noqa: E402
@@ -647,7 +650,10 @@ def main():
             print(f"[{scope.name}] Triage Agent switched off")
             S.mark_ran(session, scope)
             continue
-        prompt = S.prompt_for("triage.md", open(os.path.join(os.path.dirname(__file__), "prompts", "triage.md")).read(), scope)
+        prompt_dir = os.path.join(os.path.dirname(__file__), "prompts")
+        prompt = S.prompt_for("triage.md", open(os.path.join(prompt_dir, "triage.md")).read(), scope)
+        copy_prompt = S.prompt_for("triage.md", open(os.path.join(prompt_dir, "triage_copy.md")).read(), scope, use_override=False)
+        take_cache_usage()
         # Followed sources and news ahead of the TED backlog, or a scope that
         # already has tenders never reaches its stories. Cap the batch so one
         # scope cannot spend the whole run.
@@ -681,60 +687,102 @@ def main():
 
         # Worker threads get detached copies: ORM objects are expired on every
         # commit and must not be lazy-loaded from other threads.
-        snapshots = [SimpleNamespace(title=c.title, description=c.description, source_url=c.source_url,
-                                     country=c.country, discovery_query=c.discovery_query) for c in to_llm]
+        def _snap(c):
+            return SimpleNamespace(title=c.title, description=c.description, source_url=c.source_url,
+                                   country=c.country, discovery_query=c.discovery_query)
 
-        def _triage(snap):
+        def _score(snap):
             try:
                 return run_triage_llm(snap, prompt), None
             except Exception as e:
                 return None, e
 
-        failures = streak = 0
+        failures = streak = seen = 0
         aborted = False
-        with ThreadPoolExecutor(max_workers=8) as pool:
-            for i, (c, (result, err)) in enumerate(zip(to_llm, pool.map(_triage, snapshots)), 1):
-                if err:
-                    errors.append(f"triage {c.candidate_id}: {err}")
-                    failures += 1
+
+        def _abort(err):
+            nonlocal aborted
+            errors.append(f"Triage aborted after {streak} consecutive failures: {err}"[:300])
+            aborted = True
+
+        def _fail(c, err):
+            nonlocal failures, streak, seen
+            seen += 1
+            errors.append(f"triage {c.candidate_id}: {err}")
+            failures += 1
+            streak += 1
+            # Bad key, no credit, outage: stop instead of failing the whole queue.
+            if (seen >= 5 and failures == seen) or streak >= 10:
+                _abort(err)
+
+        def _keep(c, result):
+            nonlocal streak, seen, llm_calls
+            seen += 1
+            streak = 0
+            llm_calls += 1
+            category, _awarded = classify_opportunity(c, result)
+            from_news = "news" in (c.potential_categories or [])
+            if needs_public_copy(result, category=category, from_news_search=from_news, promote_at=PROMOTE_THRESHOLD):
+                try:
+                    result.update(run_triage_copy(c, copy_prompt, result))
+                    llm_calls += 1
+                except Exception as e:
+                    errors.append(f"triage copy {c.candidate_id}: {e}")
                     streak += 1
-                    # Bad key, no credit, outage: stop instead of failing the whole queue.
-                    if (i >= 5 and failures == i) or streak >= 10:
-                        errors.append(f"Triage aborted after {streak} consecutive failures: {err}"[:300])
+                    if streak >= 10:
+                        _abort(e)
+                    return
+            apply_triage_result(session, c, result)
+            done(c, result)
+            promoted = promote(session, c, result, country_names)
+            if promoted:
+                kind, row = promoted[0], promoted[1]
+                is_news = kind in ("news", "unchanged_news")
+                item_id = row.news_id if is_news else row.opportunity_id
+                score = int(result.get("importance") or 0) if is_news else int(result.get("relevance") or 0)
+                from services.publication import publish_reason, stage_of
+                public = bool(getattr(scope, "catalog", False) or getattr(scope, "is_default", False))
+                stage = None if is_news else stage_of(getattr(row, "status", None), getattr(row, "opportunity_type", None), getattr(row, "deadline", None))
+                why = publish_reason(getattr(row, "summary", None) or result.get("summary") or "", result.get("reason") or "", public=public, stage=stage)[:500]
+                session.execute(sql_text("""insert into scope_items (scope_id, item_type, item_id, relevance, candidate_type, reason)
+                        values (cast(:s as uuid), :t, :i, :r, :ct, :why)
+                        on conflict (scope_id, item_type, item_id) do update set relevance = excluded.relevance, reason = excluded.reason"""),
+                                {"s": scope.id, "t": "news" if is_news else "tender", "i": item_id, "r": score,
+                                 "ct": result.get("type"), "why": why})
+                if kind == "opportunity":
+                    new_opps.append(row)
+                elif kind == "updated":
+                    updates.append({"opportunity": row.title, "change": "; ".join(promoted[2]),
+                                    "action": f"Review: {row.official_url}"})
+                elif kind == "news":
+                    new_news.append(row)
+            session.commit()
+            if seen % 25 == 0:
+                print(f"  [{scope.name}] triaged {seen}/{len(to_llm)}")
+
+        # The first call writes the prompt cache. The rest start after it returns,
+        # or eight parallel calls would all miss.
+        calls_before = llm_calls
+        if to_llm:
+            result, err = _score(_snap(to_llm[0]))
+            if err:
+                _fail(to_llm[0], err)
+            else:
+                _keep(to_llm[0], result)
+        if not aborted and len(to_llm) > 1:
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                rest = to_llm[1:]
+                for c, (result, err) in zip(rest, pool.map(_score, [_snap(c) for c in rest])):
+                    if err:
+                        _fail(c, err)
+                    else:
+                        _keep(c, result)
+                    if aborted:
                         pool.shutdown(wait=False, cancel_futures=True)
-                        aborted = True
                         break
-                    continue
-                streak = 0
-                llm_calls += 1
-                apply_triage_result(session, c, result)
-                done(c, result)
-                promoted = promote(session, c, result, country_names)
-                if promoted:
-                    kind, row = promoted[0], promoted[1]
-                    is_news = kind in ("news", "unchanged_news")
-                    item_id = row.news_id if is_news else row.opportunity_id
-                    score = int(result.get("importance") or 0) if is_news else int(result.get("relevance") or 0)
-                    from services.publication import publish_reason, stage_of
-                    public = bool(getattr(scope, "catalog", False) or getattr(scope, "is_default", False))
-                    stage = None if is_news else stage_of(getattr(row, "status", None), getattr(row, "opportunity_type", None), getattr(row, "deadline", None))
-                    why = publish_reason(getattr(row, "summary", None) or result.get("summary") or "", result.get("reason") or "", public=public, stage=stage)[:500]
-                    session.execute(sql_text("""insert into scope_items (scope_id, item_type, item_id, relevance, candidate_type, reason)
-                            values (cast(:s as uuid), :t, :i, :r, :ct, :why)
-                            on conflict (scope_id, item_type, item_id) do update set relevance = excluded.relevance, reason = excluded.reason"""),
-                                    {"s": scope.id, "t": "news" if is_news else "tender", "i": item_id, "r": score,
-                                     "ct": result.get("type"), "why": why})
-                    if kind == "opportunity":
-                        new_opps.append(row)
-                    elif kind == "updated":
-                        updates.append({"opportunity": row.title, "change": "; ".join(promoted[2]),
-                                        "action": f"Review: {row.official_url}"})
-                    elif kind == "news":
-                        new_news.append(row)
-                session.commit()
-                if i % 25 == 0:
-                    print(f"  [{scope.name}] triaged {i}/{len(to_llm)}")
-        print(f"[{scope.name}] triage: {len(pending)} queued, {len(to_llm)} LLM calls")
+        cache = take_cache_usage()
+        print(f"[{scope.name}] triage: {len(pending)} queued, {len(to_llm)} scored, {llm_calls - calls_before} LLM calls, "
+              f"prompt cache {cache['creation']} tokens written, {cache['read']} tokens read")
         if aborted:
             S.mark_failed(session, scope, errors[-1] if errors else "Collection failed")
             break
@@ -772,7 +820,7 @@ def main():
             print(f"Documents: {missing['documents']} for {missing['opportunities']} tenders that had none yet")
     if S.enabled("tender_analysis"):
         analysed = analyse_tenders(session, errors)
-        print(f"Tender analysis: award criteria for {analysed['award']} criteria, requirements for {analysed['requirements']} tenders")
+        print(f"Award criteria: {analysed['award']} from TED notices")
 
     # English titles for anything that predates triage's title_en, and for activity;
     # English notes for tender updates (shown as comments).

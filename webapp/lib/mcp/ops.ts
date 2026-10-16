@@ -7,7 +7,7 @@ import {
   SCOPE_AGENT_KEYS, getCatalogScopes, getEditableScope, getScopeAgents, getViewScopes, getViewableScope, getWorkspaceScopes, replacesCatalogPick, workspaceScopeUse,
 } from '@/lib/scopes';
 import { AGENTS } from '@/lib/agents';
-import { allowRequirements } from '@/lib/tenderViews';
+import { planIncludes } from '@/lib/plans';
 import { getCommentTree } from '@/lib/comments';
 import { buyerOf, titleOf } from '@/lib/data';
 import { friendlyError, parseSearchScope, tunePrompt, validateSearchConfig } from '@/lib/configAgent';
@@ -27,15 +27,14 @@ async function signedIn() {
   return user;
 }
 
-async function monthUsage(accountId: string, userId: string) {
+async function monthUsage(accountId: string) {
   const month = new Date().toISOString().slice(0, 7);
-  const [{ data: runs }, { data: news }, { data: views }] = await Promise.all([
+  const [{ data: runs }, { data: news }] = await Promise.all([
     db().from('agent_run_usage').select('agent_key, runs').eq('account_id', accountId).eq('month', month),
     db().from('news_report_usage').select('reports').eq('account_id', accountId).eq('month', month).maybeSingle(),
-    db().from('tender_page_views').select('views').eq('user_id', userId).eq('month', month).maybeSingle(),
   ]);
   const used = (key: string) => (runs || []).find((r: any) => r.agent_key === key)?.runs ?? 0;
-  return { evaluations: used('tender_evaluation'), proposals: used('proposal_manager'), newsReports: news?.reports ?? 0, requirementViews: views?.views ?? 0 };
+  return { evaluations: used('tender_evaluation'), proposals: used('proposal_manager'), newsReports: news?.reports ?? 0 };
 }
 
 function room(limit: number | null, used: number) {
@@ -48,7 +47,7 @@ export async function getAccount() {
   const account = await getPersonalAccount(user.id);
   if (!account) throw new McpDenied('This account is not set up yet.');
   const mine = await getMyWorkspaces();
-  const usage = await monthUsage(account.id, user.id);
+  const usage = await monthUsage(account.id);
   const plan = account.plan;
   return {
     username: user.username,
@@ -63,7 +62,6 @@ export async function getAccount() {
       evaluations: room(plan.evaluationsPerMonth, usage.evaluations),
       proposals: room(plan.proposalsPerMonth, usage.proposals),
       newsReports: room(plan.newsReportsPerMonth, usage.newsReports),
-      requirementViews: room(plan.requirementViewsPerMonth, usage.requirementViews),
     },
     workspaces: mine.map((m) => ({ id: m.workspace.id, name: m.workspace.name, role: m.role, plan: m.plan.key })),
   };
@@ -240,9 +238,9 @@ export async function listScopeAgents(scopeId: string) {
 }
 
 function agentIncluded(key: string, plan: { evaluationsPerMonth: number | null; proposalsPerMonth: number | null; newsReportsPerMonth: number | null }) {
-  if (key === 'tender_evaluation' && (plan.evaluationsPerMonth ?? 0) === 0) return 'Tender Evaluation is included from Starter.';
-  if (key === 'proposal_manager' && (plan.proposalsPerMonth ?? 0) === 0) return 'Proposal briefs are included on Teams.';
-  if (key === 'news_report' && (plan.newsReportsPerMonth ?? 0) === 0) return 'The News Report Agent is included on Pro and Teams.';
+  if (key === 'tender_evaluation' && !planIncludes(plan.evaluationsPerMonth)) return 'This plan does not include Tender Evaluation.';
+  if (key === 'proposal_manager' && !planIncludes(plan.proposalsPerMonth)) return 'Proposal briefs are included on Teams.';
+  if (key === 'news_report' && !planIncludes(plan.newsReportsPerMonth)) return 'The News Report Agent is included on Pro and Teams.';
   return null;
 }
 
@@ -339,27 +337,23 @@ export async function getTender(id: string) {
   if (!plan) throw new McpDenied('This account is not set up yet.');
   const { data: o } = await db().from('opportunities').select('opportunity_id, title, title_en, language, country, authority, authority_en, opportunity_type, status, summary, tender_summary, deadline, estimated_value, currency, publication_date, official_url').eq('opportunity_id', id).maybeSingle();
   if (!o) throw new McpDenied('Unknown tender.');
-  const showRequirements = await allowRequirements(user.id, plan.requirementViewsPerMonth);
-  let requirements: unknown[] | null = null;
-  if (showRequirements) {
-    const { data } = await db().from('requirements').select('requirement_group, category, requirement_text, mandatory').eq('opportunity_id', id).limit(200);
-    requirements = data || [];
-  }
+  const { data: requirementRows } = await db().from('requirements').select('requirement_group, category, requirement_text, mandatory').eq('opportunity_id', id).limit(200);
+  const requirements = requirementRows || [];
   const { scopes } = await getViewScopes();
   let evaluation: unknown = null;
   let proposal: unknown = null;
-  if (scopes.length && (plan.evaluationsPerMonth ?? 0) !== 0) {
+  if (scopes.length && planIncludes(plan.evaluationsPerMonth)) {
     const { data: rows } = await db().from('scope_evaluations').select('scope_id, workspace_id, evaluation, proposal_brief, proposal_at').eq('opportunity_id', id).in('scope_id', scopes.map((s) => s.id));
     const ws = ctx?.workspace.id;
     const pick = (rows || []).find((r: any) => ws && r.workspace_id === ws) || (rows || []).find((r: any) => !r.workspace_id);
     evaluation = pick?.evaluation ?? null;
-    proposal = (plan.proposalsPerMonth ?? 0) !== 0 ? pick?.proposal_brief ?? null : null;
+    proposal = planIncludes(plan.proposalsPerMonth) ? pick?.proposal_brief ?? null : null;
   }
   const comments = await getCommentTree('tender', id, user.id);
   return {
     id: o.opportunity_id, title: titleOf(o), buyer: buyerOf(o), country: o.country, type: o.opportunity_type, status: o.status,
     summary: publicText(o.tender_summary || o.summary || ''), deadline: o.deadline, value: o.estimated_value, currency: o.currency, published: o.publication_date, url: o.official_url,
-    requirements, requirementsIncluded: showRequirements, evaluation, proposal, comments: comments.tree, commentCount: comments.total,
+    requirements, evaluation, proposal, comments: comments.tree, commentCount: comments.total,
   };
 }
 
@@ -383,7 +377,7 @@ export async function getNews(id: string) {
   if (!plan) throw new McpDenied('This account is not set up yet.');
   const { data: n } = await db().from('news_items').select('news_id, title, title_en, language, category, source_name, published_date, excerpt, summary, summary_long, source_url').eq('news_id', id).maybeSingle();
   if (!n) throw new McpDenied('Unknown story.');
-  const allowed = (plan.newsReportsPerMonth ?? 0) !== 0;
+  const allowed = planIncludes(plan.newsReportsPerMonth);
   let reports: unknown[] = [];
   if (allowed) {
     const { scopes } = await getViewScopes();

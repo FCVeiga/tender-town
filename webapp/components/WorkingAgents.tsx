@@ -3,6 +3,7 @@ import { AGENTS } from '@/lib/agents';
 import { SCOPE_AGENT_KEYS } from '@/lib/scopes';
 import { workingAgentKeys } from '@/lib/settings';
 import { getContext } from '@/lib/accounts';
+import { planIncludes } from '@/lib/plans';
 import AgentAvatar from './AgentAvatar';
 import { getT } from '@/lib/i18n/server';
 
@@ -13,9 +14,9 @@ export default async function WorkingAgents() {
   let on: Set<string> | null = null;
   try { on = await workingAgentKeys(); } catch { /* settings tables missing: all on */ }
   const plan = (await getContext())?.plan;
-  const blocked = (key: string) => (key === 'tender_evaluation' && (plan?.evaluationsPerMonth ?? 0) === 0)
-    || (key === 'proposal_manager' && (plan?.proposalsPerMonth ?? 0) === 0)
-    || (key === 'news_report' && (plan?.newsReportsPerMonth ?? 0) === 0);
+  const blocked = (key: string) => (key === 'tender_evaluation' && !planIncludes(plan?.evaluationsPerMonth))
+    || (key === 'proposal_manager' && !planIncludes(plan?.proposalsPerMonth))
+    || (key === 'news_report' && !planIncludes(plan?.newsReportsPerMonth));
   const shown = listed.filter((a) => blocked(a.key) || !on || on.has(a.key));
   const working = shown.filter((a) => !blocked(a.key) && (!on || on.has(a.key)));
   return (

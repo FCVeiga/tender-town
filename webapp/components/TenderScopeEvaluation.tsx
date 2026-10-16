@@ -15,7 +15,7 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(getLocale(), {
 type ScopeEvalProps = {
   opportunityId: string; scope: { id: string; name: string }; row: any; showName: boolean; canRun: boolean; signedIn: boolean;
   locked?: 'plan' | 'member' | null;
-  evaluatorOn: boolean; proposerOn: boolean; ready: boolean; analysedAt: string | null;
+  evaluatorOn: boolean; proposerOn: boolean; analysedAt: string | null;
   lead?: string | null;
   archived?: boolean;
   contextHref?: string | null;
@@ -36,7 +36,7 @@ function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, sign
 }
 
 /** One scope's evaluation of a tender. The proposal brief is a separate section. */
-export default function TenderScopeEvaluation({ opportunityId, scope, row, showName, canRun, signedIn, evaluatorOn, ready, analysedAt, locked = null, lead = null, archived = false, contextHref = null, runsLeft = null, runsLimit = null, quotaLimit = null }: ScopeEvalProps) {
+export default function TenderScopeEvaluation({ opportunityId, scope, row, showName, canRun, signedIn, evaluatorOn, analysedAt, locked = null, lead = null, archived = false, contextHref = null, runsLeft = null, runsLimit = null, quotaLimit = null }: ScopeEvalProps) {
   const t = getTSync();
   const evaluation = (row?.evaluation ?? null) as Evaluation | null;
   const running = !!row?.evaluation_started_at && Date.now() - new Date(row.evaluation_started_at).getTime() < 5 * 60_000;
@@ -84,7 +84,7 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, showN
                 <p className="eval-note">{t('{n} of {limit} left this month.', { n: runsLeft, limit: runsLimit })}</p>
               )}
               <TenderEvaluationRunner opportunityId={opportunityId} scopeId={scope.id} evaluatedAt={row?.evaluated_at ?? null} running={running}
-                ready={ready} lastError={row?.evaluation_error ?? null} />
+                lastError={row?.evaluation_error ?? null} />
             </>
           )}
     </div>

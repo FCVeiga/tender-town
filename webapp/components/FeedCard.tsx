@@ -82,7 +82,6 @@ export default function FeedCard({ item, now, value, like, social }: {
         <div className="feed-title">{item.headline}</div>
         {item.image && <NewsImage src={item.image} />}
         {item.body && <p className="feed-summary">{item.body}</p>}
-        {item.why && <p className="feed-why"><span>{t('Why this matters')}</span> {item.why}</p>}
         {item.deadline && <Deadline deadline={item.deadline} now={now} />}
       </div>
     </Link>
@@ -121,7 +120,6 @@ function SocialFeedCard({ item, now, value, social }: { item: FeedItem; now: Dat
           <div className="feed-title">{item.headline}</div>
           {item.image && <NewsImage src={item.image} />}
           {item.body && <p className="feed-summary">{item.body}</p>}
-          {item.why && <p className="feed-why"><span>{t('Why this matters')}</span> {item.why}</p>}
           {item.deadline && <Deadline deadline={item.deadline} now={now} />}
         </Link>
         <Related item={item} />

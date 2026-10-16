@@ -517,6 +517,13 @@
     "de": "Der Tender Evaluation Agent prüft eine Ausschreibung gegen den Scope, bewertet die Passung und rät. Starter enthält 1 Lauf im Monat, Pro 5, Teams unbegrenzt. Nicht auf Free.",
     "it": "Il Tender Evaluation Agent controlla una gara rispetto all’ambito, valuta l’aderenza e consiglia. Starter include 1 esecuzione al mese, Pro 5, Teams illimitato. Non è su Free."
   },
+  "Tender Evaluation Agent checks one tender against the scope, scores the fit and advises. Free includes 1 run a month, Starter 5, Pro 10, Teams unlimited.": {
+    "pt": "O Agente de Avaliação de Concursos verifica um concurso contra o âmbito, pontua o encaixe e aconselha. O Free inclui 1 execução por mês, o Starter 5, o Pro 10, o Teams é ilimitado.",
+    "es": "El Tender Evaluation Agent comprueba una licitación contra el ámbito, puntúa el encaje y aconseja. Free incluye 1 ejecución al mes, Starter 5, Pro 10, Teams ilimitado.",
+    "fr": "Le Tender Evaluation Agent vérifie un appel d’offres par rapport au périmètre, note l’adéquation et conseille. Free inclut 1 exécution par mois, Starter 5, Pro 10, Teams est illimité.",
+    "de": "Der Tender Evaluation Agent prüft eine Ausschreibung gegen den Scope, bewertet die Passung und rät. Free enthält 1 Lauf im Monat, Starter 5, Pro 10, Teams unbegrenzt.",
+    "it": "Il Tender Evaluation Agent controlla una gara rispetto all’ambito, valuta l’aderenza e consiglia. Free include 1 esecuzione al mese, Starter 5, Pro 10, Teams illimitato."
+  },
   "Proposal Manager Agent writes a proposal brief from that evaluation: the requirements, the references the scope already has, the gaps and the steps. Teams only, and only after an evaluation exists for that scope.": {
     "pt": "O Agente Gestor de Propostas escreve um brief de proposta a partir dessa avaliação: os requisitos, as referências que o âmbito já tem, as lacunas e os passos. Só no Teams, e só depois de existir uma avaliação para esse âmbito.",
     "es": "El Proposal Manager Agent escribe un brief de propuesta a partir de esa evaluación: los requisitos, las referencias que el ámbito ya tiene, los huecos y los pasos. Solo en Teams, y solo después de que exista una evaluación para ese ámbito.",
@@ -544,6 +551,13 @@
     "fr": "Ce que vous lisez",
     "de": "Was du liest",
     "it": "Cosa leggi"
+  },
+  "Tenders and news are the items the workspace’s active scopes have found, highest relevance first. A tender has a summary and its requirements. Community posts and comments are the public discussion. A report is the stored writing of Tender Evaluation, the Proposal Manager or the News Report Agent. Reading a stored report does not spend a run. Asking for a new one does.": {
+    "pt": "Concursos e notícias são os itens que os âmbitos ativos do espaço de trabalho encontraram, primeiro os de maior relevância. Um concurso tem um resumo e os seus requisitos. As publicações e os comentários da comunidade são a discussão pública. Um relatório é o texto guardado da Avaliação de Concursos, do Gestor de Propostas ou do Agente de Relatório de Notícias. Ler um relatório guardado não gasta uma execução. Pedir um novo gasta.",
+    "es": "Las licitaciones y las noticias son los elementos que han encontrado los ámbitos activos del espacio de trabajo, primero los de mayor relevancia. Una licitación tiene un resumen y sus requisitos. Las publicaciones y los comentarios de la comunidad son la discusión pública. Un informe es el texto guardado de Tender Evaluation, del Proposal Manager o del News Report Agent. Leer un informe guardado no gasta una ejecución. Pedir uno nuevo sí.",
+    "fr": "Les appels d’offres et les actualités sont les éléments trouvés par les périmètres actifs de l’espace de travail, les plus pertinents d’abord. Un appel d’offres a un résumé et ses exigences. Les publications et les commentaires de la communauté sont la discussion publique. Un rapport est le texte enregistré de Tender Evaluation, du Proposal Manager ou du News Report Agent. Lire un rapport enregistré ne consomme pas d’exécution. En demander un nouveau en consomme une.",
+    "de": "Ausschreibungen und Nachrichten sind die Einträge, die die aktiven Scopes des Arbeitsbereichs gefunden haben, die relevantesten zuerst. Eine Ausschreibung hat eine Zusammenfassung und ihre Anforderungen. Beiträge und Kommentare der Community sind die öffentliche Diskussion. Ein Bericht ist der gespeicherte Text von Tender Evaluation, vom Proposal Manager oder vom News Report Agent. Einen gespeicherten Bericht zu lesen verbraucht keinen Lauf. Einen neuen anzufordern verbraucht einen.",
+    "it": "Gare e notizie sono gli elementi trovati dagli ambiti attivi dell’area di lavoro, prima quelli più rilevanti. Una gara ha un riassunto e i suoi requisiti. I post e i commenti della community sono la discussione pubblica. Un report è il testo salvato di Tender Evaluation, del Proposal Manager o del News Report Agent. Leggere un report salvato non consuma un’esecuzione. Chiederne uno nuovo sì."
   },
   "Tenders and news are the items the workspace’s active scopes have found, highest relevance first. A tender has a summary and, while the plan has requirement views left, its requirements. Community posts and comments are the public discussion. A report is the stored writing of Tender Evaluation, the Proposal Manager or the News Report Agent. Reading a stored report does not spend a run. Asking for a new one does.": {
     "pt": "Concursos e notícias são os itens que os âmbitos ativos do espaço de trabalho encontraram, primeiro os de maior relevância. Um concurso tem um resumo e, enquanto o plano tiver vistas de requisitos, os seus requisitos. As publicações e os comentários da comunidade são a discussão pública. Um relatório é o texto guardado da Avaliação de Concursos, do Gestor de Propostas ou do Agente de Relatório de Notícias. Ler um relatório guardado não gasta uma execução. Pedir um novo gasta.",
@@ -909,6 +923,13 @@
     "de": "Wozu: die Ausschreibungen lesen, die die aktiven Scopes des Arbeitsbereichs gefunden haben. Das startet keinen Agenten.",
     "it": "A cosa serve: leggere le gare trovate dagli ambiti attivi dell’area di lavoro. Questo non esegue un agente."
   },
+  "How: list_tenders takes optional workspace_id and limit (1 to 30, default 20), highest relevance first. get_tender takes the id from that list. You get the title, buyer, country, type, status, deadline, value, summary and requirements. An evaluation or a proposal brief is included only when the plan has that agent. Comments are included.": {
+    "pt": "Como: list_tenders recebe workspace_id opcional e limit (1 a 30, predefinição 20), primeiro a maior relevância. get_tender recebe o id dessa lista. Recebe o título, o comprador, o país, o tipo, o estado, o prazo, o valor, o resumo e os requisitos. Uma avaliação ou um brief de proposta só entra quando o plano tem esse agente. Os comentários entram.",
+    "es": "Cómo: list_tenders recibe workspace_id opcional y limit (1 a 30, predeterminado 20), primero la mayor relevancia. get_tender recibe el id de esa lista. Obtienes el título, el comprador, el país, el tipo, el estado, el plazo, el valor, el resumen y los requisitos. Una evaluación o un brief de propuesta solo entra cuando el plan tiene ese agente. Los comentarios entran.",
+    "fr": "Comment : list_tenders prend workspace_id facultatif et limit (1 à 30, 20 par défaut), les plus pertinents d’abord. get_tender prend l’id de cette liste. Vous obtenez le titre, l’acheteur, le pays, le type, l’état, l’échéance, la valeur, le résumé et les exigences. Une évaluation ou un brief de proposition n’est inclus que si le forfait a cet agent. Les commentaires sont inclus.",
+    "de": "So: list_tenders nimmt optionale workspace_id und limit (1 bis 30, Standard 20), die relevantesten zuerst. get_tender nimmt die Id aus dieser Liste. Du bekommst Titel, Auftraggeber, Land, Typ, Status, Frist, Wert, Zusammenfassung und Anforderungen. Eine Bewertung oder ein Angebotsbrief ist nur dabei, wenn der Tarif diesen Agenten hat. Kommentare sind dabei.",
+    "it": "Come: list_tenders riceve workspace_id facoltativo e limit (da 1 a 30, predefinito 20), prima la rilevanza più alta. get_tender riceve l’id di quell’elenco. Ottieni titolo, acquirente, paese, tipo, stato, scadenza, valore, riassunto e requisiti. Una valutazione o un brief di proposta è incluso solo quando il piano ha quell’agente. I commenti sono inclusi."
+  },
   "How: list_tenders takes optional workspace_id and limit (1 to 30, default 20), highest relevance first. get_tender takes the id from that list. You get the title, buyer, country, type, status, deadline, value and summary. Requirements are included while the plan has views left. Free counts 2 tender pages a month, Starter 10. Pro and Teams do not count them. Past the limit, the tender comes back with requirements null. An evaluation or a proposal brief is included only when the plan has that agent. Comments are included.": {
     "pt": "Como: list_tenders recebe workspace_id opcional e limit (1 a 30, predefinição 20), primeiro a maior relevância. get_tender recebe o id dessa lista. Recebe o título, o comprador, o país, o tipo, o estado, o prazo, o valor e o resumo. Os requisitos entram enquanto o plano tiver vistas. O Free conta 2 páginas de concurso por mês, o Starter 10. O Pro e o Teams não as contam. Passado o limite, o concurso volta com requirements null. Uma avaliação ou um brief de proposta só entra quando o plano tem esse agente. Os comentários entram.",
     "es": "Cómo: list_tenders recibe workspace_id opcional y limit (1 a 30, predeterminado 20), primero la mayor relevancia. get_tender recibe el id de esa lista. Obtienes el título, el comprador, el país, el tipo, el estado, el plazo, el valor y el resumen. Los requisitos entran mientras al plan le queden vistas. Free cuenta 2 páginas de licitación al mes, Starter 10. Pro y Teams no las cuentan. Pasado el límite, la licitación vuelve con requirements null. Una evaluación o un brief de propuesta solo entra cuando el plan tiene ese agente. Los comentarios entran.",
@@ -1027,6 +1048,27 @@
     "fr": "Un périmètre personnalisé appartient à un espace de travail. Free ne peut pas en créer. Starter en inclut 1 en plus de General, Pro en inclut 5, Teams est illimité.",
     "de": "Ein eigener Scope gehört zu einem Arbeitsbereich. Free kann keinen erstellen. Starter enthält 1 neben General, Pro enthält 5, Teams ist unbegrenzt.",
     "it": "Un ambito personalizzato appartiene a un’area di lavoro. Free non può crearne uno. Starter ne include 1 oltre General, Pro ne include 5, Teams è illimitato."
+  },
+  "Free: 1 workspace, 1 template scope besides General, no custom scopes, 1 evaluation a month, no proposal briefs, no news reports.": {
+    "pt": "Free: 1 espaço de trabalho, 1 âmbito modelo para além do General, sem âmbitos personalizados, 1 avaliação por mês, sem resumos de proposta, sem relatórios de notícias.",
+    "es": "Free: 1 espacio de trabajo, 1 ámbito de plantilla además de General, sin ámbitos personalizados, 1 evaluación al mes, sin resúmenes de propuesta, sin informes de noticias.",
+    "fr": "Free : 1 espace de travail, 1 périmètre modèle en plus de General, pas de périmètre personnalisé, 1 évaluation par mois, pas de note de proposition, pas de rapport d’actualité.",
+    "de": "Free: 1 Arbeitsbereich, 1 Vorlagen-Bereich neben General, keine eigenen Bereiche, 1 Bewertung im Monat, keine Angebotsbriefings, keine Nachrichtenberichte.",
+    "it": "Free: 1 area di lavoro, 1 ambito modello oltre a General, nessun ambito personalizzato, 1 valutazione al mese, nessun brief di offerta, nessun report sulle notizie."
+  },
+  "Starter: 1 workspace, 1 scope besides General that you can create, 5 evaluations a month, no proposal briefs, no news reports.": {
+    "pt": "Starter: 1 espaço de trabalho, 1 âmbito para além do General que pode criar, 5 avaliações por mês, sem resumos de proposta, sem relatórios de notícias.",
+    "es": "Starter: 1 espacio de trabajo, 1 ámbito además de General que puedes crear, 5 evaluaciones al mes, sin resúmenes de propuesta, sin informes de noticias.",
+    "fr": "Starter : 1 espace de travail, 1 périmètre en plus de General que vous pouvez créer, 5 évaluations par mois, pas de note de proposition, pas de rapport d’actualité.",
+    "de": "Starter: 1 Arbeitsbereich, 1 Bereich neben General, den du erstellen kannst, 5 Bewertungen im Monat, keine Angebotsbriefings, keine Nachrichtenberichte.",
+    "it": "Starter: 1 area di lavoro, 1 ambito oltre a General che puoi creare, 5 valutazioni al mese, nessun brief di offerta, nessun report sulle notizie."
+  },
+  "Pro: 1 workspace, 5 scopes besides General, 10 evaluations a month, 50 news reports a month, no proposal briefs.": {
+    "pt": "Pro: 1 espaço de trabalho, 5 âmbitos além do General, 10 avaliações por mês, 50 relatórios de notícias por mês, sem resumos de proposta.",
+    "es": "Pro: 1 espacio de trabajo, 5 ámbitos además de General, 10 evaluaciones al mes, 50 informes de noticias al mes, sin resúmenes de propuesta.",
+    "fr": "Pro : 1 espace de travail, 5 périmètres en plus de General, 10 évaluations par mois, 50 rapports d’actualité par mois, pas de note de proposition.",
+    "de": "Pro: 1 Arbeitsbereich, 5 Bereiche neben General, 10 Bewertungen im Monat, 50 Nachrichtenberichte im Monat, keine Angebotsbriefings.",
+    "it": "Pro: 1 area di lavoro, 5 ambiti oltre General, 10 valutazioni al mese, 50 report sulle notizie al mese, nessun brief di offerta."
   },
   "Free: 1 workspace, 1 template scope besides General, no custom scopes, no evaluations, no proposal briefs, no news reports, requirements on 2 tenders a month.": {
     "pt": "Free: 1 espaço de trabalho, 1 âmbito modelo para além do General, sem âmbitos personalizados, sem avaliações, sem resumos de proposta, sem relatórios de notícias, requisitos em 2 concursos por mês.",

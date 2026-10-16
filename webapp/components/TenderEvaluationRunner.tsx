@@ -12,8 +12,8 @@ const GIVE_UP_MS = 4 * 60_000;
  * The Tender Evaluation Agent's button. Starts the agent (or, if someone
  * already did, waits for it) and refreshes the page when the report is in.
  */
-export default function TenderEvaluationRunner({ opportunityId, scopeId, evaluatedAt, running, ready, lastError }: {
-  opportunityId: string; scopeId: string; evaluatedAt: string | null; running: boolean; ready: boolean; lastError: string | null;
+export default function TenderEvaluationRunner({ opportunityId, scopeId, evaluatedAt, running, lastError }: {
+  opportunityId: string; scopeId: string; evaluatedAt: string | null; running: boolean; lastError: string | null;
 }) {
   const router = useRouter();
   const t = useT();
@@ -50,16 +50,15 @@ export default function TenderEvaluationRunner({ opportunityId, scopeId, evaluat
   if (state === 'working') {
     return (
       <p className="report-progress">
-        <span className="dots" /> {t('The Tender Evaluation Agent is checking every requirement against your scope — about a minute.')}
+        <span className="dots" /> {t('The Tender Evaluation Agent is reading the tender and checking it against your scope. This takes a few minutes.')}
       </p>
     );
   }
   return (
     <div className="eval-run">
-      <button className="btn-agent" onClick={run} disabled={!ready}>
+      <button className="btn-agent" onClick={run}>
         {evaluatedAt ? t('Re-run evaluation') : t('Run Tender Evaluation Agent')}
       </button>
-      {!ready && <span className="eval-note">{t('Waits for the Tender Analysis Agent to read this tender.')}</span>}
       {message && <span className="form-msg err">{t('Couldn\'t run: {message}.', { message })}</span>}
     </div>
   );

@@ -67,7 +67,7 @@ description: Scores how well one public tender fits a Tender Town scope and expl
 
 Needs a signed-in account. Call \`get_account\` first.
 
-Free does not include Tender Evaluation. If \`limits.evaluations.limit\` is 0, say that it starts on Starter and stop. Do not call \`run_scope_agent\`.
+Every plan includes Tender Evaluation. Free includes 1 a month, Starter 5, Pro 10, and Teams is unlimited (\`limits.evaluations.limit\` is null). If the limit is 0, the plan does not include it. Stop and do not call \`run_scope_agent\`.
 
 ## Before a run
 

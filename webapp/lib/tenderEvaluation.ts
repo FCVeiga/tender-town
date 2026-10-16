@@ -59,7 +59,7 @@ export async function ensureEvaluation(opportunityId: string, scopeId: string, w
   if (!(await isAgentEnabled('tender_evaluation', scopeId))) return { status: 'error', message: 'the Tender Evaluation Agent is switched off for this scope' };
   const allowance = await agentRunAllowance('tender_evaluation');
   const t = await getT();
-  if (allowance.block === 'plan') return { status: 'error', message: t('Tender Evaluation is included from Starter.') };
+  if (allowance.block === 'plan') return { status: 'error', message: t('This plan does not include Tender Evaluation.') };
   if (allowance.block === 'quota') return { status: 'error', message: t('This workspace has used its {n} tender evaluations for this month.', { n: allowance.limit ?? 0 }) };
   const owner = await evaluationWorkspace(scopeId, workspaceId);
   if (workspaceId && !owner) {
@@ -71,6 +71,8 @@ export async function ensureEvaluation(opportunityId: string, scopeId: string, w
   }
   if (!(await lockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', LOCK_MINUTES))) return { status: 'running' };
   try {
+    const { ensureTenderAnalysis } = await import('@/lib/tenderAnalysis');
+    await ensureTenderAnalysis(opportunityId);
     await runEvaluation(opportunityId, scopeId, owner);
     if (allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'tender_evaluation');
     await unlockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', null);

@@ -2,8 +2,7 @@ import { NEWS_CATEGORIES, getActiveOpportunities, getNews, newsCategoryLabel, ti
 import { FeedItem, groupCoverage, newsScore } from '@/lib/feed';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy, stageOf } from '@/lib/publication';
-import { getScopeItems } from '@/lib/scopes';
+import { publicText } from '@/lib/publication';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import FeedCard from './FeedCard';
 import SectionTabs from './SectionTabs';
@@ -46,9 +45,7 @@ async function NewsBody({ view }: { view: View }) {
 
   // The agents' post for each story: substance-first English copy, and the
   // feed ranks behind the movement arrows.
-  const [newsScope, tenderScope, { data: posts }, { data: signalPosts }] = await Promise.all([
-    getScopeItems('news', true),
-    getScopeItems('tender', true),
+  const [{ data: posts }, { data: signalPosts }] = await Promise.all([
     all.length
       ? getSupabaseServerClient().from('feed_posts').select('post_id, rank, prev_rank').in('post_id', all.map((n) => `news:${n.news_id}`))
       : Promise.resolve({ data: [] as any[] }),
@@ -60,16 +57,12 @@ async function NewsBody({ view }: { view: View }) {
   const post = new Map((posts || []).map((p: any) => [p.post_id.slice(5), p]));
   const signalPost = new Map<string, any>();
   for (const p of signalPosts || []) if (!signalPost.has(p.opportunity_id)) signalPost.set(p.opportunity_id, p);
-  const aside = (summary: string | null, why: string | null, stage?: string | null) => {
-    const facts = publicText(plainText(summary || ''));
-    const note = shownWhy(facts, plainText(why || ''), publicScope(focus.current), stage);
-    return { body: facts || null, why: note && note !== facts ? note : null };
-  };
+  const bodyOf = (summary: string | null) => publicText(plainText(summary || '')) || null;
   const signalItems: FeedItem[] = signals.map((o): FeedItem => {
     const p = signalPost.get(o.opportunity_id);
     const at = new Date(o.publication_date || o.first_detected || now);
     const score = Math.max(o.opportunity_relevance_score ?? 30, 85);
-    const copy = aside(firstInLanguage(o.summary), tenderScope?.reason.get(o.opportunity_id) || null, stageOf(o));
+    const copy = { body: bodyOf(firstInLanguage(o.summary)) };
     return {
       key: `signal:${o.opportunity_id}`, kind: 'news', event: 'signal', href: `/news/signals/${o.opportunity_id}`,
       headline: titleOf(o), ...copy,
@@ -88,7 +81,7 @@ async function NewsBody({ view }: { view: View }) {
       const score = n.relevance_score ?? 30;
       const movement: FeedItem['movement'] = !p || p.rank == null ? 'same'
         : p.prev_rank == null || p.rank < p.prev_rank ? 'up' : p.rank > p.prev_rank ? 'down' : 'same';
-      const copy = aside(firstInLanguage(n.summary, n.excerpt), newsScope?.reason.get(n.news_id) || null);
+      const copy = { body: bodyOf(firstInLanguage(n.summary, n.excerpt)) };
       return {
         key: n.news_id, kind: 'news', event: 'news', href: `/news/${n.news_id}`,
         headline: titleOf(n), ...copy,

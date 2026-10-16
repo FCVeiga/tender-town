@@ -2,6 +2,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 import { getContext, getMembership, getWorkspaceContext } from '@/lib/accounts';
 import { getT } from '@/lib/i18n/server';
+import { planIncludes } from '@/lib/plans';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const mine = shared ? !!ctx : !!scope?.workspace_id && !!(await getMembership(scope.workspace_id));
   if (!mine) return new Response(t('Not found'), { status: 404 });
   const ws = shared ? ctx : await getWorkspaceContext(scope!.workspace_id);
-  if ((ws?.plan.proposalsPerMonth ?? 0) === 0) return new Response(t('Proposal briefs are included on Teams.'), { status: 403 });
+  if (!planIncludes(ws?.plan.proposalsPerMonth)) return new Response(t('Proposal briefs are included on Teams.'), { status: 403 });
   const wsId = shared ? ctx!.workspace.id : null;
   const [{ data: rows }, { data: o }] = await Promise.all([
     db.from('scope_evaluations').select('proposal_brief, workspace_id').eq('scope_id', scopeId).eq('opportunity_id', params.id),

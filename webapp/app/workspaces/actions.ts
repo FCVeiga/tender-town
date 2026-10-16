@@ -14,6 +14,7 @@ import { randomBytes } from 'crypto';
 import { siteOrigin } from '@/lib/auth';
 import { getT } from '@/lib/i18n/server';
 import { newsReportAllowance } from '@/lib/newsQuota';
+import { planIncludes } from '@/lib/plans';
 import { fileText } from '@/lib/fileText';
 import {
   friendlyError, parseSearchScope, tuneJson, tunePrompt, validateDocumentsConfig, validatePrompt, validateSearchConfig,
@@ -270,8 +271,8 @@ export async function setAgentEnabled(key: string, enabled: boolean, scopeId: st
   if (!t) return;
   if (key === 'news_report' && enabled && (await newsReportAllowance()).block === 'plan') return;
   const plan = (await getContext())?.plan;
-  if (key === 'tender_evaluation' && enabled && (plan?.evaluationsPerMonth ?? 0) === 0) return;
-  if (key === 'proposal_manager' && enabled && (plan?.proposalsPerMonth ?? 0) === 0) return;
+  if (key === 'tender_evaluation' && enabled && !planIncludes(plan?.evaluationsPerMonth)) return;
+  if (key === 'proposal_manager' && enabled && !planIncludes(plan?.proposalsPerMonth)) return;
   await t.write({ enabled });
   revalidatePath('/', 'layout');
 }

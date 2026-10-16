@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { newsCategoryLabel, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy } from '@/lib/publication';
+import { publicText } from '@/lib/publication';
 import NewsImage from '@/components/NewsImage';
 import NewsReportRunner from '@/components/NewsReport';
 import AgentAvatar from '@/components/AgentAvatar';
@@ -85,9 +85,6 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
   let domain = n.source_name;
   try { if (n.source_url) domain = new URL(n.source_url).hostname.replace(/^www\./, ''); } catch { /* keep the source name */ }
 
-  const { data: notes } = viewScopes.length
-    ? await supabase.from('scope_items').select('scope_id, reason').eq('item_type', 'news').eq('item_id', n.news_id).in('scope_id', viewScopes.map((sc) => sc.id))
-    : { data: [] as { scope_id: string; reason: string | null }[] };
   const origin = siteOrigin();
   const headline = titleOf(n);
   return (
@@ -131,17 +128,6 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
         {!n.summary_long && <p className="summary-pending">{t('Preview — the News Report Agent replaces this with the full summary.')}</p>}
         {paragraphs.length ? paragraphs.map((p: string, i: number) => <p key={i}>{p}</p>)
           : <p className="muted">{t('No English summary yet.')}</p>}
-        {(notes || []).map((note) => {
-          const scope = viewScopes.find((sc) => sc.id === note.scope_id);
-          const why = shownWhy(paragraphs.join('\n\n'), plainText(note.reason), publicScope(scope));
-          if (!why) return null;
-          return (
-            <p key={note.scope_id} className="feed-why">
-              <span>{viewScopes.length > 1 ? t('Why this matters to {scope}', { scope: scope?.name || '' }) : t('Why this matters')}</span>
-              {why}
-            </p>
-          );
-        })}
         {facts.length > 0 && (
           <ul className="key-facts">{facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
         )}

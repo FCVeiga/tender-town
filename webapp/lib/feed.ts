@@ -15,8 +15,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy, stageOf } from '@/lib/publication';
-import { focusedScope } from '@/lib/scopeFocus';
+import { publicText } from '@/lib/publication';
 import { getScopeItems } from '@/lib/scopes';
 import { getPlatformLanguage } from '@/lib/language';
 
@@ -49,7 +48,6 @@ export type FeedItem = {
   href: string;
   headline: string;
   body: string | null;
-  why: string | null;
   category: string;
   categoryLabel: string;
   kindLabel: string;
@@ -161,7 +159,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
       return {
         key: p.post_id, kind: p.kind, event: signal ? 'signal' : p.event,
         href: p.kind === 'news' ? `/news/${p.news_id}` : opportunityPath({ opportunity_id: p.opportunity_id || '', opportunity_type: signal ? 'signal' : opp?.opportunity_type }),
-        headline: p.headline, body: p.body, why: null,
+        headline: p.headline, body: p.body,
         category: signal ? 'signal' : (p.category || (p.kind === 'news' ? 'market' : 'rfp')),
         categoryLabel: p.kind === 'news' && !signal ? newsCategoryLabel(p.category) : oppCategoryLabel(signal ? 'signal' : p.category),
         kindLabel: p.kind === 'news' || signal ? 'News' : 'Tender',
@@ -197,7 +195,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
     const score = Math.max(tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED, SIGNAL_RELEVANCE);
     keptOpp.set(o.opportunity_id, {
       key: `signal:${o.opportunity_id}`, kind: 'opportunity', event: 'signal',
-      href: opportunityPath(o), headline: titleOf(o), body: plainText(o.summary || '') || null, why: null,
+      href: opportunityPath(o), headline: titleOf(o), body: plainText(o.summary || '') || null,
       category: 'signal', categoryLabel: oppCategoryLabel('signal'), kindLabel: 'News',
       country: o.country, at, score, combined: Math.round(score * decay(at, now)),
       movement: 'same', deadline: o.deadline, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
@@ -222,17 +220,14 @@ export async function getFeed(view: FeedView, now = new Date()) {
   return { items: groupCoverage(sorted), error };
 }
 
-/** The card title and summary are the published record. The scope's note stays separate. */
+/** The card title and summary are the published record. */
 async function publishedCopy(items: FeedItem[]) {
   const db = getSupabaseServerClient();
   const newsIds = items.map((item) => item.newsId).filter((id): id is string => !!id);
   const oppIds = items.map((item) => item.opportunityId).filter((id): id is string => !!id);
-  const [{ scope }, newsScope, tenderScope, newsRows, oppRows] = await Promise.all([
-    focusedScope(),
-    getScopeItems('news', true),
-    getScopeItems('tender', true),
+  const [newsRows, oppRows] = await Promise.all([
     newsIds.length ? db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, category').in('news_id', newsIds) : Promise.resolve({ data: [] as any[] }),
-    oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary, status, deadline, opportunity_type').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
+    oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
   ]);
   const news = new Map((newsRows.data || []).map((row: any) => [row.news_id, row]));
   const opps = new Map((oppRows.data || []).map((row: any) => [row.opportunity_id, row]));
@@ -241,11 +236,8 @@ async function publishedCopy(items: FeedItem[]) {
     const opp = item.opportunityId ? opps.get(item.opportunityId) : null;
     const row = story || opp;
     if (!row) continue;
-    const summary = publicText(plainText(firstInLanguage(row.summary, row.excerpt) || ''));
-    const why = shownWhy(summary, plainText((story ? newsScope : tenderScope)?.reason.get(story ? item.newsId! : item.opportunityId!) || ''), publicScope(scope), story ? null : stageOf(opp));
     item.headline = titleOf(row);
-    item.body = summary || null;
-    item.why = why && why !== summary ? why : null;
+    item.body = publicText(plainText(firstInLanguage(row.summary, row.excerpt) || '')) || null;
     if (story?.category === 'industry') item.categoryLabel = 'Industry news';
   }
 }

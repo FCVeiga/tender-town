@@ -1385,12 +1385,12 @@
     "de": "Ändere, was dieser Bereich verfolgt, wenn das die falschen Auftraggeber sind.",
     "it": "Cambia ciò che questo ambito segue se questi acquirenti non sono quelli giusti."
   },
-  "The Tender Evaluation Agent is checking every requirement against your scope — about a minute.": {
-    "pt": "O Agente de Avaliação de Concursos está a verificar cada requisito face ao seu âmbito — cerca de um minuto.",
-    "es": "El Agente de Evaluación de Licitaciones está comprobando cada requisito frente a tu ámbito (alrededor de un minuto).",
-    "fr": "L'Agent d'évaluation des appels d'offres vérifie chaque exigence par rapport à votre périmètre — environ une minute.",
-    "de": "Der Agent Ausschreibungsbewertung prüft jede Anforderung anhand deines Bereichs – etwa eine Minute.",
-    "it": "L'Agente di valutazione gare sta verificando ogni requisito rispetto al tuo ambito: circa un minuto."
+  "The Tender Evaluation Agent is reading the tender and checking it against your scope. This takes a few minutes.": {
+    "pt": "O Agente de Avaliação de Concursos está a ler o concurso e a compará-lo com o seu âmbito. Demora alguns minutos.",
+    "es": "El Agente de Evaluación de Licitaciones está leyendo la licitación y comparándola con tu ámbito. Tarda unos minutos.",
+    "fr": "L'Agent d'évaluation des appels d'offres lit l'avis et le compare à votre périmètre. Cela prend quelques minutes.",
+    "de": "Der Agent Ausschreibungsbewertung liest die Ausschreibung und vergleicht sie mit deinem Bereich. Das dauert ein paar Minuten.",
+    "it": "L'Agente di valutazione gare sta leggendo la gara e la confronta con il tuo ambito. Ci vogliono alcuni minuti."
   },
   "Assess my fit": {
     "pt": "Avalie a minha adequação",

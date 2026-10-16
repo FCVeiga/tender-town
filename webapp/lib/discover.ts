@@ -8,7 +8,7 @@ import { searchWords } from '@/lib/search';
 import { buyerOf, opportunityPath, titleOf, type Opportunity, type NewsItem } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicText, shownWhy, stageOf } from '@/lib/publication';
+import { publicText } from '@/lib/publication';
 import { getPlatformLanguage } from '@/lib/language';
 import { getCatalogScopes } from '@/lib/scopes';
 import { scopeSlug } from '@/lib/guestScope';
@@ -24,7 +24,6 @@ export type DiscoverHit = {
   country: string | null;
   deadline: string | null;
   summary: string;
-  why?: string | null;
   closed?: boolean;
   upcoming?: boolean;
 };
@@ -140,8 +139,8 @@ export async function marketBySlug(slug: string) {
   if (!scope) return null;
   const db = getSupabaseServerClient();
   const [tenderLinks, newsLinks] = await Promise.all([
-    db.from('scope_items').select('item_id, relevance, reason').eq('scope_id', scope.id).eq('item_type', 'tender').order('relevance', { ascending: false }).limit(80),
-    db.from('scope_items').select('item_id, relevance, reason').eq('scope_id', scope.id).eq('item_type', 'news').order('relevance', { ascending: false }).limit(20),
+    db.from('scope_items').select('item_id, relevance').eq('scope_id', scope.id).eq('item_type', 'tender').order('relevance', { ascending: false }).limit(80),
+    db.from('scope_items').select('item_id, relevance').eq('scope_id', scope.id).eq('item_type', 'news').order('relevance', { ascending: false }).limit(20),
   ]);
   const tenderIds = (tenderLinks.data || []).map((row) => row.item_id);
   const newsIds = (newsLinks.data || []).map((row) => row.item_id);
@@ -158,16 +157,10 @@ export async function marketBySlug(slug: string) {
       : Promise.resolve({ data: [] as NewsItem[] }),
   ]);
   const now = new Date();
-  const whyOf = new Map((tenderLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
-  const newsWhy = new Map((newsLinks.data || []).map((row) => [row.item_id, row.reason as string | null]));
-  const withWhy = (hit: DiscoverHit, reason: string | null | undefined, stage?: string | null) => {
-    const why = shownWhy(hit.summary, plainText(reason || ''), true, stage);
-    return { ...hit, why: why && why !== hit.summary ? why : null };
-  };
   const ranked = ((oppRows.data || []) as Opportunity[]).map((row) => {
     const live = (row.status === 'OPEN' || row.status === 'SIGNAL') && (!row.deadline || new Date(row.deadline) >= now);
     const upcoming = live && (row.status === 'SIGNAL' || row.opportunity_type === 'signal');
-    return withWhy({ ...oppHit(row), closed: !live, upcoming }, whyOf.get(row.opportunity_id), stageOf(row));
+    return { ...oppHit(row), closed: !live, upcoming };
   });
   const open = ranked.filter((hit) => !hit.closed && !hit.upcoming).slice(0, 20);
   const upcoming = ranked.filter((hit) => hit.upcoming).slice(0, 20);
@@ -175,7 +168,7 @@ export async function marketBySlug(slug: string) {
   const newsRank = new Map(newsIds.map((id, index) => [id, index]));
   const industry = new Map(((newsRows.data || []) as NewsItem[]).map((row) => [row.news_id, row.category === 'industry']));
   const news = ((newsRows.data || []) as NewsItem[])
-    .map((row) => withWhy(newsHit(row), newsWhy.get(row.news_id)))
+    .map((row) => newsHit(row))
     .sort((a, b) => {
       const id = (url: string) => url.split('/').pop() || '';
       return Number(!!industry.get(id(a.url))) - Number(!!industry.get(id(b.url)))

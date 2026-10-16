@@ -3,7 +3,7 @@ import HeartButton from './HeartButton';
 import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicText, shownWhy, stageOf } from '@/lib/publication';
+import { publicText, stageOf } from '@/lib/publication';
 import UpdateComment, { UpdateEvent } from './UpdateComment';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 
@@ -50,19 +50,15 @@ export function RingGradients() {
   );
 }
 
-export default function OpportunityRow({ o, countryName, updates = [], like, why, archived = false, open = true }: {
+export default function OpportunityRow({ o, countryName, updates = [], like, archived = false }: {
   o: Opportunity; countryName: string | null; updates?: UpdateEvent[];
   like?: { liked: boolean; signedIn: boolean };
-  why?: string | null;
   archived?: boolean;
-  /** False inside a custom scope, whose interpretation may name the company. */
-  open?: boolean;
 }) {
   const days = daysUntil(o.deadline);
   const stage = stageOf(o);
   const value = money(o.estimated_value, o.currency);
   const description = publicText(plainText(firstInLanguage(o.summary) || ''));
-  const note = shownWhy(description, plainText(why || ''), open, stage);
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
   const t = getTSync();
@@ -86,7 +82,6 @@ export default function OpportunityRow({ o, countryName, updates = [], like, why
         </div>
         <h2 className="opp-title">{titleOf(o)}</h2>
         {description && <p className="opp-desc">{description}</p>}
-        {note && note !== description && <p className="feed-why"><span>{t('Why this matters')}</span> {note}</p>}
         {buyer && <p className="opp-buyer" title={o.authority ?? ''}><span>{t('Buyer')}</span>{buyer}</p>}
       </div>
 

@@ -143,9 +143,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
               </div>
             </div>
           ))}
-        </section>
-
-        <section className="detail-block analysis-block" id="evaluation">
+          <div className="analysis-block" id="evaluation">
           <div className="agent-head">
             <AgentAvatar agent="tender_evaluation" working={phase === 'evaluating'} />
             <div className="agent-id">
@@ -169,12 +167,13 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
             </div>
           )}
           {phase === 'evaluating' ? (
-            <p className="report-progress"><span className="dots" /> {t('The Tender Evaluation Agent is checking every requirement against your scope — about a minute.')}</p>
+            <p className="report-progress"><span className="dots" /> {t('The Tender Evaluation Agent is reading the tender and checking it against your scope. This takes a few minutes.')}</p>
           ) : (
             <div className="eval-run">
               <button type="button" className="btn-agent" onClick={runEvaluation}>{evaluated ? t('Re-run evaluation') : t('Run Tender Evaluation Agent')}</button>
             </div>
           )}
+          </div>
         </section>
 
         <section className="detail-block analysis-block" id="proposal-brief">

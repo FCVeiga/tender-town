@@ -13,6 +13,7 @@ import FollowingSection from '@/components/settings/FollowingSection';
 import { getCountryOptions, getFollowedSourceIds, getSources } from '@/lib/sources';
 import { getT } from '@/lib/i18n/server';
 import { newsReportAllowance } from '@/lib/newsQuota';
+import { planIncludes } from '@/lib/plans';
 
 // The Config Agent runs inside this page's server actions: give it time.
 export const maxDuration = 300;
@@ -98,8 +99,8 @@ export default async function ScopePage({ params, searchParams }: { params: { id
           {AGENTS.filter((a) => SCOPE_AGENT_KEYS.includes(a.key)).map((a) => {
             const s = agents.get(a.key);
             const planLocked = (a.key === 'news_report' && allowance.block === 'plan')
-              || (a.key === 'tender_evaluation' && (ctx?.plan.evaluationsPerMonth ?? 0) === 0)
-              || (a.key === 'proposal_manager' && (ctx?.plan.proposalsPerMonth ?? 0) === 0);
+              || (a.key === 'tender_evaluation' && !planIncludes(ctx?.plan.evaluationsPerMonth))
+              || (a.key === 'proposal_manager' && !planIncludes(ctx?.plan.proposalsPerMonth));
             if (a.key === 'search') {
               return (
                 <AgentCard key={a.key} scopeId={scope.id} agent={a} enabled={s?.enabled ?? true} instructions={scope.searchScope}

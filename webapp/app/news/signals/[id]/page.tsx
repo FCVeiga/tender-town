@@ -5,17 +5,13 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { buyerOf, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy, stageOf } from '@/lib/publication';
+import { publicText } from '@/lib/publication';
 import HeartButton from '@/components/HeartButton';
 import CommentsSection from '@/components/social/CommentsSection';
 import { getLikes } from '@/lib/likes';
 import { getPlatformLanguage } from '@/lib/language';
-import { getViewScopes } from '@/lib/scopes';
 import { getLocale, getT } from '@/lib/i18n/server';
-import { getCurrentUser, siteOrigin } from '@/lib/auth';
-import { getContext, getPersonalAccount } from '@/lib/accounts';
-import { PLANS } from '@/lib/plans';
-import { UpgradeReport } from '@/components/UpgradeReport';
+import { siteOrigin } from '@/lib/auth';
 import { clip, pageMeta } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import ItemSources from '@/components/ItemSources';
@@ -54,20 +50,9 @@ export default async function SignalPage({ params }: { params: { id: string } })
 
   const summary = publicText(plainText(firstInLanguage(o.tender_summary, o.summary) || ''));
   const paragraphs = summary.split(/\n{2,}/).map((p: string) => p.trim()).filter(Boolean);
-  const user = await getCurrentUser();
-  const [{ scopes: viewScopes }, ctx, account] = await Promise.all([
-    getViewScopes(),
-    getContext(),
-    user ? getPersonalAccount(user.id) : Promise.resolve(null),
-  ]);
-  const plan = ctx?.plan ?? account?.plan ?? PLANS[0];
-  const summaryAllowed = plan.evaluationsPerMonth !== 0;
-  const [{ data: countryRow }, likes, { data: notes }] = await Promise.all([
+  const [{ data: countryRow }, likes] = await Promise.all([
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
     getLikes('tender', [o.opportunity_id]),
-    viewScopes.length
-      ? supabase.from('scope_items').select('scope_id, reason').eq('item_type', 'tender').eq('item_id', o.opportunity_id).in('scope_id', viewScopes.map((sc) => sc.id))
-      : Promise.resolve({ data: [] as { scope_id: string; reason: string | null }[] }),
   ]);
   let domain = '';
   try { if (o.official_url) domain = new URL(o.official_url).hostname.replace(/^www\./, ''); } catch { /* keep the raw link */ }
@@ -111,19 +96,6 @@ export default async function SignalPage({ params }: { params: { id: string } })
         </div>
         {paragraphs.length ? paragraphs.map((p: string, i: number) => <p key={i}>{p}</p>)
           : <p className="muted">{t('No English summary yet.')}</p>}
-        {summaryAllowed ? (notes || []).map((note) => {
-          const scope = viewScopes.find((sc) => sc.id === note.scope_id);
-          const why = shownWhy(summary, plainText(note.reason), publicScope(scope), stageOf(o));
-          if (!why) return null;
-          return (
-            <p key={note.scope_id} className="feed-why">
-              <span>{viewScopes.length > 1 ? t('Why this matters to {scope}', { scope: scope?.name || '' }) : t('Why this matters')}</span>
-              {why}
-            </p>
-          );
-        }) : (notes || []).some((note) => shownWhy(summary, plainText(note.reason), publicScope(viewScopes.find((sc) => sc.id === note.scope_id)), stageOf(o))) ? (
-          <UpgradeReport signedIn={!!user} title={t('See what might follow, which roles could matter, and what to watch.')} />
-        ) : null}
         <ItemSources type="tender" id={o.opportunity_id} skip={o.official_url} />
       </section>
 

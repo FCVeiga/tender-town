@@ -40,7 +40,7 @@ export const AGENTS: AgentDef[] = [
     face: { colors: ['#94A3B8', '#475569'], eyes: 'round', top: 'twin', mouth: 'o' },
   },
   {
-    key: 'tender_analysis', name: 'Tender Analysis Agent', runs: 'pipeline', prompt: 'prompts/tender_requirements.md', fineTune: true,
+    key: 'tender_analysis', name: 'Tender Analysis Agent', runs: 'on click', prompt: 'prompts/tender_requirements.md', fineTune: true,
     role: 'Writes each tender’s summary and its full list of requirements.',
     face: { colors: ['#A5B4FC', '#4F46E5'], eyes: 'wide', top: 'antenna', mouth: 'flat' },
   },

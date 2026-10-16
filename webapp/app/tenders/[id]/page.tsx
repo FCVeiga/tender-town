@@ -5,8 +5,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { Opportunity, buyerOf, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
-import { publicScope, publicText, shownWhy, stageOf, statedValue, vatTreatment } from '@/lib/publication';
-import { focusedScope } from '@/lib/scopeFocus';
+import { publicText, stageOf, statedValue, vatTreatment } from '@/lib/publication';
 import { DeadlineText, StatusTags } from '@/components/OpportunityCard';
 import { UpdateEvent } from '@/components/UpdateComment';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
@@ -26,8 +25,7 @@ import { agentRunAllowance } from '@/lib/agentQuota';
 import { getPlatformLanguage } from '@/lib/language';
 import { getLocale, getT } from '@/lib/i18n/server';
 import { UpgradeReport } from '@/components/UpgradeReport';
-import { allowRequirements } from '@/lib/tenderViews';
-import { PLANS } from '@/lib/plans';
+import { PLANS, planIncludes } from '@/lib/plans';
 import { clip, pageMeta } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import ItemSources from '@/components/ItemSources';
@@ -127,9 +125,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     getViewScopes(), getContext(), user ? getPersonalAccount(user.id) : Promise.resolve(null),
   ]);
   const plan = ctx?.plan ?? account?.plan ?? PLANS[0];
-  const evaluationAllowed = plan.evaluationsPerMonth !== 0;
-  const proposalsAllowed = plan.proposalsPerMonth !== 0;
-  const showRequirements = user ? await allowRequirements(user.id, plan.requirementViewsPerMonth) : false;
+  const evaluationAllowed = planIncludes(plan.evaluationsPerMonth);
+  const proposalsAllowed = planIncludes(plan.proposalsPerMonth);
   const locked = !ctx ? null : !ctx.canCustomize && ctx.isAdmin ? 'plan' : !ctx.isAdmin ? 'member' : null;
   const { data: scopeEvals } = await supabase.from('scope_evaluations').select('*').eq('opportunity_id', params.id)
     .in('scope_id', viewScopes.map((s) => s.id));
@@ -148,7 +145,6 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   };
   const summaryRaw = publicText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? '');
   const summaryPlain = plainText(summaryRaw);
-  const { scope: reading } = await focusedScope();
   const stage = stageOf(o);
   const stated = o.estimated_value ? null : statedValue(summaryRaw);
   const vat = vatTreatment(summaryRaw);
@@ -162,7 +158,6 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
     : stage === 'signal' ? 'SIGNAL'
     : stage === 'uncertain' ? 'UNVERIFIED'
     : o.status || 'OPEN';
-  const why = shownWhy(summaryRaw, plainText(scopeItems?.reason.get(params.id) || ''), publicScope(reading), stage);
   const [{ data: countryRow }, likes, agentFlags] = await Promise.all([
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
     getLikes('tender', [o.opportunity_id]),
@@ -170,7 +165,6 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   ]);
   const flags = new Map(agentFlags.map(([id, e, p]) => [id, { evaluator: e, proposer: p }]));
   const ownScopes = viewScopes.filter((s) => !s.isDefault && !s.catalog);
-  const freeViews = PLANS.find((p) => p.key === 'free')?.requirementViewsPerMonth;
   const [evalAllowance, companyDocRows] = await Promise.all([
     evaluationAllowed ? agentRunAllowance('tender_evaluation') : Promise.resolve(null),
     ownScopes.length
@@ -251,13 +245,10 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
       <TenderJump documents={docCount} />
 
       <div className="tender-sections">
-          {(summaryRaw || why) && (
+          {summaryRaw && (
             <section className="detail-block" id="summary">
               <h2>{t('Summary')}</h2>
-              {summaryRaw && <PostMarkdown>{summaryRaw}</PostMarkdown>}
-              {why && why !== summaryPlain && (
-                <p className="feed-why"><span>{t('Why this matters')}</span> {why}</p>
-              )}
+              <PostMarkdown>{summaryRaw}</PostMarkdown>
               {o.tender_summary
                 ? <p className="summary-note">{t('Tender Analysis Agent')} · {o.official_url?.includes('ted.europa.eu') ? t('from the notice and the tender documents') : t('from the notice and the tender page')}</p>
                 : summaryRaw ? <p className="summary-note">{t('Preliminary summary.')}</p> : null}
@@ -266,18 +257,9 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
           )}
 
           <section className="detail-block" id="requirements">
-            <h2>{evaluatedScopes.length && showRequirements ? t('Requirements & Match Status') : t('Requirements')} {showRequirements && reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
-            {!showRequirements ? (
-              <UpgradeReport
-                signedIn={!!user}
-                title={user ? 'A higher plan includes requirements on more tenders' : 'An account lets you read the requirements'}
-                note={user
-                  ? (plan.requirementViewsPerMonth == null ? undefined : t('Your plan includes requirements on {n} tenders a month.', { n: plan.requirementViewsPerMonth }))
-                  : (typeof freeViews === 'number' ? t('A free account includes requirements on {n} tenders a month.', { n: freeViews }) : undefined)}
-                actionLabel={user ? undefined : 'Create a free account'}
-              />
-            ) : reqs.length === 0 ? (
-              <p className="muted">{o.tender_analysed_at ? t('None published yet.') : t('Pending analysis.')}</p>
+            <h2>{evaluatedScopes.length ? t('Requirements & Match Status') : t('Requirements')} {reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
+            {reqs.length === 0 ? (
+              o.tender_analysed_at ? <p className="muted">{t('None published yet.')}</p> : null
             ) : REQ_GROUPS.map((g) => ({ ...g, rows: reqs.filter((r) => groupOf(r) === g.key) })).filter((g) => g.rows.length).map((g) => (
               <div key={g.key} className="req-category-block">
                 <h3 className="req-category-title">{t(g.label)} <span className="uc-count">{g.rows.length}</span></h3>
@@ -342,30 +324,29 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                 </ul>
               </div>
             )}
-          </section>
-
-          <section className="detail-block analysis-block" id="evaluation">
-            {evaluationAllowed && viewScopes.length > 0 ? viewScopes.map((scope, index) => (
-              <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
-                row={evalOf(scope.id)} showName={viewScopes.length > 1 || !own} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
-                evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
-                ready={!!o.tender_summary || reqs.length > 0} analysedAt={o.tender_analysed_at ?? null}
-                lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed'}
-                contextHref={scopeCanRun(scope) ? contextHrefOf(scope) : null}
-                runsLeft={index === 0 ? runsLeft : null}
-                runsLimit={index === 0 && evalAllowance?.limit != null && !evalAllowance.block ? evalAllowance.limit : null}
-                quotaLimit={index === 0 && evalAllowance?.block === 'quota' ? evalAllowance.limit : null} />
-            )) : (
-              <>
-                <div className="agent-head">
-                  <AgentAvatar agent="tender_evaluation" />
-                  <div className="agent-id"><h2>{t('Tender Evaluation')}</h2></div>
-                </div>
-                <p className="agent-intro">{compare}</p>
-                {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
-                <UpgradeReport signedIn={!!user} title="Add your company information to assess your fit" note={t('This reads the tender and scores your fit. It needs an account, your company information, and a plan that includes evaluations.')} />
-              </>
-            )}
+            <div className="analysis-block" id="evaluation">
+              {evaluationAllowed && viewScopes.length > 0 ? viewScopes.map((scope, index) => (
+                <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
+                  row={evalOf(scope.id)} showName={viewScopes.length > 1 || !own} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
+                  evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
+                  analysedAt={o.tender_analysed_at ?? null}
+                  lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed'}
+                  contextHref={scopeCanRun(scope) ? contextHrefOf(scope) : null}
+                  runsLeft={index === 0 ? runsLeft : null}
+                  runsLimit={index === 0 && evalAllowance?.limit != null && !evalAllowance.block ? evalAllowance.limit : null}
+                  quotaLimit={index === 0 && evalAllowance?.block === 'quota' ? evalAllowance.limit : null} />
+              )) : (
+                <>
+                  <div className="agent-head">
+                    <AgentAvatar agent="tender_evaluation" />
+                    <div className="agent-id"><h2>{t('Tender Evaluation')}</h2></div>
+                  </div>
+                  <p className="agent-intro">{compare}</p>
+                  {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
+                  <UpgradeReport signedIn={!!user} title="Add your company information to assess your fit" note={t('This reads the tender and scores your fit. It needs an account, your company information, and a plan that includes evaluations.')} />
+                </>
+              )}
+            </div>
           </section>
 
           <section className="detail-block analysis-block" id="proposal-brief">

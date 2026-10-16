@@ -75,7 +75,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
       if (!post) return [];
       return [{
         key: `blog:${post.slug}`, kind: 'news', event: 'liked', href: `/blog/${post.slug}`,
-        headline: post.title, body: post.description, why: null, category: 'blog', categoryLabel: 'Blog', kindLabel: 'Blog',
+        headline: post.title, body: post.description, category: 'blog', categoryLabel: 'Blog', kindLabel: 'Blog',
         country: null, at, score: 0, combined: 0, movement: 'same', deadline: null, isNew: false,
         image: post.image,
       }];
@@ -86,7 +86,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
       const closed = o.deadline && new Date(o.deadline).getTime() < now;
       return [{
         key: `tender:${o.opportunity_id}`, kind: o.opportunity_type === 'signal' ? 'news' : 'opportunity', event: 'liked', href: opportunityPath(o),
-        headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || '').split(/\n{2,}/)[0] || null, why: null,
+        headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || '').split(/\n{2,}/)[0] || null,
         category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'News' : 'Tender',
         country: o.country, at, score: o.opportunity_relevance_score ?? 0, combined: o.opportunity_relevance_score ?? 0,
         movement: 'same', deadline: closed ? null : o.deadline, isNew: false,
@@ -97,7 +97,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
     if (!n) return [];
     return [{
       key: `news:${n.news_id}`, kind: 'news', event: 'liked', href: `/news/${n.news_id}`,
-      headline: titleOf(n), body: publicText(firstInLanguage(n.summary) || ''), why: null, category: n.category || 'market',
+      headline: titleOf(n), body: publicText(firstInLanguage(n.summary) || ''), category: n.category || 'market',
       categoryLabel: newsCategoryLabel(n.category), kindLabel: 'News', country: n.region && n.region !== 'EU / International' ? n.region : null,
       at, score: n.relevance_score ?? 0, combined: n.relevance_score ?? 0, movement: 'same', deadline: null, isNew: false,
       image: n.image_url,

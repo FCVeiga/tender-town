@@ -79,7 +79,6 @@ function Hit({ hit }: { hit: DiscoverHit }) {
         </div>
         <div className="news-title">{hit.title}</div>
         {hit.summary && <div className="news-excerpt">{hit.summary}</div>}
-        {hit.why && <p className="feed-why"><span>{t('Why this matters')}</span> {hit.why}</p>}
         {meta && <div className="list-row-meta">{meta}</div>}
       </div>
     </Link>

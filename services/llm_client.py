@@ -5,6 +5,7 @@ Shared Anthropic API client for every agent that needs an LLM call
 import json
 import os
 import re
+import threading
 from typing import Optional
 
 try:
@@ -48,14 +49,50 @@ def _extract_json(text: str) -> dict:
         )
 
 
+# Haiku 4.5 caches a prefix only at 4,096 tokens or more. A shorter prompt is
+# billed as normal input and the API returns no error. Callers that repeat one
+# system prompt (triage, one scope at a time) mark it anyway.
+_cache_lock = threading.Lock()
+_cache_usage = {"creation": 0, "read": 0}
+
+
+def take_cache_usage() -> dict:
+    """Tokens written to and read from the prompt cache since the last take."""
+    with _cache_lock:
+        snap = dict(_cache_usage)
+        _cache_usage["creation"] = 0
+        _cache_usage["read"] = 0
+    return snap
+
+
+def _note_cache(usage) -> None:
+    if usage is None:
+        return
+    created = getattr(usage, "cache_creation_input_tokens", 0) or 0
+    read = getattr(usage, "cache_read_input_tokens", 0) or 0
+    with _cache_lock:
+        _cache_usage["creation"] += created
+        _cache_usage["read"] += read
+
+
 def call_llm_json(system_prompt: str, user_content: str,
-                   model: str = CHEAP_MODEL, max_tokens: int = 1024) -> dict:
+                   model: str = CHEAP_MODEL, max_tokens: int = 1024,
+                   cache_system: bool = False) -> dict:
     client = _get_client()
+    system = system_prompt
+    if cache_system:
+        system = [{
+            "type": "text",
+            "text": system_prompt,
+            "cache_control": {"type": "ephemeral"},
+        }]
     response = client.messages.create(
         model=model, max_tokens=max_tokens,
-        system=system_prompt,
+        system=system,
         messages=[{"role": "user", "content": user_content}],
     )
+    if cache_system:
+        _note_cache(getattr(response, "usage", None))
     text = "".join(block.text for block in response.content if block.type == "text")
     return _extract_json(text)
 

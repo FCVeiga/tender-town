@@ -26,7 +26,6 @@ const ROWS: { label: string; cell: (plan: Plan, t: (key: string, vars?: { n: num
   { label: 'Scopes besides General', cell: (p, t) => (p.scopes >= 1000 ? t('Unlimited') : !p.customize ? t('1 template') : p.scopes === 1 ? t('1 you can create') : String(p.scopes)) },
   { label: 'Members', cell: (p, t) => (p.members == null ? t('Unlimited') : String(p.members)) },
   { label: 'Agent updates', cell: (p, t) => t(CADENCE[p.runsPerDay] ?? `${p.runsPerDay}`) },
-  { label: 'Tender requirements', cell: (p, t) => (p.requirementViewsPerMonth == null ? t('Every tender') : t('{n} tenders a month', { n: p.requirementViewsPerMonth })) },
   { label: 'Tender Evaluation', cell: (p, t) => monthCount(p.evaluationsPerMonth, t) },
   { label: 'Proposal briefs', cell: (p, t) => monthCount(p.proposalsPerMonth, t) },
   { label: 'News Report Agent', cell: (p, t) => monthCount(p.newsReportsPerMonth, t) },

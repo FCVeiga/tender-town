@@ -191,16 +191,17 @@ def search_config(scope=None) -> dict:
     return (s.search if s else None) or {}
 
 
-def prompt_for(prompt_filename: str, default: str, scope=None) -> str:
+def prompt_for(prompt_filename: str, default: str, scope=None, use_override: bool = True) -> str:
     """The agent's prompt: the scope's fine-tuned version for scope agents (or
     the platform's for platform agents), with the scope's relevance rules,
-    topic, name and the platform language filled in."""
+    topic, name and the platform language filled in. use_override=False keeps
+    `default` (the triage copy pass) and still fills the scope's rules."""
     key = next((k for k, p in AGENT_PROMPTS.items() if p.endswith("/" + prompt_filename)), None)
     s = scope or default_scope()
     if key in SCOPE_AGENTS:
-        prompt = (s.overrides.get(key) if s else None) or default
+        prompt = ((s.overrides.get(key) if s and use_override else None) or default)
     else:
-        prompt = _state["overrides"].get(key) or default
+        prompt = (_state["overrides"].get(key) if use_override else None) or default
     cfg = search_config(s)
     if cfg.get("mode") == "generic":
         # No industry: platform agents (feed posts, …) write for a general audience.

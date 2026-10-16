@@ -61,60 +61,26 @@ opportunity relevance, job postings.
   "eudi_relevance": "DIRECT | ADJACENT | STRATEGIC | LOW | NONE",
   "commercial_relevance": "HIGH | MEDIUM | LOW | NONE",
   "type": "TENDER | RFI | GRANT | CONSORTIUM_CALL | PILOT | PIPELINE_SIGNAL | NEWS_ONLY | FALSE_POSITIVE",
-  "reason": "the public interpretation. See Reason below. Do not repeat the summary.",
   "deep_analysis_required": true,
   "country": "ISO 3166-1 alpha-2 code of the buying/issuing country, or null if multi-country/unclear",
   "authority": "contracting authority / funder / organisation name, or null",
   "deadline": "YYYY-MM-DD submission deadline if stated, else null",
-  "summary": "two or three plain sentences of the facts, the same story as title_en. No verdict on whether it is an opportunity",
   "news_category": "regulation | industry | market | null  (only for NEWS_ONLY — see below)",
   "importance": 0,
-  "language": "ISO 639-1 code of the input's language, e.g. de, el, fr, en",
-  "title_en": "the title in clear {language} (translated if needed; drop CPV/category boilerplate and reference numbers)"
+  "language": "ISO 639-1 code of the input's language, e.g. de, el, fr, en"
 }
 ```
 
 Only fill `country`, `authority` and `deadline` from what the input actually
 says — never guess. Use null when unknown.
 
-## Reason
-The summary states the facts. The reason is a separate interpretation, shown
-to readers as why the item matters. It must not contradict the summary on a
-date, on whether something is still planned or already done, on whether a
-procurement is open, or on who the buyer is. If you are unsure, leave that
-point out. An interpretation that contradicts the summary is discarded.
+`language` is the ISO 639-1 code of the input. Keep `authority` as the official
+name, followed by a {language} rendering in parentheses when it isn't already
+in {language}, e.g. "Υφυπουργείο Ψηφιακής Πολιτικής (Deputy Ministry of Digital
+Policy)".
 
-Do not name a company the radar is configured for, and do not write "for
-{company}". The summary is public on every market.
-
-Match the reason to the record's stage. The stage comes from the deadline and
-the notice, not from how interesting the story is:
-- Open tender, with a bid deadline still ahead: the current bidding opportunity.
-- Upcoming signal: a plan, study or prior notice with no bid open yet. Say what
-  may follow and what to monitor. Do not call it an open tender or a closed tender.
-- Closed or awarded, or a bid deadline already past: the historical value, what
-  the buyer has purchased, or a possible renewal. Do not call it live, active or open.
-- Status not confirmed: say the bidding status is not confirmed. Do not state
-  that bidding is open or closed.
-
-When the item is only background, with no buyer preparing a purchase, write
-one sentence on what it is. Do not force it into procurement language.
-
-Otherwise write three short sentences, and do not repeat the summary:
-- Commercial implication: what work might follow, marked as an inference
-  ("This suggests", "A later contract could"). Do not state an inference as a fact.
-- Relevant capabilities: which supplier or partner roles could matter. Name
-  roles, not companies.
-- Next step: the announcement, consultation or procurement channel to monitor,
-  or the evidence that is still missing.
-
-## Languages
-The input may be in any language (procurement notices usually are in the
-buyer's language). Read and judge it in that language, but write every text
-field — `reason`, `summary`, `title_en` (the title, in {language}) — in
-{language}. Keep `authority` as the official name, followed by a {language}
-rendering in parentheses when it isn't already in {language}, e.g. "Υφυπουργείο Ψηφιακής Πολιτικής (Deputy Ministry of
-Digital Policy)".
+Do not write `summary`, `reason`, or `title_en`. A later pass writes those,
+and only for a record that will be shown.
 
 ## News categories (NEWS_ONLY only)
 - regulation: laws, implementing acts, regulators' decisions, certification
@@ -137,11 +103,3 @@ with opportunities, so use the same bar for both:
 - 30-59: useful context — surveys, analysis, smaller pilots, regional news.
 - 0-29: marginal — generic explainers, opinion, tangential identity news, and industry background with no buyer who might procure.
 <!-- /importance -->
-
-## Dates that sources get wrong
-If the input mentions a member state offering or providing a European Digital
-Identity Wallet by the end of 2026, the date is 24 Dec 2026 (Article 5a(1) of
-Regulation (EU) 2024/1183: 24 months after the implementing acts entered into
-force on 24 Dec 2024). Do not write 31 Dec 2026. Germany's d-you wallet
-launches in January 2027, not January 2026. If you cannot tell which date a
-sentence means, leave the day out.
