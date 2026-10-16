@@ -138,7 +138,6 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   const evaluatedScopes = user ? viewScopes.filter((s) => evalOf(s.id)?.evaluation) : [];
   const scopeItems = await getScopeItems('tender');
   const relevance = scopeItems?.relevance.get(params.id) ?? o.opportunity_relevance_score;
-  const fits = evaluatedScopes.map((s) => evalOf(s.id).evaluation.fit_score as number);
   const matchOf = (r: any, scopeId: string) => {
     const rows = (r.requirement_matches || []).filter((m: any) => m.scope_id === scopeId);
     return (wsId && rows.find((m: any) => m.workspace_id === wsId)) || rows.find((m: any) => !m.workspace_id);
@@ -174,6 +173,12 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   const withContext = new Set((companyDocRows.data || []).map((row: { scope_id: string }) => row.scope_id));
   const contextHrefOf = (scope: { id: string; isDefault: boolean; catalog: boolean; instructions: string | null }) =>
     (!scope.isDefault && !scope.catalog && !scope.instructions?.trim() && !withContext.has(scope.id)) ? `/workspaces/scopes/${scope.id}` : null;
+  const readyScopes = user ? viewScopes.filter((s) => {
+    const row = evalOf(s.id);
+    return !!(row?.evaluation || row?.evaluated_at);
+  }) : [];
+  const fitScopes = readyScopes.filter((s) => evalOf(s.id)?.evaluation && !contextHrefOf(s));
+  const fits = fitScopes.map((s) => evalOf(s.id).evaluation.fit_score as number);
   const runsLeft = evalAllowance && evalAllowance.limit != null && !evalAllowance.block ? Math.max(0, evalAllowance.limit - evalAllowance.used) : null;
   const notices = ((documents || []) as Doc[])
     .filter((d) => d.document_type === 'CONTRACT_NOTICE' || d.document_type === 'CORRIGENDUM')
@@ -275,9 +280,9 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
         )}
         fit={(
           <section className="detail-block" id="requirements">
-            {evaluatedScopes.length > 0 && (
+            {readyScopes.length > 0 && (
               <>
-                <h2>{t('Requirements & Match Status')} {reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
+                <h2>{fitScopes.length ? t('Requirements & Match Status') : t('Requirements')} {reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
                 {reqs.length === 0 ? (
                   <p className="muted">{t('None published yet.')}</p>
                 ) : REQ_GROUPS.map((g) => ({ ...g, rows: reqs.filter((r) => groupOf(r) === g.key) })).filter((g) => g.rows.length).map((g) => (
@@ -285,7 +290,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                     <h3 className="req-category-title">{t(g.label)} <span className="uc-count">{g.rows.length}</span></h3>
                     <div className="req-table-wrap">
                       <table className="req-table">
-                        <thead><tr><th>{t('Requirement')}</th><th>{t('Threshold')}</th><th>{t('Mandatory')}</th>{evaluatedScopes.map((sc) => <th key={sc.id}>{evaluatedScopes.length > 1 ? `${t('Match')} · ${sc.name}` : t('Match')}</th>)}</tr></thead>
+                        <thead><tr><th>{t('Requirement')}</th><th>{t('Threshold')}</th><th>{t('Mandatory')}</th>{fitScopes.map((sc) => <th key={sc.id}>{fitScopes.length > 1 ? `${t('Match')} · ${sc.name}` : t('Match')}</th>)}</tr></thead>
                         <tbody>
                           {g.rows.map((r) => (
                             <tr key={r.requirement_id}>
@@ -297,7 +302,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                               </td>
                               <td>{firstInLanguage(r.threshold) ?? ''}</td>
                               <td>{r.mandatory ? <span className="mand-yes">{t('Mandatory')}</span> : <span className="mand-no">{t('Optional')}</span>}</td>
-                              {evaluatedScopes.map((sc) => {
+                              {fitScopes.map((sc) => {
                                 const m = matchOf(r, sc.id);
                                 return (
                                   <td key={sc.id}>
@@ -365,7 +370,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                   </div>
                   <p className="agent-intro">{compare}</p>
                   {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
-                  <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run the agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
+                  <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
                 </>
               )}
             </div>
@@ -380,17 +385,17 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
             <p className="agent-intro">{briefLead}</p>
             {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
             {!proposalsAllowed ? (
-              <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run this agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
+              <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
             ) : (
               <>
-                {!evaluatedScopes.length && <p><a className="btn primary" href="#evaluation">{t('Assess my fit first')}</a></p>}
+                {!evaluatedScopes.length && <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>}
                 {viewScopes.filter((scope) => evalOf(scope.id)?.evaluation).map((scope) => (
                   <ProposalSlot key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
                     row={evalOf(scope.id)} showName={viewScopes.length > 1 || !own} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
                     proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed} />
                 ))}
                 {evaluatedScopes.length > 0 && viewScopes.some((scope) => !evalOf(scope.id)?.evaluation) && (
-                  <p><a className="btn primary" href="#evaluation">{t('Assess my fit first')}</a></p>
+                  <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>
                 )}
               </>
             )}

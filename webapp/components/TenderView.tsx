@@ -59,7 +59,7 @@ export default function TenderView({ documentCount, summary, fit, brief, documen
 
   const tabs: { id: TenderPanel; hash: string; label: string }[] = [
     { id: 'summary', hash: 'summary', label: t('Summary') },
-    { id: 'fit', hash: 'evaluation', label: t('Assess my fit') },
+    { id: 'fit', hash: 'evaluation', label: t('Requirements & fit') },
     { id: 'brief', hash: 'proposal-brief', label: t('Prepare a brief') },
     { id: 'documents', hash: 'documents', label: documentCount > 0 ? t('Documents ({n})', { n: documentCount }) : t('Documents') },
   ];

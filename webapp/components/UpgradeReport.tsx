@@ -11,6 +11,17 @@ export function UpgradeReport({ note, title, signedIn = true, actionLabel, butto
   const t = useT();
   const path = usePathname();
   const showTitle = !buttonOnly && !note;
+  if (buttonOnly) {
+    return (
+      <div className="eval-run">
+        {signedIn ? (
+          <Link href="/settings/account?plan=1" className="btn primary">{t(actionLabel || 'Upgrade plan')}</Link>
+        ) : (
+          <Link href={loginHref || `/signup?next=${encodeURIComponent(path || '/')}`} className="btn primary">{t(actionLabel || 'Create an account')}</Link>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="profile-empty">
       {!buttonOnly && note && <p className="agent-intro">{note}</p>}

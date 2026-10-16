@@ -2,6 +2,7 @@ import Link from 'next/link';
 import AgentAvatar from '@/components/AgentAvatar';
 import TenderEvaluationRunner from '@/components/TenderEvaluationRunner';
 import ProposalRunner from '@/components/ProposalRunner';
+import RunFitAnalysis from '@/components/RunFitAnalysis';
 import { firstInLanguage } from '@/lib/english';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 
@@ -28,7 +29,7 @@ type ScopeEvalProps = {
 
 function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, signedIn: boolean, locked: 'plan' | 'member' | null, loginLabel: string) {
   if (!signedIn) {
-    return <p className="eval-run"><Link className="btn primary" href={`/login?next=/tenders/${opportunityId}`}>{t(loginLabel)}</Link></p>;
+    return <div className="eval-run"><Link className="btn primary" href={`/login?next=/tenders/${opportunityId}`}>{t(loginLabel)}</Link></div>;
   }
   if (locked === 'member') return <p className="muted">{t('Run by your workspace\u2019s admins.')}</p>;
   if (locked === 'plan') return <p className="muted"><Link href="/settings/account?plan=1">{t('Upgrade')}</Link> {t('to evaluate tenders against your own scope\u2019s context.')}</p>;
@@ -40,6 +41,8 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, canRu
   const t = getTSync();
   const evaluation = (row?.evaluation ?? null) as Evaluation | null;
   const running = !!row?.evaluation_started_at && Date.now() - new Date(row.evaluation_started_at).getTime() < 5 * 60_000;
+  const analysed = !!row?.evaluated_at || !!evaluation;
+  const showReport = !!evaluation && !contextHref;
 
   return (
     <div className="eval-scope">
@@ -49,14 +52,14 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, canRu
           <h2>{t('Tender Evaluation')}</h2>
           {row?.evaluated_at && <span className="agent-name">{t('report from {date}', { date: fmtDate(row.evaluated_at) })}</span>}
         </div>
-        {evaluation && <span className={`verdict eval-${evaluation.verdict}`}>{VERDICTS[evaluation.verdict] ? t(VERDICTS[evaluation.verdict]) : evaluation.verdict}</span>}
+        {showReport && <span className={`verdict eval-${evaluation.verdict}`}>{VERDICTS[evaluation.verdict] ? t(VERDICTS[evaluation.verdict]) : evaluation.verdict}</span>}
       </div>
       {lead && <p className="agent-intro">{lead}</p>}
       {archived && <p className="summary-note">{t('This tender is archived.')}</p>}
-      {evaluation && analysedAt && row?.evaluated_at && analysedAt > row.evaluated_at && (
+      {showReport && analysedAt && row?.evaluated_at && analysedAt > row.evaluated_at && (
         <p className="summary-note">{t('Requirements changed since this report — re-run it.')}</p>
       )}
-      {evaluation && (
+      {showReport && (
         <div className="eval-report">
           <div className="eval-score"><span className="eval-score-num">{evaluation.fit_score}</span><span className="eval-score-label">{t('Fit score')}</span></div>
           {firstInLanguage(evaluation.take) && <p className="analysis-take">{evaluation.take}</p>}
@@ -72,19 +75,19 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, canRu
           )}
         </div>
       )}
-      {contextHref && <p className="eval-note"><Link href={contextHref}>{t('Add your company information')}</Link></p>}
       {!evaluatorOn ? <p className="muted">{t('Agent off for this scope.')}</p>
         : quotaLimit != null ? (
           <p className="muted">{t('This workspace has used its {n} tender evaluations for this month.', { n: quotaLimit })} <Link href="/settings/account?plan=1">{t('Upgrade')}</Link></p>
         )
-        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked, 'Log in to run the agent')
+        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked, 'Log in to run agent')
+          : contextHref && analysed ? <RunFitAnalysis href={contextHref} />
           : (
             <>
               {runsLeft != null && runsLimit != null && (
                 <p className="eval-note">{t('{n} of {limit} left this month.', { n: runsLeft, limit: runsLimit })}</p>
               )}
               <TenderEvaluationRunner opportunityId={opportunityId} scopeId={scope.id} evaluatedAt={row?.evaluated_at ?? null} running={running}
-                lastError={row?.evaluation_error ?? null} />
+                lastError={row?.evaluation_error ?? null} label={analysed && !evaluation ? 'Run Fit analysis' : 'Run agent'} />
             </>
           )}
     </div>
@@ -107,7 +110,7 @@ export function ProposalSlot({ opportunityId, scope, row, showName, canRun, sign
         </div>
       )}
       {!proposerOn ? <p className="muted">{t('Agent off for this scope.')}</p>
-        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked, 'Log in to run this agent')
+        : !canRun ? blockedCopy(t, opportunityId, signedIn, locked, 'Log in to run agent')
           : <ProposalRunner opportunityId={opportunityId} scopeId={scope.id} proposalAt={row?.proposal_at ?? null} running={proposing} lastError={row?.proposal_error ?? null} />}
     </div>
   );

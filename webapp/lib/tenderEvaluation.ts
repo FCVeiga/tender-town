@@ -33,6 +33,16 @@ async function systemPrompt(scopeId: string, workspaceId: string | null) {
   return prompt.replace('{company_brief}', brief);
 }
 
+/** A custom scope with no instructions and no company documents has nothing to score against. */
+async function hasCompanyContext(scopeId: string) {
+  const scope = await getScope(scopeId);
+  if (!scope || scope.isDefault || scope.catalog) return true;
+  if (scope.instructions?.trim()) return true;
+  const { count } = await getSupabaseServerClient().from('company_documents').select('id', { count: 'exact', head: true })
+    .eq('scope_id', scopeId).is('workspace_id', null);
+  return (count ?? 0) > 0;
+}
+
 /** A shared scope uses one evaluation until this workspace has its own documents. */
 async function evaluationWorkspace(scopeId: string, workspaceId: string | null): Promise<string | null> {
   if (!workspaceId) return null;
@@ -73,6 +83,17 @@ export async function ensureEvaluation(opportunityId: string, scopeId: string, w
   try {
     const { ensureTenderAnalysis } = await import('@/lib/tenderAnalysis');
     await ensureTenderAnalysis(opportunityId);
+    if (!(await hasCompanyContext(scopeId))) {
+      const db = getSupabaseServerClient();
+      let mark = db.from('scope_evaluations').update({
+        evaluated_at: new Date().toISOString(), evaluation_error: null,
+      }).eq('scope_id', scopeId).eq('opportunity_id', opportunityId);
+      mark = owner ? mark.eq('workspace_id', owner) : mark.is('workspace_id', null);
+      const { error } = await mark;
+      if (error) throw new Error(error.message);
+      await unlockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', null);
+      return { status: 'done' };
+    }
     await runEvaluation(opportunityId, scopeId, owner);
     if (allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'tender_evaluation');
     await unlockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', null);

@@ -150,7 +150,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
               {analysis && allowance.block !== 'plan' && <span className={`verdict ${analysis.verdict}`} title={VERDICTS[analysis.verdict] ? t(VERDICTS[analysis.verdict].note) : undefined}>{VERDICTS[analysis.verdict] ? t(VERDICTS[analysis.verdict].label) : null}</span>}
             </div>
             {allowance.block === 'plan' && (
-              <UpgradeReport signedIn={likes.signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} actionLabel={likes.signedIn ? undefined : 'Log in to run this agent'} loginHref={likes.signedIn ? undefined : `/login?next=/news/${n.news_id}`} />
+              <UpgradeReport signedIn={likes.signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} actionLabel={likes.signedIn ? undefined : 'Log in to run agent'} loginHref={likes.signedIn ? undefined : `/login?next=/news/${n.news_id}`} />
             )}
             {allowance.block !== 'plan' && !analysis && allowance.block === 'quota' && (
               <p className="muted">{t('This workspace has used its 50 news reports for this month.')}</p>

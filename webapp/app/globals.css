@@ -351,6 +351,8 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .key-facts li { font-size: 13.5px; color: var(--ink); line-height: 1.5; }
 .key-facts li::marker { color: var(--accent); }
 .analysis-block { border-left: 3px solid; border-image: linear-gradient(180deg, var(--brand-a), var(--brand-b)) 1; }
+.analysis-block .profile-empty, .eval-scope .profile-empty { text-align: left; padding: 0; }
+.analysis-block .profile-empty-cta, .eval-scope .profile-empty-cta { margin-top: 0; }
 #requirements > #evaluation { margin-top: 22px; padding-top: 4px; border-left: 0; border-image: none; }
 .verdict { font-family: var(--font-mono-stack); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 999px; }
 .verdict.act { background: var(--brand-gradient); color: var(--ink); }

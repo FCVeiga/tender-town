@@ -12,8 +12,8 @@ const GIVE_UP_MS = 4 * 60_000;
  * The Tender Evaluation Agent's button. Starts the agent (or, if someone
  * already did, waits for it) and refreshes the page when the report is in.
  */
-export default function TenderEvaluationRunner({ opportunityId, scopeId, evaluatedAt, running, lastError }: {
-  opportunityId: string; scopeId: string; evaluatedAt: string | null; running: boolean; lastError: string | null;
+export default function TenderEvaluationRunner({ opportunityId, scopeId, evaluatedAt, running, lastError, label = 'Run agent' }: {
+  opportunityId: string; scopeId: string; evaluatedAt: string | null; running: boolean; lastError: string | null; label?: string;
 }) {
   const router = useRouter();
   const t = useT();
@@ -56,8 +56,8 @@ export default function TenderEvaluationRunner({ opportunityId, scopeId, evaluat
   }
   return (
     <div className="eval-run">
-      <button className="btn-agent" onClick={run}>
-        {evaluatedAt ? t('Re-run evaluation') : t('Run Tender Evaluation Agent')}
+      <button className="btn primary" onClick={run}>
+        {t(label)}
       </button>
       {message && <span className="form-msg err">{t('Couldn\'t run: {message}.', { message })}</span>}
     </div>

@@ -39,7 +39,7 @@ export default function NewsReportRunner({ newsId, scopeId, lastError, signedIn 
   }, [newsId, router]);
 
   if (state === 'error' && (message === 'plan' || lastError === 'plan')) {
-    return <UpgradeReport signedIn={signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} actionLabel={signedIn ? undefined : 'Log in to run this agent'} loginHref={signedIn ? undefined : `/login?next=/news/${newsId}`} />;
+    return <UpgradeReport signedIn={signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} actionLabel={signedIn ? undefined : 'Log in to run agent'} loginHref={signedIn ? undefined : `/login?next=/news/${newsId}`} />;
   }
   if (state === 'error' && (message === 'quota' || lastError === 'quota')) {
     return <p className="muted">{t('This workspace has used its 50 news reports for this month.')}</p>;

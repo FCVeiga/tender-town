@@ -1580,5 +1580,54 @@
     "fr": "Connectez-vous pour lancer cet agent",
     "de": "Melde dich an, um diesen Agenten auszuführen",
     "it": "Accedi per eseguire questo agente"
+  },
+  "Requirements & fit": {
+    "pt": "Requisitos e adequação",
+    "es": "Requisitos y encaje",
+    "fr": "Exigences et adéquation",
+    "de": "Anforderungen und Passung",
+    "it": "Requisiti e idoneità"
+  },
+  "Requirements & fit first": {
+    "pt": "Requisitos e adequação primeiro",
+    "es": "Requisitos y encaje primero",
+    "fr": "Exigences et adéquation d’abord",
+    "de": "Zuerst Anforderungen und Passung",
+    "it": "Prima requisiti e idoneità"
+  },
+  "Log in to run agent": {
+    "pt": "Inicie sessão para executar o agente",
+    "es": "Inicia sesión para ejecutar el agente",
+    "fr": "Connectez-vous pour lancer l’agent",
+    "de": "Melde dich an, um den Agenten auszuführen",
+    "it": "Accedi per eseguire l’agente"
+  },
+  "Run agent": {
+    "pt": "Executar agente",
+    "es": "Ejecutar agente",
+    "fr": "Lancer l’agent",
+    "de": "Agent ausführen",
+    "it": "Esegui agente"
+  },
+  "Run Fit analysis": {
+    "pt": "Executar análise de adequação",
+    "es": "Ejecutar análisis de encaje",
+    "fr": "Lancer l’analyse d’adéquation",
+    "de": "Passungsanalyse ausführen",
+    "it": "Esegui analisi di idoneità"
+  },
+  "Fit analysis": {
+    "pt": "Análise de adequação",
+    "es": "Análisis de encaje",
+    "fr": "Analyse d’adéquation",
+    "de": "Passungsanalyse",
+    "it": "Analisi di idoneità"
+  },
+  "Add your company information on this scope before a fit analysis.": {
+    "pt": "Adicione a informação da sua empresa neste âmbito antes de uma análise de adequação.",
+    "es": "Añade la información de tu empresa en este ámbito antes de un análisis de encaje.",
+    "fr": "Ajoutez les informations de votre entreprise sur ce périmètre avant une analyse d’adéquation.",
+    "de": "Füge die Angaben deines Unternehmens in diesem Scope hinzu, bevor du eine Passungsanalyse ausführst.",
+    "it": "Aggiungi le informazioni della tua azienda in questo ambito prima di un’analisi di idoneità."
   }
 }

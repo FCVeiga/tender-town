@@ -164,8 +164,6 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
             {evaluated && <span className={`verdict eval-${EXAMPLE_EVAL.verdict}`}>{t('Bid with a partner')}</span>}
           </div>
           <p className="agent-intro">{t('Get the requirements and eligibility criteria, and a fit assessment against your company information.')}</p>
-          <p>{t('This run uses Harborline Identity, a sample company. It is not your account.')}</p>
-          <p>{t('Harborline holds ISO 27001, turns over €4.1 million a year, and has delivered two identity-wallet projects worth €3.7 million together. It has no staff in Malta, and its cyber insurance is €2 million.')}</p>
           {evaluated && (
             <div className="eval-report">
               <div className="eval-score"><span className="eval-score-num">{EXAMPLE_EVAL.fit_score}</span><span className="eval-score-label">{t('Fit score')}</span></div>
@@ -182,7 +180,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
             <p className="report-progress"><span className="dots" /> {t('The Tender Evaluation Agent is reading the tender and checking it against your scope. This takes a few minutes.')}</p>
           ) : (
             <div className="eval-run">
-              <button type="button" className="btn-agent" onClick={runEvaluation}>{evaluated ? t('Re-run evaluation') : t('Run Tender Evaluation Agent')}</button>
+              <button type="button" className="btn primary" onClick={runEvaluation}>{t('Run agent')}</button>
             </div>
           )}
           </div>
@@ -196,7 +194,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
           </div>
           <p className="agent-intro">{t('Build a starting brief from your evaluation, including evidence, unresolved requirements and roles a partner needs to cover.')}</p>
           {!evaluated ? (
-            <p><a className="btn primary" href="#evaluation">{t('Assess my fit first')}</a></p>
+            <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>
           ) : phase === 'briefed' ? (
             <>
               {exampleBrief(deadline).map((section) => (
@@ -206,15 +204,15 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
                 </div>
               ))}
               <div className="eval-run">
-                <button type="button" className="btn-agent" onClick={download}>{t('Download proposal brief (.md)')}</button>
-                <button type="button" className="btn-agent" onClick={runBrief}>{t('Regenerate')}</button>
+                <button type="button" className="btn primary" onClick={download}>{t('Download proposal brief (.md)')}</button>
+                <button type="button" className="btn primary" onClick={runBrief}>{t('Run agent')}</button>
               </div>
             </>
           ) : phase === 'briefing' ? (
             <p className="report-progress"><span className="dots" /> {t('The Proposal Manager Agent is mapping every requirement to your company material — a few minutes.')}</p>
           ) : (
             <div className="eval-run">
-              <button type="button" className="btn-agent" onClick={runBrief}>{t('Prepare proposal brief')}</button>
+              <button type="button" className="btn primary" onClick={runBrief}>{t('Run agent')}</button>
             </div>
           )}
         </section>

@@ -52,9 +52,9 @@ export default function ProposalRunner({ opportunityId, scopeId, proposalAt, run
   }
   return (
     <div className="eval-run">
-      {proposalAt && <a className="btn-agent" href={`/tenders/${opportunityId}/proposal?scope=${scopeId}`} download>{t('Download proposal brief (.md)')}</a>}
-      <button type="button" className="btn-agent" onClick={run}>
-        {proposalAt ? t('Regenerate') : t('Prepare proposal brief')}
+      {proposalAt && <a className="btn primary" href={`/tenders/${opportunityId}/proposal?scope=${scopeId}`} download>{t('Download proposal brief (.md)')}</a>}
+      <button type="button" className="btn primary" onClick={run}>
+        {t('Run agent')}
       </button>
       {message && <span className="form-msg err">{t('Couldn\'t run: {message}.', { message })}</span>}
     </div>
