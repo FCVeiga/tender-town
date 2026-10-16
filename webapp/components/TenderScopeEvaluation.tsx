@@ -3,6 +3,9 @@ import AgentAvatar from '@/components/AgentAvatar';
 import TenderEvaluationRunner from '@/components/TenderEvaluationRunner';
 import ProposalRunner from '@/components/ProposalRunner';
 import RunFitAnalysis from '@/components/RunFitAnalysis';
+import ProposalBriefView from '@/components/ProposalBriefView';
+import PostMarkdown from '@/components/social/PostMarkdown';
+import { parseProposalBrief } from '@/lib/proposalBrief';
 import { firstInLanguage } from '@/lib/english';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 
@@ -95,12 +98,13 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, canRu
 }
 
 /** The proposal brief for one scope that already has an evaluation. */
-export function ProposalSlot({ opportunityId, scope, row, showName, canRun, signedIn, locked = null, proposerOn }: {
+export function ProposalSlot({ opportunityId, scope, row, showName, canRun, signedIn, locked = null, proposerOn, contextHref = null }: {
   opportunityId: string; scope: { id: string; name: string }; row: any; showName: boolean; canRun: boolean; signedIn: boolean;
-  locked?: 'plan' | 'member' | null; proposerOn: boolean;
+  locked?: 'plan' | 'member' | null; proposerOn: boolean; contextHref?: string | null;
 }) {
   const t = getTSync();
   const proposing = !!row?.proposal_started_at && Date.now() - new Date(row.proposal_started_at).getTime() < 6 * 60_000;
+  const brief = parseProposalBrief(row?.proposal_brief);
   return (
     <div className="proposal-block">
       {showName && (
@@ -111,7 +115,9 @@ export function ProposalSlot({ opportunityId, scope, row, showName, canRun, sign
       )}
       {!proposerOn ? <p className="muted">{t('Agent off for this scope.')}</p>
         : !canRun ? blockedCopy(t, opportunityId, signedIn, locked, 'Log in to run agent')
+          : contextHref ? <RunFitAnalysis href={contextHref} label="Run agent" title="Proposal brief" message="Add your company information on this scope before a proposal brief." />
           : <ProposalRunner opportunityId={opportunityId} scopeId={scope.id} proposalAt={row?.proposal_at ?? null} running={proposing} lastError={row?.proposal_error ?? null} />}
+      {brief ? <ProposalBriefView brief={brief} /> : row?.proposal_brief ? <PostMarkdown>{row.proposal_brief}</PostMarkdown> : null}
     </div>
   );
 }

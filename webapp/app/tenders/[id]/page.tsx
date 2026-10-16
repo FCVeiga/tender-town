@@ -18,6 +18,8 @@ import { getScopeItems, getViewScopes } from '@/lib/scopes';
 import { getContext, getPersonalAccount } from '@/lib/accounts';
 import TenderScopeEvaluation, { ProposalSlot } from '@/components/TenderScopeEvaluation';
 import TenderView from '@/components/TenderView';
+import EvaluationCriteria from '@/components/EvaluationCriteria';
+import { shownCriteria } from '@/lib/award';
 import TenderHistory from '@/components/TenderHistory';
 import PostMarkdown from '@/components/social/PostMarkdown';
 import CommentsSection from '@/components/social/CommentsSection';
@@ -180,13 +182,14 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   const fitScopes = readyScopes.filter((s) => evalOf(s.id)?.evaluation && !contextHrefOf(s));
   const fits = fitScopes.map((s) => evalOf(s.id).evaluation.fit_score as number);
   const runsLeft = evalAllowance && evalAllowance.limit != null && !evalAllowance.block ? Math.max(0, evalAllowance.limit - evalAllowance.used) : null;
+  const criteria = shownCriteria(award);
   const notices = ((documents || []) as Doc[])
     .filter((d) => d.document_type === 'CONTRACT_NOTICE' || d.document_type === 'CORRIGENDUM')
     .sort((a, b) => (a.publication_date || '').localeCompare(b.publication_date || '') || (a.name || '').localeCompare(b.name || ''));
   const submitDocs = ((documents || []) as Doc[]).filter((d) => d.document_type === 'FORM' || d.document_type === 'FINANCIAL_PROPOSAL');
   const docCount = (documents || []).length;
   const compare = t('Get the requirements and eligibility criteria, and a fit assessment against your company information.');
-  const briefLead = t('Build a starting brief from your evaluation, including evidence, unresolved requirements and roles a partner needs to cover.');
+  const briefLead = t('Prepare the submission pack from the tender’s templates, fill each document from your company file, and list the next steps.');
   const scopeCanRun = (scope: { id: string; isDefault: boolean }) => canRun && (!scope.isDefault || !!ctx?.isPlatformAdmin);
 
   const origin = siteOrigin();
@@ -318,23 +321,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                     </div>
                   </div>
                 ))}
-                {(award || []).length > 0 && (
-                  <div className="req-category-block">
-                    <h3 className="req-category-title">{t('Award criteria')}</h3>
-                    <div className="award-list">
-                      {(award || []).map((a: any) => {
-                        const what = firstInLanguage(a.subcriteria?.name_en, a.subcriteria?.name, a.subcriteria?.description_en, a.subcriteria?.description);
-                        return (
-                          <div key={a.id} className="award-row">
-                            <span className="award-label">{a.criterion}{what ? <em> — {what}</em> : null}</span>
-                            <span className="award-bar">{a.weight != null ? <span style={{ width: `${a.weight}%` }} /> : null}</span>
-                            <span className="award-weight">{a.weight != null ? `${a.weight}%` : '—'}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                <EvaluationCriteria rows={criteria} />
                 {submitDocs.length > 0 && (
                   <div className="req-category-block">
                     <h3 className="req-category-title">{t('Documents to submit')} <span className="uc-count">{submitDocs.length}</span></h3>
@@ -392,7 +379,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                 {viewScopes.filter((scope) => evalOf(scope.id)?.evaluation).map((scope) => (
                   <ProposalSlot key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
                     row={evalOf(scope.id)} showName={viewScopes.length > 1 || !own} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
-                    proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed} />
+                    proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed} contextHref={scopeCanRun(scope) ? contextHrefOf(scope) : null} />
                 ))}
                 {evaluatedScopes.length > 0 && viewScopes.some((scope) => !evalOf(scope.id)?.evaluation) && (
                   <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>

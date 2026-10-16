@@ -1,9 +1,9 @@
 /**
- * Proposal Manager Agent — run from the tender page's evaluation section,
- * once the Tender Evaluation Agent has reported. Writes the proposal brief
- * (Markdown): tender summary, deadlines, evaluation criteria, every
- * requirement with the answer the company's material supports, the
- * documents to submit, the gaps and the next steps.
+ * Proposal Manager Agent — the bid manager for one tender.
+ * Runs only after a fit evaluation, and only when the scope has company
+ * information. Reads the buyer's forms and annexes and writes the submission:
+ * the document list, each document filled from the company file, and the
+ * each document filled from the company file, and the next steps.
  * (prompt: agents/proposal_manager.md; company material: Settings.)
  */
 import Anthropic from '@anthropic-ai/sdk';
@@ -13,14 +13,26 @@ import { friendly, lockEvaluation, unlockEvaluation } from '@/lib/scopeWork';
 import { getScope } from '@/lib/scopes';
 import { agentRunAllowance, recordAgentRun } from '@/lib/agentQuota';
 import { getT } from '@/lib/i18n/server';
+import { submissionDocumentTexts } from '@/lib/tenderAnalysis';
+import { normaliseBrief, parseProposalBrief } from '@/lib/proposalBrief';
 
 const MODEL = 'claude-opus-5-5';
 const LOCK_MINUTES = 6;
 const GROUPS: Record<string, string> = {
   ELIGIBILITY: 'Eligibility', REFERENCES: 'Project references', HUMAN_RESOURCES: 'Human resources', TECHNICAL: 'Technical & project',
 };
+const NEED_CONTEXT = 'Add your company information on this scope before a proposal brief.';
 
 export type ProposalStatus = 'done' | 'running' | 'error';
+
+async function hasCompanyContext(scopeId: string) {
+  const scope = await getScope(scopeId);
+  if (!scope || scope.isDefault || scope.catalog) return true;
+  if (scope.instructions?.trim()) return true;
+  const { count } = await getSupabaseServerClient().from('company_documents').select('id', { count: 'exact', head: true })
+    .eq('scope_id', scopeId).is('workspace_id', null);
+  return (count ?? 0) > 0;
+}
 
 async function proposalWorkspace(scopeId: string, workspaceId: string | null): Promise<string | null> {
   if (!workspaceId) return null;
@@ -34,8 +46,15 @@ async function proposalWorkspace(scopeId: string, workspaceId: string | null): P
 export async function ensureProposal(opportunityId: string, scopeId: string, workspaceId: string | null = null): Promise<{ status: ProposalStatus; message?: string }> {
   if (!(await isAgentEnabled('proposal_manager', scopeId))) return { status: 'error', message: 'the Proposal Manager Agent is switched off for this scope' };
   const allowance = await agentRunAllowance('proposal_manager');
-  if (allowance.block) return { status: 'error', message: (await getT())('Proposal briefs are included on Teams.') };
+  const t = await getT();
+  if (allowance.block) return { status: 'error', message: t('Proposal briefs are included on Teams.') };
   const owner = await proposalWorkspace(scopeId, workspaceId);
+  const { data: existing } = await (owner
+    ? getSupabaseServerClient().from('scope_evaluations').select('evaluation').match({ scope_id: scopeId, opportunity_id: opportunityId, workspace_id: owner })
+    : getSupabaseServerClient().from('scope_evaluations').select('evaluation').eq('scope_id', scopeId).eq('opportunity_id', opportunityId).is('workspace_id', null)
+  ).maybeSingle();
+  if (!existing?.evaluation) return { status: 'error', message: 'run the Tender Evaluation Agent for this scope first' };
+  if (!(await hasCompanyContext(scopeId))) return { status: 'error', message: t(NEED_CONTEXT) };
   if (!(await lockEvaluation(scopeId, opportunityId, owner, 'proposal_started_at', 'proposal_error', LOCK_MINUTES))) return { status: 'running' };
   try {
     await runProposal(opportunityId, scopeId, owner);
@@ -52,16 +71,17 @@ export async function ensureProposal(opportunityId: string, scopeId: string, wor
 async function runProposal(opportunityId: string, scopeId: string, workspaceId: string | null) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY is not configured on the server.');
   const db = getSupabaseServerClient();
-  const [{ data: o }, { data: reqs }, { data: award }, { data: docs }, { data: se }] = await Promise.all([
+  const [{ data: o }, { data: reqs }, { data: award }, { data: docs }, { data: se }, templates] = await Promise.all([
     db.from('opportunities').select('*').eq('opportunity_id', opportunityId).single(),
     db.from('requirements').select('requirement_group, category, requirement_text, mandatory, threshold, evidence_required, document, requirement_matches(match_status, notes, scope_id, workspace_id)')
       .eq('opportunity_id', opportunityId),
     db.from('award_criteria').select('criterion, weight, subcriteria').eq('opportunity_id', opportunityId).order('weight', { ascending: false }),
-    db.from('documents').select('name, name_en, document_type').eq('opportunity_id', opportunityId),
+    db.from('documents').select('name, name_en, document_type, url').eq('opportunity_id', opportunityId),
     (workspaceId
       ? db.from('scope_evaluations').select('evaluation').match({ scope_id: scopeId, opportunity_id: opportunityId, workspace_id: workspaceId })
       : db.from('scope_evaluations').select('evaluation').eq('scope_id', scopeId).eq('opportunity_id', opportunityId).is('workspace_id', null)
     ).maybeSingle(),
+    submissionDocumentTexts(opportunityId),
   ]);
   if (!o) throw new Error('Tender not found.');
   if (!se?.evaluation) throw new Error('run the Tender Evaluation Agent for this scope first');
@@ -87,7 +107,10 @@ async function runProposal(opportunityId: string, scopeId: string, workspaceId: 
     ev.strengths?.length && `Strengths:\n${ev.strengths.map((s: string) => `- ${s}`).join('\n')}`,
     ev.gaps?.length && `Gaps:\n${ev.gaps.map((s: string) => `- ${s}`).join('\n')}`,
     ev.partners?.length && `Partners:\n${ev.partners.map((p: any) => `- ${p.role}: ${p.why || ''}`).join('\n')}`,
-    `\nPublished tender documents:\n${(docs || []).map((d: any) => `- [${d.document_type}] ${d.name_en || d.name}`).join('\n') || '(none listed)'}`,
+    `\nPublished tender documents:\n${(docs || []).map((d: any) => `- [${d.document_type}] ${d.name_en || d.name} | ${d.url || 'no url'}`).join('\n') || '(none listed)'}`,
+    templates.length
+      ? `\nTemplate text read from the tender files. Follow these headings, tables and fields:\n${templates.map((d) => `\n### [${d.type}] ${d.name}\n${d.body}`).join('\n')}`
+      : '\nNo template file could be read. Draft only from the document names and the requirements, and say the template was not in the files read.',
   ].filter(Boolean).join('\n');
 
   const [prompt, brief] = await Promise.all([agentPrompt('proposal_manager', 'proposal_manager.md', scopeId), companyBrief({ withDocuments: true, scopeId, workspaceId })]);
@@ -101,18 +124,22 @@ async function runProposal(opportunityId: string, scopeId: string, workspaceId: 
     system: prompt.replace('{company_brief}', brief).replaceAll('{tender title}', title),
     messages: [{ role: 'user', content: tender }],
     betas: ['server-side-fallback-2026-07-01'],
-    output_config: { effort: 'medium' },
+    output_config: { effort: 'high' },
     fallbacks: 'default',
   } as any);
   const response: any = await stream.finalMessage();
   if (response.stop_reason === 'refusal') throw new Error('The agent declined to write this brief.');
-  let markdown = (response.content as any[]).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
-  markdown = markdown.replace(/^```(?:markdown|md)?\s*\n/, '').replace(/\n```\s*$/, '');
-  if (!markdown.startsWith('#')) throw new Error('The agent did not return a brief.');
-  if (response.stop_reason === 'max_tokens') markdown += '\n\n> _The brief was cut short at the length limit — re-run to regenerate it._\n';
+  const text = (response.content as any[]).filter((b) => b.type === 'text').map((b) => b.text).join('').trim()
+    .replace(/^```(?:json)?\s*\n/, '').replace(/\n```\s*$/, '');
+  const parsed = parseProposalBrief(text);
+  if (!parsed) throw new Error(response.stop_reason === 'max_tokens' ? 'The brief was cut short. Run it again.' : 'The agent did not return a brief.');
+  const allowed = new Set((docs || []).map((d: any) => d.url).filter(Boolean));
+  if (o.official_url) allowed.add(o.official_url);
+  const submission = normaliseBrief(parsed, allowed);
+  if (!submission.pack.length || !submission.documents.length) throw new Error('The agent did not return a brief.');
 
   let saved = db.from('scope_evaluations').update({
-    proposal_brief: markdown, proposal_at: new Date().toISOString(), proposal_error: null,
+    proposal_brief: JSON.stringify(submission), proposal_at: new Date().toISOString(), proposal_error: null,
   }).eq('scope_id', scopeId).eq('opportunity_id', opportunityId);
   saved = workspaceId ? saved.eq('workspace_id', workspaceId) : saved.is('workspace_id', null);
   const { error } = await saved;

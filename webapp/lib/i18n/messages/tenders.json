@@ -1629,5 +1629,124 @@
     "fr": "Ajoutez les informations de votre entreprise sur ce périmètre avant une analyse d’adéquation.",
     "de": "Füge die Angaben deines Unternehmens in diesem Scope hinzu, bevor du eine Passungsanalyse ausführst.",
     "it": "Aggiungi le informazioni della tua azienda in questo ambito prima di un’analisi di idoneità."
+  },
+  "Prepare the submission from the tender’s templates, fill it with your company information, and list what is still missing.": {
+    "pt": "Prepare a proposta a partir dos modelos do concurso, preencha-a com a informação da sua empresa e liste o que ainda falta.",
+    "es": "Prepara la oferta a partir de las plantillas de la licitación, rellénala con la información de tu empresa y lista lo que aún falta.",
+    "fr": "Préparez l’offre à partir des modèles de l’appel d’offres, remplissez-la avec les informations de votre entreprise et listez ce qui manque encore.",
+    "de": "Bereite das Angebot aus den Vorlagen der Ausschreibung vor, fülle es mit den Angaben deines Unternehmens und liste, was noch fehlt.",
+    "it": "Prepara l’offerta dai modelli della gara, compilala con le informazioni della tua azienda ed elenca ciò che manca ancora."
+  },
+  "The Proposal Manager is reading the tender templates and filling the submission from your company file.": {
+    "pt": "O gestor da proposta está a ler os modelos do concurso e a preencher a proposta com o ficheiro da sua empresa.",
+    "es": "El gestor de la oferta está leyendo las plantillas de la licitación y rellenando la oferta con el archivo de tu empresa.",
+    "fr": "Le responsable de l’offre lit les modèles de l’appel d’offres et remplit l’offre avec le dossier de votre entreprise.",
+    "de": "Der Angebotsmanager liest die Vorlagen der Ausschreibung und füllt das Angebot aus deiner Unternehmensakte.",
+    "it": "Il responsabile dell’offerta sta leggendo i modelli della gara e compilando l’offerta con il fascicolo della tua azienda."
+  },
+  "Add your company information on this scope before a proposal brief.": {
+    "pt": "Adicione a informação da sua empresa neste âmbito antes de um resumo de proposta.",
+    "es": "Añade la información de tu empresa en este ámbito antes de un informe de oferta.",
+    "fr": "Ajoutez les informations de votre entreprise sur ce périmètre avant une note d’offre.",
+    "de": "Füge die Angaben deines Unternehmens in diesem Scope hinzu, bevor du ein Angebotsbriefing erstellst.",
+    "it": "Aggiungi le informazioni della tua azienda in questo ambito prima di un brief dell’offerta."
+  },
+  "Prepares the submission from the tender’s templates and your company file, and lists what the bid team still has to provide.": {
+    "pt": "Prepara a proposta a partir dos modelos do concurso e do ficheiro da sua empresa, e lista o que a equipa de proposta ainda tem de fornecer.",
+    "es": "Prepara la oferta a partir de las plantillas de la licitación y el archivo de tu empresa, y lista lo que el equipo de oferta aún tiene que aportar.",
+    "fr": "Prépare l’offre à partir des modèles de l’appel d’offres et du dossier de votre entreprise, et liste ce que l’équipe d’offre doit encore fournir.",
+    "de": "Bereitet das Angebot aus den Vorlagen der Ausschreibung und deiner Unternehmensakte vor und listet, was das Angebotsteam noch liefern muss.",
+    "it": "Prepara l’offerta dai modelli della gara e dal fascicolo della tua azienda, ed elenca ciò che il team di gara deve ancora fornire."
+  },
+  "Prepares the submission pack from the tender’s templates, fills each document from your company file, and lists the next steps.": {
+    "pt": "Prepara o dossier de candidatura a partir dos modelos do concurso, preenche cada documento com o ficheiro da sua empresa e lista os próximos passos.",
+    "es": "Prepara el expediente de oferta a partir de las plantillas de la licitación, rellena cada documento con el archivo de tu empresa y lista los próximos pasos.",
+    "fr": "Prépare le dossier de soumission à partir des modèles de l’appel d’offres, remplit chaque document avec le dossier de votre entreprise et liste les prochaines étapes.",
+    "de": "Bereitet das Angebotsdossier aus den Vorlagen der Ausschreibung vor, füllt jedes Dokument aus deiner Unternehmensakte und listet die nächsten Schritte.",
+    "it": "Prepara il fascicolo di offerta dai modelli della gara, compila ogni documento con il fascicolo della tua azienda ed elenca i prossimi passi."
+  },
+  "Prepare the submission pack from the tender’s templates, fill each document from your company file, and list the next steps.": {
+    "pt": "Prepare o dossier de candidatura a partir dos modelos do concurso, preencha cada documento com o ficheiro da sua empresa e liste os próximos passos.",
+    "es": "Prepara el expediente de oferta a partir de las plantillas de la licitación, rellena cada documento con el archivo de tu empresa y lista los próximos pasos.",
+    "fr": "Préparez le dossier de soumission à partir des modèles de l’appel d’offres, remplissez chaque document avec le dossier de votre entreprise et listez les prochaines étapes.",
+    "de": "Bereite das Angebotsdossier aus den Vorlagen der Ausschreibung vor, fülle jedes Dokument aus deiner Unternehmensakte und liste die nächsten Schritte.",
+    "it": "Prepara il fascicolo di offerta dai modelli della gara, compila ogni documento con il fascicolo della tua azienda ed elenca i prossimi passi."
+  },
+  "Submission pack": {
+    "pt": "Dossier de candidatura",
+    "es": "Expediente de oferta",
+    "fr": "Dossier de soumission",
+    "de": "Angebotsdossier",
+    "it": "Fascicolo di offerta"
+  },
+  "Description": {
+    "pt": "Descrição",
+    "es": "Descripción",
+    "fr": "Description",
+    "de": "Beschreibung",
+    "it": "Descrizione"
+  },
+  "Document": {
+    "pt": "Documento",
+    "es": "Documento",
+    "fr": "Document",
+    "de": "Dokument",
+    "it": "Documento"
+  },
+  "To include": {
+    "pt": "A incluir",
+    "es": "Por incluir",
+    "fr": "À inclure",
+    "de": "Aufzunehmen",
+    "it": "Da includere"
+  },
+  "Missing": {
+    "pt": "Em falta",
+    "es": "Falta",
+    "fr": "Manquant",
+    "de": "Fehlt",
+    "it": "Manca"
+  },
+  "To fill": {
+    "pt": "A preencher",
+    "es": "Por completar",
+    "fr": "À compléter",
+    "de": "Auszufüllen",
+    "it": "Da compilare"
+  },
+  "View document": {
+    "pt": "Ver documento",
+    "es": "Ver documento",
+    "fr": "Voir le document",
+    "de": "Dokument ansehen",
+    "it": "Vedi il documento"
+  },
+  "Evaluation criteria": {
+    "pt": "Critérios de avaliação",
+    "es": "Criterios de evaluación",
+    "fr": "Critères d’évaluation",
+    "de": "Bewertungskriterien",
+    "it": "Criteri di valutazione"
+  },
+  "Criterion": {
+    "pt": "Critério",
+    "es": "Criterio",
+    "fr": "Critère",
+    "de": "Kriterium",
+    "it": "Criterio"
+  },
+  "Marks": {
+    "pt": "Pontos",
+    "es": "Puntos",
+    "fr": "Points",
+    "de": "Punkte",
+    "it": "Punti"
+  },
+  "What is assessed": {
+    "pt": "O que é avaliado",
+    "es": "Qué se valora",
+    "fr": "Ce qui est évalué",
+    "de": "Was bewertet wird",
+    "it": "Che cosa si valuta"
   }
 }

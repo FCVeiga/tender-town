@@ -51,7 +51,7 @@ export const AGENTS: AgentDef[] = [
   },
   {
     key: 'proposal_manager', name: 'Proposal Manager Agent', runs: 'on click', prompt: 'webapp/agents/proposal_manager.md', fineTune: true,
-    role: 'Writes the proposal brief: requirements, references, gaps and steps.',
+    role: 'Prepares the submission pack from the tender’s templates, fills each document from your company file, and lists the next steps.',
     face: { colors: ['#5EEAD4', '#0D9488'], eyes: 'round', top: 'cap', mouth: 'smile' },
   },
   {

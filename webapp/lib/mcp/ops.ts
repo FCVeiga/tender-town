@@ -15,6 +15,13 @@ import { newsReportAllowance } from '@/lib/newsQuota';
 import { startProposalBrief, startTenderEvaluation } from '@/app/actions';
 import { ensureNewsReport } from '@/lib/newsReport';
 import { publicText } from '@/lib/publication';
+import { briefToMarkdown, parseProposalBrief } from '@/lib/proposalBrief';
+
+function readableBrief(raw: string | null | undefined) {
+  if (!raw) return null;
+  const brief = parseProposalBrief(raw);
+  return brief ? briefToMarkdown(brief) : raw;
+}
 
 const db = () => getSupabaseServerClient();
 const ID = /^[0-9a-f-]{36}$/i;
@@ -346,7 +353,7 @@ export async function getTender(id: string) {
     const ws = ctx?.workspace.id;
     const pick = (rows || []).find((r: any) => ws && r.workspace_id === ws) || (rows || []).find((r: any) => !r.workspace_id);
     evaluation = pick?.evaluation ?? null;
-    proposal = planIncludes(plan.proposalsPerMonth) ? pick?.proposal_brief ?? null : null;
+    proposal = planIncludes(plan.proposalsPerMonth) ? readableBrief(pick?.proposal_brief) : null;
   }
   const comments = await getCommentTree('tender', id, user.id);
   return {
@@ -437,7 +444,7 @@ export async function getScopeReport(scopeId: string, kind: 'tender_evaluation' 
   const ws = ctx?.workspace.id;
   const { data: rows } = await db().from('scope_evaluations').select('workspace_id, evaluation, proposal_brief, proposal_at').match({ scope_id: scopeId, opportunity_id: itemId });
   const pick = (rows || []).find((r: any) => ws && r.workspace_id === ws) || (rows || []).find((r: any) => !r.workspace_id);
-  if (kind === 'proposal_brief') return { scopeId, kind, itemId, report: pick?.proposal_brief ?? null, at: pick?.proposal_at ?? null };
+  if (kind === 'proposal_brief') return { scopeId, kind, itemId, report: readableBrief(pick?.proposal_brief), at: pick?.proposal_at ?? null };
   return { scopeId, kind, itemId, report: pick?.evaluation ?? null };
 }
 

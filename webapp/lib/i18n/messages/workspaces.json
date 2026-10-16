@@ -2224,5 +2224,12 @@
   "fr": "Votre équipe de réponse",
   "de": "Dein Angebotsteam",
   "it": "Il tuo team di gara"
- }
+ },
+"Prepares the submission from the tender’s templates and your company file, and lists what the bid team still has to provide.": {
+    "pt": "Prepara a proposta a partir dos modelos do concurso e do ficheiro da sua empresa, e lista o que a equipa de proposta ainda tem de fornecer.",
+    "es": "Prepara la oferta a partir de las plantillas de la licitación y el archivo de tu empresa, y lista lo que el equipo de oferta aún tiene que aportar.",
+    "fr": "Prépare l’offre à partir des modèles de l’appel d’offres et du dossier de votre entreprise, et liste ce que l’équipe d’offre doit encore fournir.",
+    "de": "Bereitet das Angebot aus den Vorlagen der Ausschreibung und deiner Unternehmensakte vor und listet, was das Angebotsteam noch liefern muss.",
+    "it": "Prepara l’offerta dai modelli della gara e dal fascicolo della tua azienda, ed elenca ciò che il team di gara deve ancora fornire."
+  }
 }

@@ -2,7 +2,11 @@
 
 import { useState, type ReactNode } from 'react';
 import AgentAvatar from '@/components/AgentAvatar';
-import { EXAMPLE_EVAL, exampleBrief, exampleMatch, type ExampleMatch } from '@/lib/exampleRun';
+import { EXAMPLE_EVAL, exampleBrief, exampleMatch, type BriefSource, type ExampleMatch } from '@/lib/exampleRun';
+import { briefToMarkdown } from '@/lib/proposalBrief';
+import ProposalBriefView from '@/components/ProposalBriefView';
+import EvaluationCriteria from '@/components/EvaluationCriteria';
+import type { ShownCriterion } from '@/lib/award';
 import { useT } from '@/lib/i18n/client';
 import TenderView from '@/components/TenderView';
 
@@ -37,12 +41,12 @@ function matchClass(status: ExampleMatch['status']) {
   return 'partner';
 }
 
-function briefMarkdown(deadline: string) {
-  return exampleBrief(deadline).map((section) => `## ${section.heading}\n\n${section.paragraphs.join('\n\n')}`).join('\n\n');
+function briefMarkdown(deadline: string, docs: BriefSource[]) {
+  return briefToMarkdown(exampleBrief(deadline, docs));
 }
 
 /** The same sections as a tender page. The buttons play a finished evaluation and brief for the sample company. */
-export default function ExampleWalkthrough({ requirements, deadline, archived, relevance, valueText, valueNote, documentCount, summary, documents, history, sources }: {
+export default function ExampleWalkthrough({ requirements, deadline, archived, relevance, valueText, valueNote, documentCount, summary, documents, history, sources, sourceDocs = [], criteria = [] }: {
   requirements: ExampleRequirement[];
   deadline: string;
   archived: boolean;
@@ -54,6 +58,8 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
   documents: ReactNode;
   history: ReactNode;
   sources: ReactNode;
+  sourceDocs?: BriefSource[];
+  criteria?: ShownCriterion[];
 }) {
   const t = useT();
   const [phase, setPhase] = useState<'idle' | 'evaluating' | 'evaluated' | 'briefing' | 'briefed'>('idle');
@@ -69,7 +75,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
     window.setTimeout(() => setPhase('briefed'), 2600);
   }
   function download() {
-    const file = new Blob([`# Proposal brief — Harborline Identity\n\n${briefMarkdown(deadline)}\n`], { type: 'text/markdown' });
+    const file = new Blob([briefMarkdown(deadline, sourceDocs)], { type: 'text/markdown' });
     const url = URL.createObjectURL(file);
     const link = document.createElement('a');
     link.href = url;
@@ -153,6 +159,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
               </div>
             </div>
           ))}
+          <EvaluationCriteria rows={criteria} />
           </>
           )}
           <div className="analysis-block" id="evaluation">
@@ -192,24 +199,19 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
             <AgentAvatar agent="proposal_manager" size={36} working={phase === 'briefing'} />
             <div className="agent-id"><h2>{t('Proposal brief')}</h2></div>
           </div>
-          <p className="agent-intro">{t('Build a starting brief from your evaluation, including evidence, unresolved requirements and roles a partner needs to cover.')}</p>
+          <p className="agent-intro">{t('Prepare the submission pack from the tender’s templates, fill each document from your company file, and list the next steps.')}</p>
           {!evaluated ? (
             <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>
           ) : phase === 'briefed' ? (
             <>
-              {exampleBrief(deadline).map((section) => (
-                <div key={section.heading}>
-                  <h3>{section.heading}</h3>
-                  {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                </div>
-              ))}
               <div className="eval-run">
                 <button type="button" className="btn primary" onClick={download}>{t('Download proposal brief (.md)')}</button>
                 <button type="button" className="btn primary" onClick={runBrief}>{t('Run agent')}</button>
               </div>
+              <ProposalBriefView brief={exampleBrief(deadline, sourceDocs)} />
             </>
           ) : phase === 'briefing' ? (
-            <p className="report-progress"><span className="dots" /> {t('The Proposal Manager Agent is mapping every requirement to your company material — a few minutes.')}</p>
+            <p className="report-progress"><span className="dots" /> {t('The Proposal Manager is reading the tender templates and filling the submission from your company file.')}</p>
           ) : (
             <div className="eval-run">
               <button type="button" className="btn primary" onClick={runBrief}>{t('Run agent')}</button>

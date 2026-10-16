@@ -29,7 +29,7 @@ export const MCP_DOC: Doc[] = [
     'Search Agent finds tenders and news on procurement portals, the web and the sources the workspace follows. Plain-language instructions are turned into its search configuration. Saving them does not fetch results immediately. Search runs with the pipeline, as often as the plan allows: once a day on Free, twice on Starter, three times on Pro, six times on Teams.',
     'Triage Agent scores each find and sorts tenders, grants and news. Instructions rewrite its prompt. It runs on the same schedule as search.',
     'Tender Evaluation Agent checks one tender against the scope, scores the fit and advises. Free includes 1 run a month, Starter 5, Pro 10, Teams unlimited.',
-    'Proposal Manager Agent writes a proposal brief from that evaluation: the requirements, the references the scope already has, the gaps and the steps. Teams only, and only after an evaluation exists for that scope.',
+    'Proposal Manager Agent prepares the submission pack from the tender’s templates and the company file, fills each document, and lists the next steps. Teams only. It runs only after an evaluation, and only when that scope has company information.',
     'News Report Agent reads one story and writes what the team should do about it. Pro includes 50 a month, Teams unlimited. Not on Free or Starter.',
   ] },
   { p: 'Documents and the requirement list are written by the platform’s own agents. This server can read them. It cannot configure those agents, upload documents, post, comment, change the plan, or delete a workspace or a scope.' },
@@ -158,7 +158,7 @@ export const MCP_DOC: Doc[] = [
   { p: 'How: scope_id, item_id (a tender id or a news id), kind (tender_evaluation, proposal_brief or news_report) and optional workspace_id. The plan must include that agent. If none has been written, report is null.' },
   { h: 3, text: 'run_scope_agent' },
   { p: 'Purpose: write a new Tender Evaluation, proposal brief or news report.' },
-  { p: 'How: scope_id, item_id and agent (tender_evaluation, proposal_manager or news_report), plus workspace_id. It uses one of the workspace’s monthly runs. A re-run counts. A failed run does not. You must be an admin, and the scope must be one this workspace is viewing. It refuses when the plan does not include the agent or the month’s runs are used up. A proposal brief needs an evaluation for that scope first.' },
+  { p: 'How: scope_id, item_id and agent (tender_evaluation, proposal_manager or news_report), plus workspace_id. It uses one of the workspace’s monthly runs. A re-run counts. A failed run does not. You must be an admin, and the scope must be one this workspace is viewing. It refuses when the plan does not include the agent or the month’s runs are used up. A proposal brief needs an evaluation for that scope first, and company information on the scope.' },
 
   { h: 2, text: 'When something fails' },
   { p: 'A refused tool comes back as JSON with an error string. Say that sentence to the user. Do not retry a plan or quota error. Do not invent workspace, scope, tender, news or post ids: list or get them first. Send one tool per request.' },

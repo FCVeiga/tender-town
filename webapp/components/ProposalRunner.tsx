@@ -46,7 +46,7 @@ export default function ProposalRunner({ opportunityId, scopeId, proposalAt, run
   if (state === 'working') {
     return (
       <p className="report-progress">
-        <span className="dots" /> {t('The Proposal Manager Agent is mapping every requirement to your company material — a few minutes.')}
+        <span className="dots" /> {t('The Proposal Manager is reading the tender templates and filling the submission from your company file.')}
       </p>
     );
   }

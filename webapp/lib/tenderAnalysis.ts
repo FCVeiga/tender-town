@@ -215,6 +215,47 @@ async function documentTexts(opportunityId: string) {
   return picked;
 }
 
+const SUBMISSION_ORDER = ['FORM', 'FINANCIAL_PROPOSAL', 'ANNEX', 'TENDER_SPECIFICATIONS', 'TECHNICAL_SPECIFICATIONS', 'AWARD_CRITERIA'];
+const SUBMISSION_CAP: Record<string, number> = {
+  FORM: 40_000, FINANCIAL_PROPOSAL: 40_000, ANNEX: 40_000,
+  TENDER_SPECIFICATIONS: 24_000, TECHNICAL_SPECIFICATIONS: 24_000, AWARD_CRITERIA: 12_000,
+};
+const SUBMISSION_KIND_CAP: Record<string, number> = {
+  FORM: 6, FINANCIAL_PROPOSAL: 4, ANNEX: 8, TENDER_SPECIFICATIONS: 2, TECHNICAL_SPECIFICATIONS: 2, AWARD_CRITERIA: 2,
+};
+
+/** Forms, annexes and the specifications that define them, so a brief can follow the buyer's template. */
+export async function submissionDocumentTexts(opportunityId: string) {
+  const db = getSupabaseServerClient();
+  const { data } = await db.from('documents').select('name, document_type, url').eq('opportunity_id', opportunityId);
+  const rank = new Map(SUBMISSION_ORDER.map((t, i) => [t, i]));
+  const rows = (data || [])
+    .filter((r) => rank.has(r.document_type) && r.url && (r.url.includes('downloadContractDocument') || r.url.includes('/de/documents/')))
+    .sort((a, b) => (rank.get(a.document_type)! - rank.get(b.document_type)!) || (recency(b.name || '') - recency(a.name || '')));
+  const picked: { name: string; type: string; body: string }[] = [];
+  const seen = new Map<string, number>();
+  let total = 0;
+  for (const r of rows) {
+    const kind = r.document_type as string;
+    if ((seen.get(kind) || 0) >= (SUBMISSION_KIND_CAP[kind] || 1)) continue;
+    let resp: Response;
+    try { resp = await fetch(r.url, { headers: { 'User-Agent': UA } }); } catch { continue; }
+    if (!resp.ok) continue;
+    const buf = Buffer.from(await resp.arrayBuffer());
+    if (buf.length > 30_000_000) continue;
+    let body = '';
+    try { body = (await readFileBody(r.name || 'document', buf)).replace(/[ \t]+/g, ' ').trim(); } catch { continue; }
+    body = body.slice(0, SUBMISSION_CAP[kind] || DOC_CHARS);
+    if (body.length < 200) continue;
+    if (total + body.length > 140_000) body = body.slice(0, Math.max(0, 140_000 - total));
+    if (!body) break;
+    picked.push({ name: r.name || 'document', type: kind, body });
+    seen.set(kind, (seen.get(kind) || 0) + 1);
+    total += body.length;
+  }
+  return picked;
+}
+
 async function pageText(url: string) {
   const key = process.env.TAVILY_API_KEY;
   if (key) {
@@ -343,14 +384,31 @@ export async function ensureTenderAnalysis(opportunityId: string) {
     if (error) throw new Error(error.message);
   }
   const { data: storedAward } = await db.from('award_criteria').select('id, weight, subcriteria').eq('opportunity_id', opportunityId);
+  const created: any[] = [];
   for (const a of Array.isArray(out.award_criteria) ? out.award_criteria : []) {
     if (!a?.criterion) continue;
     const weight = a.weight == null || a.weight === '' ? null : Number(a.weight);
-    const row = (storedAward || []).find((s) => (s.weight == null && weight == null) || Number(s.weight) === weight);
-    if (!row) continue;
-    await db.from('award_criteria').update({
-      subcriteria: { ...(row.subcriteria && typeof row.subcriteria === 'object' ? row.subcriteria : {}), name_en: String(a.criterion), description_en: a.description ? String(a.description) : null },
-    }).eq('id', row.id);
+    const row = (storedAward || []).find((s) => {
+      const sub = s.subcriteria && typeof s.subcriteria === 'object' ? s.subcriteria : {};
+      if (sub.type === 'grid') return false;
+      return (s.weight == null && weight == null) || Number(s.weight) === weight;
+    });
+    if (row) {
+      await db.from('award_criteria').update({
+        subcriteria: { ...(row.subcriteria && typeof row.subcriteria === 'object' ? row.subcriteria : {}), name_en: String(a.criterion), description_en: a.description ? String(a.description) : null },
+      }).eq('id', row.id);
+    } else if (!(storedAward || []).length) {
+      created.push({
+        opportunity_id: opportunityId,
+        criterion: String(a.criterion).slice(0, 256),
+        weight,
+        subcriteria: { name: String(a.criterion), name_en: String(a.criterion), description: a.description ? String(a.description) : null, description_en: a.description ? String(a.description) : null },
+      });
+    }
+  }
+  if (created.length) {
+    const { error: awardError } = await db.from('award_criteria').insert(created);
+    if (awardError) throw new Error(awardError.message);
   }
   const summary = publicText(plainSummary(out.summary || '')) || null;
   const money = statedContract(out, summary || '');

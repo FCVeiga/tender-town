@@ -1,4 +1,5 @@
 /** The example page runs this real notice against a sample company. Nothing is saved. */
+import type { ProposalBrief } from '@/lib/proposalBrief';
 
 export const EXAMPLE_TENDER_ID = '9da13edc78bd027ff91e';
 
@@ -94,21 +95,71 @@ export const EXAMPLE_EVAL = {
   ],
 };
 
-export function exampleBrief(deadline: string) {
-  return [
-    { heading: 'Tender', paragraphs: [
-      `Malta Digital Innovation Authority, through the Department of Contracts, is buying a European Digital Identity Wallet. Submission is ${deadline}. The estimated value is €15,659,714.03 excluding VAT, over 90 months, with seven years of operation from Version 1.`,
-    ] },
-    { heading: 'What Harborline can answer', paragraphs: [
-      'Lead with the ISO/IEC 27001 certificate and the auditor’s turnover declaration of €4.1 million. Name the two wallet projects and state their values plainly, including the shortfall against €5 million.',
-      'The project manager, solution architect, lead developer, cybersecurity specialist and trust-services specialist can be named from the current team, with CVs and degree certificates.',
-    ] },
-    { heading: 'What a partner has to cover', paragraphs: [
-      'A systems and network engineer based in Malta for the contract term. A legal specialist for the certification work. Colocation in the two MITA data centres for Version 2. An insurer willing to raise the cyber policy to €4 million.',
-      'Do not describe these as already employed. The brief is an instruction to the bid team, not a claim that the gaps are closed.',
-    ] },
-    { heading: 'Documents to prepare', paragraphs: [
-      'ESPD, the key-experts form, the signed project list, the ISO certificate, the insurance schedule, the technical-offer questionnaire, and the financial bid form. The Malta eID and ARF v2.4 gaps belong in the technical offer as a plan, not as work already certified.',
-    ] },
-  ];
+export type BriefSource = { name: string; name_en: string | null; url: string | null; document_type: string | null };
+
+function sourceUrl(docs: BriefSource[], test: (doc: BriefSource) => boolean) {
+  return docs.find((doc) => doc.url && test(doc))?.url || '';
+}
+
+/** The sample brief, with links taken from the tender’s own files. */
+export function exampleBrief(deadline: string, docs: BriefSource[] = []): ProposalBrief {
+  const label = (doc: BriefSource) => `${doc.name_en || ''} ${doc.name}`.toLowerCase();
+  const espd = sourceUrl(docs, (doc) => doc.document_type === 'FORM' || label(doc).includes('espd'));
+  const financial = sourceUrl(docs, (doc) => doc.document_type === 'FINANCIAL_PROPOSAL');
+  const forms = sourceUrl(docs, (doc) => label(doc).includes('annex'));
+  const specifications = sourceUrl(docs, (doc) => doc.document_type === 'TENDER_SPECIFICATIONS' && !label(doc).includes('annex'));
+  return {
+    pack: [
+      { name: 'ESPD', description: 'Exclusion grounds, turnover and the project references the buyer scores.', url: espd },
+      { name: 'Key experts form', description: 'The named experts, their CVs and the on-site role in Malta.', url: forms },
+      { name: 'Technical offer', description: 'The questionnaire in the tender document, answered section by section.', url: specifications },
+      { name: 'Financial bid form', description: 'The priced offer on the buyer’s spreadsheet.', url: financial },
+    ],
+    documents: [
+      {
+        name: 'ESPD',
+        needed: ['Exclusion grounds', 'Average yearly turnover', 'Two wallet project references', 'ISO/IEC 27001 certificate', 'Insurance schedule'],
+        missing: ['Signed project list that reaches the €5 million reference threshold', 'Insurance schedule raised from €2 million to €4 million'],
+        sections: [
+          { title: 'Exclusion grounds', body: 'None declared.', gaps: [] },
+          { title: 'Economic and financial standing', body: 'Average yearly turnover is €4.1 million. ISO/IEC 27001 is current.', gaps: ['Insurance schedule at €4 million'] },
+          { title: 'Technical and professional ability', body: 'Two wallet projects are named: €2.1 million and €1.6 million. Together they are under the €5 million reference threshold.', gaps: ['Signed project list with the extra contracts that reach €5 million'] },
+        ],
+      },
+      {
+        name: 'Key experts form',
+        needed: ['Project manager', 'Solution architect', 'Lead developer', 'Cybersecurity specialist', 'Trust-services specialist', 'Malta-based systems engineer', 'Legal specialist in EUDI certification'],
+        missing: ['A Malta-based systems engineer for the 90-month on-site role', 'A legal specialist in EUDI certification'],
+        sections: [
+          { title: 'Key experts', body: 'Project manager, solution architect, lead developer, cybersecurity specialist and trust-services specialist are named from the current team, with CVs.', gaps: ['Malta-based systems and network engineer', 'Legal specialist in EUDI certification'] },
+        ],
+      },
+      {
+        name: 'Technical offer',
+        needed: ['Delivery approach', 'ARF v2.4 coverage', 'Malta eID binding', 'Version 2 hosting in the MITA data centres'],
+        missing: ['Line-by-line ARF v2.4 answers', 'A host already in the MITA data centres'],
+        sections: [
+          { title: 'Delivery approach', body: 'The offer follows the current wallet service: identity, credentials and the existing team named above.', gaps: [] },
+          { title: 'ARF v2.4', body: 'The questionnaire is not yet mapped line by line. Gaps stay a plan, not work already certified.', gaps: ['An answer for each ARF v2.4 requirement in the questionnaire'] },
+          { title: 'Hosting', body: 'Current hosting is in Frankfurt. Version 2, including the PKI, has to be colocated in the MITA data centres.', gaps: ['A host already in the MITA data centres'] },
+        ],
+      },
+      {
+        name: 'Financial bid form',
+        needed: ['Tenderer name', 'Price for the service', 'VAT treatment'],
+        missing: ['The price'],
+        sections: [
+          { title: 'Tenderer', body: 'Harborline Identity.', gaps: [] },
+          { title: 'Price', body: 'The company file has no bid price.', gaps: ['The price on the buyer’s financial bid form', `Submitted by ${deadline}`] },
+        ],
+      },
+    ],
+    next_steps: [
+      'Ask the auditor to sign the project list and say which extra contracts reach the €5 million reference threshold.',
+      'Get a quote to raise cyber cover from €2 million to €4 million, and attach the schedule to the ESPD.',
+      'Name the Malta-based engineer and the legal specialist, with CVs, before the key-experts form is finished.',
+      'Answer the technical-offer questionnaire line by line against ARF v2.4, and name a host in the MITA data centres.',
+      `Put the price on the financial bid form and submit the pack by ${deadline}.`,
+    ],
+  };
 }

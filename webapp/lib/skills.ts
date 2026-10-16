@@ -88,7 +88,7 @@ A mandatory requirement marked NO_MATCH caps the fit. UNKNOWN means the material
 `,
   'proposal-draft': `---
 name: proposal-draft
-description: Drafts a Tender Town proposal brief from a tender's fit analysis, including requirement answers, evidence, and gaps. Use when the user wants a proposal draft, a bid brief, or a response outline for a tender.
+description: Drafts a Tender Town proposal as the bid manager: the submission pack, each document filled from the company file, and the next steps. Use when the user wants a proposal draft, a bid brief, or the documents a tender asks for.
 ---
 
 # Proposal draft
@@ -105,13 +105,13 @@ The brief uses the company material on the scope. You cannot upload documents. G
 
 ## Run
 
-Call \`run_scope_agent\` with \`agent\` \`proposal_manager\`, \`scope_id\`, and the tender id as \`item_id\`. It refuses until an evaluation exists for that scope.
+Call \`run_scope_agent\` with \`agent\` \`proposal_manager\`, \`scope_id\`, and the tender id as \`item_id\`. It refuses until an evaluation exists for that scope, and until the scope has company information.
 
 ## How to present it
 
-The brief is the document the bid team starts from. Keep its sections: tender summary, dates, evaluation criteria, eligibility, project references, human resources, technical requirements, project requirements, documents to submit, gaps, and next steps.
+The brief is the submission the organisation finishes. Show the pack as a table (name, description, link), then each document with what it needs, what is missing, and the filled sections, then the next steps.
 
-The status on a requirement is Covered, Partial, Partner needed, or Gap. Do not invent a certificate, a project, a person, a figure, or a date. Do not submit the proposal anywhere, and do not publish a notice.
+A template from the tender is filled in that template’s own structure. A field the company file does not cover stays marked to provide. Do not invent a certificate, a project, a person, a figure, or a date. Do not submit the proposal anywhere, and do not publish a notice.
 `,
 } as const;
 

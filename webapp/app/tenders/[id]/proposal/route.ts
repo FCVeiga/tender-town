@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { getContext, getMembership, getWorkspaceContext } from '@/lib/accounts';
 import { getT } from '@/lib/i18n/server';
 import { planIncludes } from '@/lib/plans';
+import { briefToMarkdown, parseProposalBrief } from '@/lib/proposalBrief';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     || (rows || []).find((r: any) => !r.workspace_id && r.proposal_brief);
   if (!row?.proposal_brief) return new Response(t('No proposal brief yet.'), { status: 404 });
   const slug = String(o?.title_en || o?.title || 'tender').normalize('NFKD').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-  return new Response(row.proposal_brief, {
+  const parsed = parseProposalBrief(row.proposal_brief);
+  return new Response(parsed ? briefToMarkdown(parsed) : row.proposal_brief, {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
       'Content-Disposition': `attachment; filename="proposal-brief-${slug || params.id}.md"`,

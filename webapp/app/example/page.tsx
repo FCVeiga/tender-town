@@ -9,6 +9,7 @@ import { StatusTags } from '@/components/OpportunityCard';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
 import TenderHistory from '@/components/TenderHistory';
 import ExampleWalkthrough from '@/components/ExampleWalkthrough';
+import { shownCriteria } from '@/lib/award';
 import PostMarkdown from '@/components/social/PostMarkdown';
 import { UpdateEvent } from '@/components/UpdateComment';
 import { getLocale, getT } from '@/lib/i18n/server';
@@ -35,10 +36,11 @@ export default async function ExamplePage() {
     );
   }
 
-  const [{ data: requirements }, { data: documents }, { data: changes }, { data: countryRow }] = await Promise.all([
+  const [{ data: requirements }, { data: documents }, { data: changes }, { data: award }, { data: countryRow }] = await Promise.all([
     supabase.from('requirements').select('*').eq('opportunity_id', o.opportunity_id),
     supabase.from('documents').select('*').eq('opportunity_id', o.opportunity_id).order('publication_date', { ascending: true, nullsFirst: false }),
     supabase.from('change_events').select('*').eq('opportunity_id', o.opportunity_id).order('detected_at', { ascending: false }),
+    supabase.from('award_criteria').select('*').eq('opportunity_id', o.opportunity_id).order('weight', { ascending: false }),
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
   ]);
 
@@ -119,6 +121,8 @@ export default async function ExamplePage() {
             verifiedAt={o.verified_at}
           />
         )}
+        sourceDocs={(documents || []).map((d) => ({ name: d.name as string, name_en: (d.name_en as string | null) ?? null, url: (d.url as string | null) ?? null, document_type: (d.document_type as string | null) ?? null }))}
+        criteria={shownCriteria(award)}
         sources={(
           <section className="detail-block" id="sources">
             <h2>{t('Source')}</h2>
