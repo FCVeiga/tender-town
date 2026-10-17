@@ -556,10 +556,15 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .scope-banner .form-msg { color: #fff; }
 .scope-banner-actions { display: flex; align-items: center; gap: 10px; flex: none; min-width: 0; max-width: 100%; flex-wrap: wrap; }
 .find-chat, .find-panel { display: flex; flex-direction: column; gap: 12px; }
-.modal.find-modal { z-index: 80; display: flex; flex-direction: column; overflow: hidden; }
-.modal.find-modal .modal-body { flex: 1; min-height: 0; overflow: hidden; }
-.find-panel { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-.find-foot { flex: none; display: flex; flex-direction: column; gap: 8px; background: var(--surface); }
+/* Block, not flex: a flex dialog collapses to the title row on iPhone. */
+.modal.find-modal {
+  z-index: 80; display: block; height: fit-content; max-height: min(92dvh, 760px);
+  overflow: auto; -webkit-overflow-scrolling: touch;
+}
+.modal.find-modal .modal-body { display: flex; flex-direction: column; gap: 16px; height: auto; min-height: auto; overflow: visible; }
+.modal.find-modal .modal-head { position: sticky; top: 0; z-index: 1; background: var(--surface); }
+.find-panel { flex: none; min-height: auto; overflow: visible; }
+.find-foot { flex: none; display: flex; flex-direction: column; gap: 8px; position: sticky; bottom: 0; padding-top: 8px; background: var(--surface); }
 .find-fields { display: flex; flex-direction: column; gap: 12px; }
 .find-fields .field { margin: 0; }
 .modal.find-modal .btn.primary.find-go {
@@ -1326,11 +1331,18 @@ th.num .sort-head { justify-content: flex-end; }
     width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 20px 20px 0 0; border-bottom: 0;
     max-height: 92vh; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom);
   }
-  /* The find sheet sits above the tab bar and the keyboard. */
+  /* Longhands, not inset: iOS keeps a stretched dialog and paints only the title. */
   .modal.find-modal {
-    max-height: min(92dvh, calc(var(--vvh, 100dvh) - var(--topbar-h) - 8px));
-    margin-bottom: var(--keyboard-inset, 0px);
+    top: auto; right: 0; bottom: 0; left: 0;
+    width: 100%;
+    height: fit-content;
+    min-height: 520px;
+    min-height: min(520px, 85svh);
+    max-height: 92svh;
+    margin: 0 0 var(--keyboard-inset, 0px);
   }
+  .modal.find-modal[open] { animation: none; }
+  .modal.find-modal .modal-body { padding-bottom: calc(18px + var(--keyboard-inset, 0px)); }
   body:has(dialog.find-modal[open]) .bottom-nav { visibility: hidden; pointer-events: none; }
   .modal[open] { animation: sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
   .modal-body { padding: 10px 16px 18px; }

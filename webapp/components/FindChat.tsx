@@ -38,8 +38,8 @@ export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onC
     if (!vv) return;
     const apply = () => {
       const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
-      root.style.setProperty('--keyboard-inset', `${inset}px`);
-      root.style.setProperty('--vvh', `${Math.round(vv.height)}px`);
+      const keyboard = inset > 80 && inset < window.innerHeight * 0.6 ? inset : 0;
+      root.style.setProperty('--keyboard-inset', `${keyboard}px`);
     };
     apply();
     vv.addEventListener('resize', apply);
@@ -48,7 +48,6 @@ export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onC
       vv.removeEventListener('resize', apply);
       vv.removeEventListener('scroll', apply);
       root.style.removeProperty('--keyboard-inset');
-      root.style.removeProperty('--vvh');
     };
   }, []);
 
