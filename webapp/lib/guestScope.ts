@@ -114,7 +114,7 @@ const rank = (name: string) => {
 };
 
 export function wordsOf(text: string): string[] {
-  return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter((w) => w.length >= 4 && !STOP.has(w));
+  return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? ([] as string[])).filter((w) => w.length >= 4 && !STOP.has(w));
 }
 
 /** Words a preset can be recognised by. New presets need no code: this reads their name, instructions and search config. */
