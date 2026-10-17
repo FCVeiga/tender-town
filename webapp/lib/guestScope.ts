@@ -19,6 +19,8 @@ export const FOCUS_USER_COOKIE = 'tt_scope_user';
 export const INTENT_COOKIE = 'tt_intent';
 /** 1 = the scope banner is collapsed. 0 = the person opened it again. */
 export const BANNER_COOKIE = 'tt_banner';
+/** What a visitor told the find-a-tender agent, before an account exists. */
+export const FIND_COOKIE = 'tt_find';
 export const SCOPE_QUERY_HEADER = 'x-tt-scope';
 
 const SCOPE_QUERY = /^[a-z0-9-]{1,80}$/;

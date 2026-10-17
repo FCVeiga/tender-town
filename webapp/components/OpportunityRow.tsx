@@ -50,10 +50,11 @@ export function RingGradients() {
   );
 }
 
-export default function OpportunityRow({ o, countryName, updates = [], like, archived = false }: {
+export default function OpportunityRow({ o, countryName, updates = [], like, archived = false, title }: {
   o: Opportunity; countryName: string | null; updates?: UpdateEvent[];
   like?: { liked: boolean; signedIn: boolean };
   archived?: boolean;
+  title?: string;
 }) {
   const days = daysUntil(o.deadline);
   const stage = stageOf(o);
@@ -80,7 +81,7 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
           {o.opportunity_type && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
           {o.duration_months ? <span className="opp-chip">{o.duration_months >= 24 ? t('{n} years', { n: +(o.duration_months / 12).toFixed(1) }) : t('{n} months', { n: o.duration_months })}</span> : null}
         </div>
-        <h2 className="opp-title">{titleOf(o)}</h2>
+        <h2 className="opp-title">{title || titleOf(o)}</h2>
         {description && <p className="opp-desc">{description}</p>}
         {buyer && <p className="opp-buyer" title={o.authority ?? ''}><span>{t('Buyer')}</span>{buyer}</p>}
       </div>

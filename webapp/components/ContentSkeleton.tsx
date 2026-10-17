@@ -5,7 +5,7 @@ import { BannerJobs } from '@/components/ScopeBanner';
 import AgentLoader from '@/components/AgentLoader';
 
 const HEADING = 'Specialised AI agents for your next tender.';
-const COPY = 'Choose your market. Create a custom scope to tailor their work to your business.';
+const COPY = 'Choose your market, or tell an agent about your company and see the best open tender.';
 const NOTE = 'Your specialised tender agents';
 
 function Bars({ n, className }: { n: number; className: string }) {

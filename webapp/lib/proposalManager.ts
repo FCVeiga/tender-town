@@ -8,7 +8,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { agentPrompt, companyBrief, isAgentEnabled } from '@/lib/settings';
+import { agentPrompt, companyBrief, isAgentEnabled, namedCompany } from '@/lib/settings';
 import { friendly, lockEvaluation, unlockEvaluation } from '@/lib/scopeWork';
 import { getScope } from '@/lib/scopes';
 import { agentRunAllowance, recordAgentRun } from '@/lib/agentQuota';
@@ -43,11 +43,11 @@ async function proposalWorkspace(scopeId: string, workspaceId: string | null): P
   return (count ?? 0) > 0 ? workspaceId : null;
 }
 
-export async function ensureProposal(opportunityId: string, scopeId: string, workspaceId: string | null = null): Promise<{ status: ProposalStatus; message?: string }> {
+export async function ensureProposal(opportunityId: string, scopeId: string, workspaceId: string | null = null, onboard = false): Promise<{ status: ProposalStatus; message?: string }> {
   if (!(await isAgentEnabled('proposal_manager', scopeId))) return { status: 'error', message: 'the Proposal Manager Agent is switched off for this scope' };
   const allowance = await agentRunAllowance('proposal_manager');
   const t = await getT();
-  if (allowance.block) return { status: 'error', message: t('Proposal briefs are included on Teams.') };
+  if (!onboard && allowance.block) return { status: 'error', message: t('Proposal briefs are included on Teams.') };
   const owner = await proposalWorkspace(scopeId, workspaceId);
   const { data: existing } = await (owner
     ? getSupabaseServerClient().from('scope_evaluations').select('evaluation').match({ scope_id: scopeId, opportunity_id: opportunityId, workspace_id: owner })
@@ -58,7 +58,7 @@ export async function ensureProposal(opportunityId: string, scopeId: string, wor
   if (!(await lockEvaluation(scopeId, opportunityId, owner, 'proposal_started_at', 'proposal_error', LOCK_MINUTES))) return { status: 'running' };
   try {
     await runProposal(opportunityId, scopeId, owner);
-    if (allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'proposal_manager');
+    if (!onboard && allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'proposal_manager');
     await unlockEvaluation(scopeId, opportunityId, owner, 'proposal_started_at', 'proposal_error', null);
     return { status: 'done' };
   } catch (e: any) {
@@ -113,7 +113,10 @@ async function runProposal(opportunityId: string, scopeId: string, workspaceId: 
       : '\nNo template file could be read. Draft only from the document names and the requirements, and say the template was not in the files read.',
   ].filter(Boolean).join('\n');
 
-  const [prompt, brief] = await Promise.all([agentPrompt('proposal_manager', 'proposal_manager.md', scopeId), companyBrief({ withDocuments: true, scopeId, workspaceId })]);
+  const [prompt, brief] = await Promise.all([
+    namedCompany(scopeId, workspaceId).then((name) => agentPrompt('proposal_manager', 'proposal_manager.md', scopeId, name)),
+    companyBrief({ withDocuments: true, scopeId, workspaceId }),
+  ]);
   const client = new Anthropic({
     defaultHeaders: process.env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID } : undefined,
   });

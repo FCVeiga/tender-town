@@ -555,6 +555,25 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .scope-chevron.up { transform: rotate(180deg); }
 .scope-banner .form-msg { color: #fff; }
 .scope-banner-actions { display: flex; align-items: center; gap: 10px; flex: none; min-width: 0; max-width: 100%; flex-wrap: wrap; }
+.find-chat, .find-panel { display: flex; flex-direction: column; gap: 12px; }
+.modal:has(.find-panel) { display: flex; flex-direction: column; overflow: hidden; }
+.modal:has(.find-panel) .modal-body { flex: 1; min-height: 0; overflow: hidden; }
+.find-panel { flex: 1; min-height: 0; overflow-y: auto; }
+.find-fields { display: flex; flex-direction: column; gap: 12px; }
+.find-fields .field { margin: 0; }
+.scope-banner .modal .btn.primary.find-go { width: 100%; min-height: 44px; }
+.find-result { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 4px 0 2px; padding: 4px 0 4px 14px; border-left: 3px solid var(--accent); }
+.find-result h3 { margin: 0; font-size: 22px; line-height: 1.25; letter-spacing: -0.02em; }
+.find-result p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--text); }
+.find-result .find-result-kicker { margin: 6px 0 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.find-line { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; }
+.find-line.you { justify-content: flex-end; }
+.find-bubble { margin: 0; padding: 8px 12px; border-radius: 14px; font-size: 14.5px; line-height: 1.45; max-width: min(34rem, 100%); }
+.find-line.agent .find-bubble { background: var(--surface-2); border-bottom-left-radius: 4px; }
+.find-line.you .find-bubble { background: var(--brand-a); color: #fff; border-bottom-right-radius: 4px; }
+.find-ask { display: flex; gap: 8px; margin-top: 12px; }
+.find-ask input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
+.find-run { max-width: 40rem; }
 .scope-banner-picker { position: relative; min-width: 0; max-width: 100%; }
 .scope-banner-select {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;

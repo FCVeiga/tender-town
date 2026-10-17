@@ -5,13 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n/client';
 import { chooseScope, rememberFocus, rememberIntent, setBannerCompact } from '@/app/scope/actions';
+import FindChat from '@/components/FindChat';
 import { Modal } from '@/components/settings/SettingsUI';
 import type { FocusModel } from '@/lib/scopeFocus';
 
 type Gate = { action: 'switch' | 'create'; kind: 'plan' | 'permission' | 'signup' | 'limit'; scopeId?: string };
 
 const HEADING = 'Specialised AI agents for your next tender.';
-const COPY = 'Choose your market. Create a custom scope to tailor their work to your business.';
+const COPY = 'Choose your market, or tell an agent about your company and see the best open tender.';
+const FIND = 'Find the best active tender for your company';
 const NOTE = 'Your specialised tender agents';
 const CONNECT = 'Connect your own agents';
 const CONNECT_BODY = 'Your agent can do these jobs: find opportunities, analyse requirements and prepare proposal briefs. You create the account.';
@@ -64,8 +66,8 @@ function BannerArt() {
   );
 }
 
-export default function ScopeBanner({ model, createAction, compact: compactSaved }: {
-  model: FocusModel; createAction: (() => Promise<void>) | null; compact: boolean;
+export default function ScopeBanner({ model, compact: compactSaved }: {
+  model: FocusModel; compact: boolean;
 }) {
   const t = useT();
   const router = useRouter();
@@ -75,6 +77,7 @@ export default function ScopeBanner({ model, createAction, compact: compactSaved
   const [active, setActive] = useState(0);
   const [gate, setGate] = useState<Gate | null>(model.deny ? { action: 'switch', kind: model.deny.kind, scopeId: model.deny.scopeId } : null);
   const [agents, setAgents] = useState(false);
+  const [find, setFind] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLDivElement>(null);
@@ -276,15 +279,7 @@ export default function ScopeBanner({ model, createAction, compact: compactSaved
             </div>
           )}
         </div>
-        {createAction ? (
-          <form action={createAction}>
-            <button type="submit" className="scope-banner-create">{t('+ Create a scope')}</button>
-          </form>
-        ) : (
-          <button type="button" className="scope-banner-create" onClick={() => setGate({ action: 'create', kind: model.create === 'ok' ? 'plan' : model.create })}>
-            {t('+ Create a scope')}
-          </button>
-        )}
+        <button type="button" className="btn primary" onClick={() => setFind(true)}>{t(FIND)}</button>
         <button type="button" className="btn primary scope-banner-connect" onClick={() => setAgents(true)}>{t(CONNECT)}</button>
         <Link href="/example" className="scope-banner-create">{t('See an example')}</Link>
         <button type="button" className="scope-banner-fold" aria-expanded={!compact} aria-label={compact ? t('Expand') : t('Collapse')} onClick={toggleCompact}>
@@ -296,6 +291,7 @@ export default function ScopeBanner({ model, createAction, compact: compactSaved
         <GateModal gate={gate} model={model} onClose={() => setGate(null)} />
       )}
       {agents && <AgentModal onClose={() => setAgents(false)} />}
+      {find && <FindChat signedIn={model.signedIn} onClose={() => setFind(false)} />}
     </section>
   );
 }

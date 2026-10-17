@@ -3,11 +3,15 @@ import Link from 'next/link';
 import { siteOrigin } from '@/lib/auth';
 import { pageMeta } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
-import { FEED_VIEWS, FeedView, getFeed } from '@/lib/feed';
+import { FEED_VIEWS, FeedItem, FeedView, getFeed } from '@/lib/feed';
 import { getActivity } from '@/lib/sources';
-import FeedCard from '@/components/FeedCard';
+import HomeFeedItems, { HomeEntry } from '@/components/HomeFeedItems';
 import LiveActivity from '@/components/LiveActivity';
-import { getFeedLikes, likeTarget } from '@/lib/likes';
+import { getLikes, likeTarget } from '@/lib/likes';
+import { getEngagement } from '@/lib/engagement';
+import { getCommunityFeed, type PostCard } from '@/lib/community';
+import { getCurrentUser } from '@/lib/auth';
+import { getSupabaseServerClient } from '@/lib/supabase';
 import { getT } from '@/lib/i18n/server';
 import { withPublicScope } from '@/lib/guestScope';
 import { resolveFocus } from '@/lib/scopeFocus';
@@ -17,11 +21,6 @@ import ScopeView from '@/components/ScopeView';
 import ScopeStatus, { CheckedLine } from '@/components/ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 import AgentLoader from '@/components/AgentLoader';
-
-const likeOf = (likes: { signedIn: boolean; liked: Set<string> }, href: string) => {
-  const t = likeTarget(href);
-  return { liked: !!t && likes.liked.has(`${t[0]}:${t[1]}`), signedIn: likes.signedIn };
-};
 
 const PAGE = 30;
 const LEAD = 'Specialised AI agents for your next tender. They find opportunities, analyse requirements and prepare proposal briefs.';
@@ -78,14 +77,32 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
   const focus = await resolveFocus();
   const view = (FEED_VIEWS.find((v) => v.slug === raw)?.slug ?? 'top') as FeedView;
   const scopeId = focus.hold?.id ?? focus.current?.id ?? null;
-  const [{ items, error }, activity] = await Promise.all([
+  const [{ items, error }, activity, user] = await Promise.all([
     getFeed(view, now),
     focus.hold || !focus.current ? Promise.resolve([]) : getActivity(30, focus.current.id),
+    getCurrentUser(),
   ]);
+  const posts = focus.hold ? [] : await getCommunityFeed(view === 'new' ? 'new' : 'best', user?.id ?? null, now);
+  const postEngAll = await getEngagement('post', posts.map((post) => post.id));
+  const visiblePosts = posts.filter((post) => !postEngAll.hidden.has(post.id));
+  const entries = mixHome(items, visiblePosts, view);
   const run = scopeRun(focus.current);
-  const kind = collectionKind(run, items.length > 0, !!focus.hold);
+  const kind = collectionKind(run, entries.length > 0, !!focus.hold);
   const shown = Math.max(PAGE, Number(n) || PAGE);
-  const likes = await getFeedLikes(items.map((i) => i.href));
+  const slice = entries.slice(0, shown);
+  const newsIds = slice.flatMap((entry) => entry.kind === 'item' && entry.item.kind === 'news' && entry.item.newsId ? [entry.item.newsId] : []);
+  const signalIds = slice.flatMap((entry) => entry.kind === 'item' && entry.item.event === 'signal' ? [likeTarget(entry.item.href)?.[1] || entry.item.opportunityId || ''] : []).filter(Boolean);
+  const postIds = slice.flatMap((entry) => entry.kind === 'post' ? [entry.post.id] : []);
+  const tenderIds = slice.flatMap((entry) => entry.kind === 'item' && entry.item.event !== 'signal' && entry.item.opportunity ? [entry.item.opportunity.opportunity_id] : []);
+  const codes = Array.from(new Set(slice.flatMap((entry) => entry.kind === 'item' && entry.item.opportunity?.country && entry.item.event !== 'signal' ? [entry.item.opportunity.country] : [])));
+  const [newsEng, tenderEng, postEng, likes, countryRows] = await Promise.all([
+    getEngagement('news', newsIds),
+    getEngagement('tender', signalIds),
+    postIds.length ? Promise.resolve(postEngAll) : getEngagement('post', []),
+    getLikes('tender', tenderIds),
+    codes.length ? getSupabaseServerClient().from('countries').select('code, name').in('code', codes) : Promise.resolve({ data: [] as { code: string; name: string }[] }),
+  ]);
+  const countries = new Map((countryRows.data || []).map((row) => [row.code, row.name]));
   const href = (v: FeedView, more?: number) => {
     const p = new URLSearchParams();
     if (v !== 'top') p.set('view', v);
@@ -117,13 +134,14 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
         )}
         {kind === 'ready' && <CheckedLine iso={run.lastSuccessAt} surface="feed" />}
         <div className="feed">
-          {(kind === 'ready' || kind === 'stale') && items.slice(0, shown).map((item) => (
-            <FeedCard key={item.key} item={item} now={now} value={view === 'relevance' ? item.score : item.combined} like={likeOf(likes, item.href)} />
-          ))}
+          {(kind === 'ready' || kind === 'stale') && (
+            <HomeFeedItems entries={slice} now={now} valueOf={(item) => view === 'relevance' ? item.score : item.combined}
+              countries={countries} likes={likes} newsEng={newsEng} tenderEng={tenderEng} postEng={postEng} />
+          )}
         </div>
-        {(kind === 'ready' || kind === 'stale') && items.length > shown && (
+        {(kind === 'ready' || kind === 'stale') && entries.length > shown && (
           <Link href={href(view, shown + PAGE)} scroll={false} className="feed-more">
-            {t('Show more')} <span className="mono">({t('{n} left', { n: items.length - shown })})</span>
+            {t('Show more')} <span className="mono">({t('{n} left', { n: entries.length - shown })})</span>
           </Link>
         )}
         </ScopeView>
@@ -132,4 +150,16 @@ async function HomeFeed({ view: raw, n }: { view?: string; n?: string }) {
       <aside className="home-right"><LiveActivity initial={focus.hold ? [] : activity} scopeId={scopeId} /></aside>
     </>
   );
+}
+
+/** Signals stay first, industry news last. Community posts sit with the rest, on the same sort. */
+function mixHome(items: FeedItem[], posts: PostCard[], view: FeedView): HomeEntry[] {
+  const bandOf = (item: FeedItem) => item.category === 'signal' || item.event === 'signal' ? 0 : item.category === 'industry' ? 2 : 1;
+  const rows = [
+    ...items.map((item) => ({ key: item.key, kind: 'item' as const, item, band: bandOf(item), at: item.at.getTime(), hot: item.combined, score: item.score })),
+    ...posts.map((post) => ({ key: `post:${post.id}`, kind: 'post' as const, post, band: 1, at: new Date(post.createdAt).getTime(), hot: post.score, score: post.score })),
+  ];
+  const rank = (row: (typeof rows)[number]) => view === 'new' ? row.at : view === 'relevance' ? row.score : row.hot;
+  rows.sort((a, b) => a.band - b.band || rank(b) - rank(a));
+  return rows;
 }

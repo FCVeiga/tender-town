@@ -8,7 +8,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { agentPrompt, companyBrief, isAgentEnabled } from '@/lib/settings';
+import { agentPrompt, companyBrief, isAgentEnabled, namedCompany } from '@/lib/settings';
 import { friendly, lockEvaluation, unlockEvaluation } from '@/lib/scopeWork';
 import { getScope } from '@/lib/scopes';
 import { agentRunAllowance, recordAgentRun } from '@/lib/agentQuota';
@@ -27,7 +27,7 @@ export type EvaluationStatus = 'done' | 'running' | 'error';
 // context and uploaded material in place of {company_brief}.
 async function systemPrompt(scopeId: string, workspaceId: string | null) {
   const [prompt, brief] = await Promise.all([
-    agentPrompt('tender_evaluation', 'tender_evaluation.md', scopeId),
+    namedCompany(scopeId, workspaceId).then((name) => agentPrompt('tender_evaluation', 'tender_evaluation.md', scopeId, name)),
     companyBrief({ withDocuments: true, scopeId, workspaceId }),
   ]);
   return prompt.replace('{company_brief}', brief);
@@ -65,12 +65,12 @@ function parseJson(text: string) {
  * Run the evaluation unless one is already running (two clicks, or two
  * people, share one run: the second gets 'running' and waits for the page).
  */
-export async function ensureEvaluation(opportunityId: string, scopeId: string, workspaceId: string | null = null): Promise<{ status: EvaluationStatus; message?: string }> {
+export async function ensureEvaluation(opportunityId: string, scopeId: string, workspaceId: string | null = null, onboard = false): Promise<{ status: EvaluationStatus; message?: string }> {
   if (!(await isAgentEnabled('tender_evaluation', scopeId))) return { status: 'error', message: 'the Tender Evaluation Agent is switched off for this scope' };
   const allowance = await agentRunAllowance('tender_evaluation');
   const t = await getT();
-  if (allowance.block === 'plan') return { status: 'error', message: t('This plan does not include Tender Evaluation.') };
-  if (allowance.block === 'quota') return { status: 'error', message: t('This workspace has used its {n} tender evaluations for this month.', { n: allowance.limit ?? 0 }) };
+  if (!onboard && allowance.block === 'plan') return { status: 'error', message: t('This plan does not include Tender Evaluation.') };
+  if (!onboard && allowance.block === 'quota') return { status: 'error', message: t('This workspace has used its {n} tender evaluations for this month.', { n: allowance.limit ?? 0 }) };
   const owner = await evaluationWorkspace(scopeId, workspaceId);
   if (workspaceId && !owner) {
     const db = getSupabaseServerClient();
@@ -95,7 +95,7 @@ export async function ensureEvaluation(opportunityId: string, scopeId: string, w
       return { status: 'done' };
     }
     await runEvaluation(opportunityId, scopeId, owner);
-    if (allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'tender_evaluation');
+    if (!onboard && allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'tender_evaluation');
     await unlockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', null);
     return { status: 'done' };
   } catch (e: any) {

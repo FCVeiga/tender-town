@@ -12,7 +12,7 @@
  * same rate, order only shifts when posts enter or leave the feed.
  */
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
+import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf, type Opportunity } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { publicText } from '@/lib/publication';
@@ -63,6 +63,7 @@ export type FeedItem = {
   statusLabel?: string | null;   // e.g. "Closed" / "Awarded" in search results
   image?: string | null;         // news: the publisher's share image
   related?: { href: string; headline: string }[];
+  opportunity?: Opportunity;    // tender and signal rows, when the notice is still open
 };
 
 /**
@@ -168,6 +169,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
         isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
         opportunityId: p.opportunity_id,
         newsId: p.news_id,
+        opportunity: opp,
       };
     });
 
@@ -200,6 +202,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
       country: o.country, at, score, combined: Math.round(score * decay(at, now)),
       movement: 'same', deadline: o.deadline, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
       opportunityId: o.opportunity_id,
+      opportunity: o,
     });
   }
   await publishedCopy([...rest, ...keptOpp.values(), ...newsById.values()]);
@@ -226,7 +229,7 @@ async function publishedCopy(items: FeedItem[]) {
   const newsIds = items.map((item) => item.newsId).filter((id): id is string => !!id);
   const oppIds = items.map((item) => item.opportunityId).filter((id): id is string => !!id);
   const [newsRows, oppRows] = await Promise.all([
-    newsIds.length ? db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, category').in('news_id', newsIds) : Promise.resolve({ data: [] as any[] }),
+    newsIds.length ? db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, category, image_url').in('news_id', newsIds) : Promise.resolve({ data: [] as any[] }),
     oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
   ]);
   const news = new Map((newsRows.data || []).map((row: any) => [row.news_id, row]));
@@ -236,8 +239,10 @@ async function publishedCopy(items: FeedItem[]) {
     const opp = item.opportunityId ? opps.get(item.opportunityId) : null;
     const row = story || opp;
     if (!row) continue;
-    item.headline = titleOf(row);
+    const official = item.kind === 'opportunity' && item.event !== 'signal' ? String(item.opportunity?.title || opp?.title || '').trim() : '';
+    item.headline = official || titleOf(row);
     item.body = publicText(plainText(firstInLanguage(row.summary, row.excerpt) || '')) || null;
+    if (story?.image_url) item.image = story.image_url;
     if (story?.category === 'industry') item.categoryLabel = 'Industry news';
   }
 }

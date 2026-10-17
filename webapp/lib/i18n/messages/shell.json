@@ -2456,5 +2456,229 @@
     "fr": "Prépare l’offre à partir des modèles de l’appel d’offres et du dossier de votre entreprise, et liste ce que l’équipe d’offre doit encore fournir.",
     "de": "Bereitet das Angebot aus den Vorlagen der Ausschreibung und deiner Unternehmensakte vor und listet, was das Angebotsteam noch liefern muss.",
     "it": "Prepara l’offerta dai modelli della gara e dal fascicolo della tua azienda, ed elenca ciò che il team di gara deve ancora fornire."
+  },
+  "Choose your market, or tell an agent about your company and see the best open tender.": {
+    "pt": "Escolha o seu mercado, ou diga a um agente o que a sua empresa faz e veja o melhor concurso aberto.",
+    "es": "Elige tu mercado, o cuéntale a un agente qué hace tu empresa y mira la mejor licitación abierta.",
+    "fr": "Choisissez votre marché, ou dites à un agent ce que fait votre entreprise et voyez le meilleur appel d’offres ouvert.",
+    "de": "Wähle deinen Markt, oder sag einem Agenten, was dein Unternehmen macht, und sieh die beste offene Ausschreibung.",
+    "it": "Scegli il tuo mercato, oppure di’ a un agente cosa fa la tua azienda e guarda la migliore gara aperta."
+  },
+  "Find the best active tender for your company": {
+    "pt": "Encontre o melhor concurso ativo para a sua empresa",
+    "es": "Encuentra la mejor licitación activa para tu empresa",
+    "fr": "Trouvez le meilleur appel d’offres actif pour votre entreprise",
+    "de": "Finde die beste aktive Ausschreibung für dein Unternehmen",
+    "it": "Trova la migliore gara attiva per la tua azienda"
+  },
+  "Find a tender": {
+    "pt": "Encontrar um concurso",
+    "es": "Encontrar una licitación",
+    "fr": "Trouver un appel d’offres",
+    "de": "Eine Ausschreibung finden",
+    "it": "Trovare una gara"
+  },
+  "What does your company do?": {
+    "pt": "O que faz a sua empresa?",
+    "es": "¿Qué hace tu empresa?",
+    "fr": "Que fait votre entreprise ?",
+    "de": "Was macht dein Unternehmen?",
+    "it": "Cosa fa la tua azienda?"
+  },
+  "Where can you take on the work?": {
+    "pt": "Onde pode realizar o trabalho?",
+    "es": "¿Dónde puedes hacer el trabajo?",
+    "fr": "Où pouvez-vous réaliser le travail ?",
+    "de": "Wo kannst du die Arbeit übernehmen?",
+    "it": "Dove puoi svolgere il lavoro?"
+  },
+  "Create an account and I will open the best active tender for you, with the evaluation and the proposal brief.": {
+    "pt": "Crie uma conta e abro o melhor concurso ativo para si, com a avaliação e o resumo da proposta.",
+    "es": "Crea una cuenta y te abro la mejor licitación activa, con la evaluación y el informe de oferta.",
+    "fr": "Créez un compte et j’ouvre pour vous le meilleur appel d’offres actif, avec l’évaluation et la note d’offre.",
+    "de": "Erstelle ein Konto, und ich öffne die beste aktive Ausschreibung für dich, mit der Bewertung und dem Angebotsbriefing.",
+    "it": "Crea un account e apro la migliore gara attiva per te, con la valutazione e il brief dell’offerta."
+  },
+  "A short description": {
+    "pt": "Uma descrição curta",
+    "es": "Una descripción breve",
+    "fr": "Une courte description",
+    "de": "Eine kurze Beschreibung",
+    "it": "Una descrizione breve"
+  },
+  "Countries or regions": {
+    "pt": "Países ou regiões",
+    "es": "Países o regiones",
+    "fr": "Pays ou régions",
+    "de": "Länder oder Regionen",
+    "it": "Paesi o regioni"
+  },
+  "Say a little more about what you do.": {
+    "pt": "Diga um pouco mais sobre o que faz.",
+    "es": "Cuenta un poco más sobre lo que haces.",
+    "fr": "Dites-en un peu plus sur ce que vous faites.",
+    "de": "Sag etwas mehr darüber, was du machst.",
+    "it": "Di’ qualcosa in più su quello che fai."
+  },
+  "Create an account": {
+    "pt": "Criar uma conta",
+    "es": "Crear una cuenta",
+    "fr": "Créer un compte",
+    "de": "Konto erstellen",
+    "it": "Crea un account"
+  },
+  "Show the tender": {
+    "pt": "Mostrar o concurso",
+    "es": "Mostrar la licitación",
+    "fr": "Afficher l’appel d’offres",
+    "de": "Ausschreibung anzeigen",
+    "it": "Mostra la gara"
+  },
+  "Tell the agent about your company first.": {
+    "pt": "Diga primeiro ao agente o que a sua empresa faz.",
+    "es": "Cuéntale primero al agente qué hace tu empresa.",
+    "fr": "Dites d’abord à l’agent ce que fait votre entreprise.",
+    "de": "Sag dem Agenten zuerst, was dein Unternehmen macht.",
+    "it": "Di’ prima all’agente cosa fa la tua azienda."
+  },
+  "Finding the best open tender for your company, then writing the evaluation and the proposal brief.": {
+    "pt": "A encontrar o melhor concurso aberto para a sua empresa e a escrever a avaliação e o resumo da proposta.",
+    "es": "Buscando la mejor licitación abierta para tu empresa y escribiendo la evaluación y el informe de oferta.",
+    "fr": "Recherche du meilleur appel d’offres ouvert pour votre entreprise, puis rédaction de l’évaluation et de la note d’offre.",
+    "de": "Suche die beste offene Ausschreibung für dein Unternehmen und schreibe dann die Bewertung und das Angebotsbriefing.",
+    "it": "Cerco la migliore gara aperta per la tua azienda, poi scrivo la valutazione e il brief dell’offerta."
+  },
+  "No open tender matches that yet.": {
+    "pt": "Ainda não há um concurso aberto que corresponda.",
+    "es": "Todavía no hay una licitación abierta que encaje.",
+    "fr": "Aucun appel d’offres ouvert ne correspond encore.",
+    "de": "Dazu gibt es noch keine offene Ausschreibung.",
+    "it": "Non c’è ancora una gara aperta che corrisponda."
+  },
+  "The evaluation did not finish.": {
+    "pt": "A avaliação não terminou.",
+    "es": "La evaluación no ha terminado.",
+    "fr": "L’évaluation ne s’est pas terminée.",
+    "de": "Die Bewertung wurde nicht fertig.",
+    "it": "La valutazione non è finita."
+  },
+  "The proposal brief did not finish.": {
+    "pt": "O resumo da proposta não terminou.",
+    "es": "El informe de oferta no ha terminado.",
+    "fr": "La note d’offre ne s’est pas terminée.",
+    "de": "Das Angebotsbriefing wurde nicht fertig.",
+    "it": "Il brief dell’offerta non è finito."
+  },
+  "This account is not set up yet.": {
+    "pt": "Esta conta ainda não está configurada.",
+    "es": "Esta cuenta todavía no está lista.",
+    "fr": "Ce compte n’est pas encore prêt.",
+    "de": "Dieses Konto ist noch nicht eingerichtet.",
+    "it": "Questo account non è ancora pronto."
+  },
+  "Tell me the company name, its website, and any documentation you can share. I will look for the best active tender.": {
+    "pt": "Diga-me o nome da empresa, o website e a documentação que puder partilhar. Vou procurar o melhor concurso ativo.",
+    "es": "Dime el nombre de la empresa, su sitio web y la documentación que puedas compartir. Buscaré la mejor licitación activa.",
+    "fr": "Indiquez le nom de l’entreprise, son site et la documentation que vous pouvez partager. Je chercherai le meilleur appel d’offres actif.",
+    "de": "Nenne den Firmennamen, die Website und die Unterlagen, die du teilen kannst. Ich suche die beste aktive Ausschreibung.",
+    "it": "Dimmi il nome dell’azienda, il sito e la documentazione che puoi condividere. Cerco la migliore gara attiva."
+  },
+  "Finding active tenders for {name}.": {
+    "pt": "A procurar concursos ativos para {name}.",
+    "es": "Buscando licitaciones activas para {name}.",
+    "fr": "Recherche d’appels d’offres actifs pour {name}.",
+    "de": "Suche aktive Ausschreibungen für {name}.",
+    "it": "Cerco gare attive per {name}."
+  },
+  "I may have found an active tender for {name}.": {
+    "pt": "Posso ter encontrado um concurso ativo para {name}.",
+    "es": "Puede que haya encontrado una licitación activa para {name}.",
+    "fr": "J’ai peut-être trouvé un appel d’offres actif pour {name}.",
+    "de": "Ich habe vielleicht eine aktive Ausschreibung für {name} gefunden.",
+    "it": "Potrei aver trovato una gara attiva per {name}."
+  },
+  "Create an account to see the result.": {
+    "pt": "Crie uma conta para ver o resultado.",
+    "es": "Crea una cuenta para ver el resultado.",
+    "fr": "Créez un compte pour voir le résultat.",
+    "de": "Erstelle ein Konto, um das Ergebnis zu sehen.",
+    "it": "Crea un account per vedere il risultato."
+  },
+  "Add the company name, and a website or a short note.": {
+    "pt": "Indique o nome da empresa e um website ou uma nota curta.",
+    "es": "Añade el nombre de la empresa y un sitio web o una nota breve.",
+    "fr": "Ajoutez le nom de l’entreprise, et un site ou une courte note.",
+    "de": "Gib den Firmennamen an und eine Website oder eine kurze Notiz.",
+    "it": "Aggiungi il nome dell’azienda e un sito o una nota breve."
+  },
+  "Company name": {
+    "pt": "Nome da empresa",
+    "es": "Nombre de la empresa",
+    "fr": "Nom de l’entreprise",
+    "de": "Firmenname",
+    "it": "Nome dell’azienda"
+  },
+  "What the company does, where it can work, or a few lines from a page": {
+    "pt": "O que a empresa faz, onde pode trabalhar, ou algumas linhas de uma página",
+    "es": "Qué hace la empresa, dónde puede trabajar, o unas líneas de una página",
+    "fr": "Ce que fait l’entreprise, où elle peut travailler, ou quelques lignes d’une page",
+    "de": "Was das Unternehmen macht, wo es arbeiten kann, oder ein paar Zeilen von einer Seite",
+    "it": "Cosa fa l’azienda, dove può lavorare, o qualche riga da una pagina"
+  },
+  "Look for a tender": {
+    "pt": "Procurar um concurso",
+    "es": "Buscar una licitación",
+    "fr": "Chercher un appel d’offres",
+    "de": "Eine Ausschreibung suchen",
+    "it": "Cerca una gara"
+  },
+  "Tell me the company name, its website, and any other context you can share. I will look for the best active tender.": {
+    "pt": "Diga-me o nome da empresa, o website e qualquer outro contexto que possa partilhar. Vou procurar o melhor concurso ativo.",
+    "es": "Dime el nombre de la empresa, su sitio web y cualquier otro contexto que puedas compartir. Buscaré la mejor licitación activa.",
+    "fr": "Indiquez le nom de l’entreprise, son site et tout autre contexte que vous pouvez partager. Je chercherai le meilleur appel d’offres actif.",
+    "de": "Nenne den Firmennamen, die Website und jeden weiteren Kontext, den du teilen kannst. Ich suche die beste aktive Ausschreibung.",
+    "it": "Dimmi il nome dell’azienda, il sito e qualsiasi altro contesto che puoi condividere. Cerco la migliore gara attiva."
+  },
+  "Context": {
+    "pt": "Contexto",
+    "es": "Contexto",
+    "fr": "Contexte",
+    "de": "Kontext",
+    "it": "Contesto"
+  },
+  "Any other information not publicly available (eg. certifications, main contracts or projects, team members expertise…)": {
+    "pt": "Qualquer outra informação que não seja pública (p. ex. certificações, principais contratos ou projetos, experiência da equipa…)",
+    "es": "Cualquier otra información que no sea pública (p. ej. certificaciones, contratos o proyectos principales, experiencia del equipo…)",
+    "fr": "Toute autre information qui n’est pas publique (p. ex. certifications, principaux contrats ou projets, expertise de l’équipe…)",
+    "de": "Alle weiteren Informationen, die nicht öffentlich sind (z. B. Zertifizierungen, wichtige Verträge oder Projekte, Fachwissen im Team…)",
+    "it": "Qualsiasi altra informazione non pubblica (es. certificazioni, contratti o progetti principali, competenze del team…)"
+  },
+  "Possible match": {
+    "pt": "Possível correspondência",
+    "es": "Posible encaje",
+    "fr": "Correspondance possible",
+    "de": "Möglicher Treffer",
+    "it": "Possibile corrispondenza"
+  },
+  "An active tender for {name}": {
+    "pt": "Um concurso ativo para {name}",
+    "es": "Una licitación activa para {name}",
+    "fr": "Un appel d’offres actif pour {name}",
+    "de": "Eine aktive Ausschreibung für {name}",
+    "it": "Una gara attiva per {name}"
+  },
+  "Create an account to open the evaluation and the proposal brief.": {
+    "pt": "Crie uma conta para abrir a avaliação e o resumo da proposta.",
+    "es": "Crea una cuenta para abrir la evaluación y el informe de oferta.",
+    "fr": "Créez un compte pour ouvrir l’évaluation et la note d’offre.",
+    "de": "Erstelle ein Konto, um die Bewertung und das Angebotsbriefing zu öffnen.",
+    "it": "Crea un account per aprire la valutazione e il brief dell’offerta."
+  },
+  "Open it to see the evaluation and the proposal brief.": {
+    "pt": "Abra para ver a avaliação e o resumo da proposta.",
+    "es": "Ábrelo para ver la evaluación y el informe de oferta.",
+    "fr": "Ouvrez-le pour voir l’évaluation et la note d’offre.",
+    "de": "Öffne es, um die Bewertung und das Angebotsbriefing zu sehen.",
+    "it": "Aprilo per vedere la valutazione e il brief dell’offerta."
   }
 }
