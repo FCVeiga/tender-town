@@ -556,12 +556,17 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .scope-banner .form-msg { color: #fff; }
 .scope-banner-actions { display: flex; align-items: center; gap: 10px; flex: none; min-width: 0; max-width: 100%; flex-wrap: wrap; }
 .find-chat, .find-panel { display: flex; flex-direction: column; gap: 12px; }
-.modal:has(.find-panel) { display: flex; flex-direction: column; overflow: hidden; }
-.modal:has(.find-panel) .modal-body { flex: 1; min-height: 0; overflow: hidden; }
-.find-panel { flex: 1; min-height: 0; overflow-y: auto; }
+.modal.find-modal { z-index: 80; display: flex; flex-direction: column; overflow: hidden; }
+.modal.find-modal .modal-body { flex: 1; min-height: 0; overflow: hidden; }
+.find-panel { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.find-foot { flex: none; display: flex; flex-direction: column; gap: 8px; background: var(--surface); }
 .find-fields { display: flex; flex-direction: column; gap: 12px; }
 .find-fields .field { margin: 0; }
-.scope-banner .modal .btn.primary.find-go { width: 100%; min-height: 44px; }
+.modal.find-modal .btn.primary.find-go {
+  width: 100%; min-height: 44px; height: auto; padding: 0 14px; border-radius: 999px;
+  background: var(--brand-a); border-color: var(--brand-a); color: #fff; box-shadow: none;
+}
+.modal.find-modal .btn.primary.find-go:hover { background: #1554E0; border-color: #1554E0; }
 .find-result { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 4px 0 2px; padding: 4px 0 4px 14px; border-left: 3px solid var(--accent); }
 .find-result h3 { margin: 0; font-size: 22px; line-height: 1.25; letter-spacing: -0.02em; }
 .find-result p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--text); }
@@ -1321,6 +1326,12 @@ th.num .sort-head { justify-content: flex-end; }
     width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 20px 20px 0 0; border-bottom: 0;
     max-height: 92vh; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom);
   }
+  /* The find sheet sits above the tab bar and the keyboard. */
+  .modal.find-modal {
+    max-height: min(92dvh, calc(var(--vvh, 100dvh) - var(--topbar-h) - 8px));
+    margin-bottom: var(--keyboard-inset, 0px);
+  }
+  body:has(dialog.find-modal[open]) .bottom-nav { visibility: hidden; pointer-events: none; }
   .modal[open] { animation: sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
   .modal-body { padding: 10px 16px 18px; }
   .modal-body::before { content: ''; display: block; width: 40px; height: 5px; border-radius: 3px; background: var(--border-strong); margin: 0 auto 6px; }

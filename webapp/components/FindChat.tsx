@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import AgentAvatar from '@/components/AgentAvatar';
 import { Modal } from '@/components/settings/SettingsUI';
@@ -26,6 +26,31 @@ export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onC
   const [phase, setPhase] = useState<'ask' | 'working' | 'found'>('ask');
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia('(pointer: fine)').matches) nameRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const apply = () => {
+      const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      root.style.setProperty('--keyboard-inset', `${inset}px`);
+      root.style.setProperty('--vvh', `${Math.round(vv.height)}px`);
+    };
+    apply();
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
+    return () => {
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
+      root.style.removeProperty('--keyboard-inset');
+      root.style.removeProperty('--vvh');
+    };
+  }, []);
 
   useEffect(() => {
     if (phase !== 'working') return;
@@ -53,7 +78,7 @@ export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onC
   const company = name.trim();
 
   return (
-    <Modal title={t('Find a tender')} onClose={onClose}>
+    <Modal title={t('Find a tender')} onClose={onClose} className="find-modal" portal>
       <div className="find-panel" aria-live="polite">
         {phase === 'ask' && (
           <>
@@ -64,7 +89,7 @@ export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onC
             <form id="find-form" className="find-fields" onSubmit={(event) => { event.preventDefault(); look(); }}>
               <label className="field">
                 <span>{t('Company name')}</span>
-                <input value={name} onChange={(event) => setName(event.target.value)} autoFocus />
+                <input ref={nameRef} value={name} onChange={(event) => setName(event.target.value)} />
               </label>
               <label className="field">
                 <span>{t('Website')}</span>
@@ -92,15 +117,17 @@ export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onC
           </div>
         )}
       </div>
-      {error && <p className="form-msg err">{error}</p>}
-      {phase === 'ask' && (
-        <button type="submit" form="find-form" className="btn primary find-go">{t('Look for a tender')}</button>
-      )}
-      {phase === 'found' && (
-        <button type="button" className="btn primary find-go" disabled={pending} onClick={finish}>
-          {signedIn ? t('Show the tender') : t('Create an account')}
-        </button>
-      )}
+      <div className="find-foot">
+        {error && <p className="form-msg err">{error}</p>}
+        {phase === 'ask' && (
+          <button type="submit" form="find-form" className="btn primary find-go">{t('Look for a tender')}</button>
+        )}
+        {phase === 'found' && (
+          <button type="button" className="btn primary find-go" disabled={pending} onClick={finish}>
+            {signedIn ? t('Show the tender') : t('Create an account')}
+          </button>
+        )}
+      </div>
     </Modal>
   );
 }

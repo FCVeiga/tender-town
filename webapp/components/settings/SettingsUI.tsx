@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, useTransition, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n/client';
 
@@ -109,12 +110,14 @@ export function ActionRow({ label, hint, children }: { label: string; hint?: Rea
 
 /* ---------------- Modal ---------------- */
 
-export function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
+export function Modal({ title, onClose, children, wide = false, className = '', portal = false }: {
+  title: string; onClose: () => void; children: ReactNode; wide?: boolean; className?: string; portal?: boolean;
+}) {
   const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { ref.current?.showModal(); }, []);
-  return (
-    <dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''}`} onClose={onClose} onClick={(e) => { if (e.target === ref.current) ref.current?.close(); }}>
+  const node = (
+    <dialog ref={ref} className={`modal${wide ? ' modal-wide' : ''}${className ? ` ${className}` : ''}`} onClose={onClose} onClick={(e) => { if (e.target === ref.current) ref.current?.close(); }}>
       <div className="modal-body">
         <div className="modal-head">
           <h2>{title}</h2>
@@ -124,6 +127,9 @@ export function Modal({ title, onClose, children, wide = false }: { title: strin
       </div>
     </dialog>
   );
+  // The banner creates a stacking context. A dialog left inside it paints under the phone tab bar.
+  if (portal && typeof document !== 'undefined') return createPortal(node, document.body);
+  return node;
 }
 
 /** A list of choices inside a modal: picking one saves it and closes. */
