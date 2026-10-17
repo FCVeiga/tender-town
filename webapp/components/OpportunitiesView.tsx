@@ -13,6 +13,7 @@ import { Suspense } from 'react';
 import { ScopeBannerSuspense } from './ScopeBannerSlot';
 import { ListSkeleton } from './ContentSkeleton';
 import AgentLoader from '@/components/AgentLoader';
+import ScopePicker from '@/components/ScopePicker';
 import ScopeView from './ScopeView';
 import ScopeStatus, { CheckedLine } from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
@@ -88,6 +89,7 @@ async function OpportunitiesBody({ view }: { view: View }) {
 
   return (
     <ScopeView scopeId={scopeId}>
+      <ScopePicker model={focus} />
       <SectionTabs tabs={tabs} active={activeHref} />
 
       {error && (

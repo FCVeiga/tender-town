@@ -18,6 +18,7 @@ import ScopeView from './ScopeView';
 import ScopeStatus, { CheckedLine } from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 import AgentLoader from '@/components/AgentLoader';
+import ScopePicker from '@/components/ScopePicker';
 
 
 type View = 'all' | 'signals' | (typeof NEWS_CATEGORIES)[number]['slug'];
@@ -116,6 +117,7 @@ async function NewsBody({ view }: { view: View }) {
 
   return (
       <ScopeView scopeId={focus.hold?.id ?? focus.current?.id ?? null}>
+      <ScopePicker model={focus} />
       <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />
 
       {error && <div className="callout error"><strong>{t('Error loading news.')}</strong> {error.message}</div>}

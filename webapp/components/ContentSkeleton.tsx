@@ -38,7 +38,6 @@ export function BannerSkeleton({ compact = false }: { compact?: boolean }) {
             </div>
           )}
           <div className="scope-banner-actions" aria-hidden="true">
-            <div className="skel skel-select" />
             <div className="skel skel-btn" />
           </div>
         </div>

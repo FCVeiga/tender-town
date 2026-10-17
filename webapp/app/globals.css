@@ -482,7 +482,7 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
   column-gap: 24px; align-items: start; min-width: 0;
 }
 .home-layout > .scope-banner-slot { grid-column: 1 / -1; grid-row: 1; }
-.home-layout > .feed-sort { grid-column: 1; grid-row: 2; }
+.home-layout > .feed-scope { grid-column: 1; grid-row: 2; }
 .feed-page { grid-column: 1; grid-row: 3; min-width: 0; }
 .scope-banner-slot {
   position: relative; z-index: 4;
@@ -662,7 +662,7 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 }
 @media (max-width: 720px) {
   .scope-banner-actions { flex-direction: column; align-items: stretch; }
-  .scope-banner-picker, .scope-banner-select, .scope-banner-connect { width: 100%; }
+  .scope-banner-find { width: 100%; }
   button.scope-banner-create, a.scope-banner-create { align-self: flex-start; width: auto; }
   .scope-banner-fold { align-self: flex-end; }
   .scope-banner.compact .scope-banner-inner { flex-direction: column; align-items: stretch; }
@@ -798,6 +798,9 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .skel-card { height: 112px; border-radius: var(--radius); }
 .skel-row { height: 108px; border-radius: 14px; }
 .skel-activity { height: 58px; margin: 8px 14px; }
+.feed-scope { position: relative; z-index: 5; margin-bottom: 16px; }
+.feed-scope-btn { max-width: min(420px, 100%); font-weight: 650; }
+.feed-scope-btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .feed-sort { display: flex; gap: 4px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
 .feed-sort::-webkit-scrollbar { display: none; }
 .feed-sort-link {
@@ -1225,8 +1228,8 @@ th.num .sort-head { justify-content: flex-end; }
 .live-head { width: 100%; border: 0; font: inherit; text-align: left; cursor: default; }
 
 @media (max-width: 1240px) {
-  /* Banner, then the sort, then live activity, then the feed. */
-  .home-layout > .feed-sort { grid-row: 2; }
+  /* Banner, then the scope, then live activity, then the feed. */
+  .home-layout > .feed-scope { grid-row: 2; }
   .home-right { display: flex; grid-column: 1; grid-row: 3; position: static; max-height: none; margin-bottom: 14px; }
   .feed-page { grid-row: 4; }
   .live-head { cursor: pointer; gap: 10px; }
