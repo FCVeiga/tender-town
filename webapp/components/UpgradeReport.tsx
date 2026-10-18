@@ -17,7 +17,7 @@ export function UpgradeReport({ note, title, signedIn = true, actionLabel, butto
         {signedIn ? (
           <Link href="/settings/account?plan=1" className="btn primary">{t(actionLabel || 'Upgrade plan')}</Link>
         ) : (
-          <Link href={loginHref || `/signup?next=${encodeURIComponent(path || '/')}`} className="btn primary">{t(actionLabel || 'Create an account')}</Link>
+          <Link href={loginHref || `/signup?next=${encodeURIComponent(path || '/')}`} className="btn primary" data-track="signup_cta_clicked" data-placement="gate" data-cta="signup">{t(actionLabel || 'Create an account')}</Link>
         )}
       </div>
     );
@@ -33,7 +33,7 @@ export function UpgradeReport({ note, title, signedIn = true, actionLabel, butto
       ) : (
         <>
           {showTitle && <p className="profile-empty-title">{t(title || 'Create an account to see this')}</p>}
-          <Link href={loginHref || `/signup?next=${encodeURIComponent(path || '/')}`} className="btn primary profile-empty-cta">{t(actionLabel || 'Create an account')}</Link>
+          <Link href={loginHref || `/signup?next=${encodeURIComponent(path || '/')}`} className="btn primary profile-empty-cta" data-track="signup_cta_clicked" data-placement="gate" data-cta="signup">{t(actionLabel || 'Create an account')}</Link>
         </>
       )}
     </div>

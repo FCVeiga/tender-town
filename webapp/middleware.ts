@@ -7,6 +7,7 @@ import {
   scopeTerms, scopesToRemember, signalWords, type GuestScopeChoice,
 } from '@/lib/guestScope';
 import { SUPER_ADMIN_EMAIL, clientIp, isInternalClient } from '@/lib/internal';
+import { stampVisit } from '@/lib/visitAnalytics';
 
 /**
  * Keeps sign-in sessions fresh: when the access token is near expiry, the
@@ -146,30 +147,39 @@ async function trackVisit(request: NextRequest, response: NextResponse, who: { s
     if (url && key && ip) await rememberIp(url, key, ip);
   }
   const staff = request.cookies.get(STAFF_COOKIE)?.value === '1';
-  if (isInternalClient(request.headers.get('user-agent')) || staff || admin) return response;
-  if (url && key && ip && (await ignoredIps(url, key)).has(ip)) return response;
+  const ignored = Boolean(url && key && ip && (await ignoredIps(url, key)).has(ip));
+  const markedInternal = staff || admin || ignored;
   const kind = viewKind(request.nextUrl.pathname);
-  if (!kind || !url || !key) return response;
-  let visitor = request.cookies.get(VISITOR_COOKIE)?.value || '';
-  if (!UUID.test(visitor)) {
-    visitor = crypto.randomUUID();
-    response.cookies.set(VISITOR_COOKIE, visitor, {
-      path: '/', maxAge: COOKIE_MAX_AGE, sameSite: 'lax', httpOnly: true, secure: process.env.NODE_ENV === 'production',
-    });
-  }
   const tzRaw = request.cookies.get(GUEST_TZ_COOKIE)?.value;
   let timeZone: string | null = null;
   try { timeZone = tzRaw ? decodeURIComponent(tzRaw) : null; } catch { timeZone = null; }
   const country = countryFrom(request.headers.get('x-vercel-ip-country'), request.headers.get('accept-language'), timeZone);
   let scopeIds: string[] = [];
   let plan: string | null = null;
-  if (who.signedIn && who.userId) {
+  if (url && key && who.signedIn && who.userId && !markedInternal) {
     [scopeIds, plan] = await Promise.all([signedInScopeIds(url, key, who.userId), personalPlan(url, key, who.userId)]);
   } else if (who.scopeId && UUID.test(who.scopeId)) scopeIds = [who.scopeId];
-  else if (who.scopeId === 'general') {
+  else if (url && key && who.scopeId === 'general') {
     const id = await generalScopeId(url, key);
     if (id) scopeIds = [id];
   }
+  const stamped = stampVisit(request, response, {
+    signedIn: who.signedIn, userId: who.signedIn ? who.userId : null, scopeId: scopeIds[0] || null,
+    plan, country, internal: markedInternal,
+  });
+  if (url && key && stamped.events.length) {
+    try {
+      await fetch(`${url}/rest/v1/analytics_events?on_conflict=dedupe`, {
+        method: 'POST',
+        headers: { ...serviceHeaders(key), Prefer: 'resolution=ignore-duplicates,return=minimal' },
+        body: JSON.stringify(stamped.events),
+      });
+    } catch { /* a missed event should not take the page down */ }
+  }
+  if (markedInternal || stamped.traffic === 'bot' || isInternalClient(request.headers.get('user-agent'))) return response;
+  if (!kind || !url || !key) return response;
+  const visitor = stamped.visitor || request.cookies.get(VISITOR_COOKIE)?.value || '';
+  if (!UUID.test(visitor)) return response;
   try {
     const headers = serviceHeaders(key, true);
     const rememberCountry = who.userId && country && !countryKnown.has(who.userId);

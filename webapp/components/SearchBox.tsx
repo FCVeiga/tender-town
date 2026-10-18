@@ -9,7 +9,7 @@ export default function SearchBox() {
   const params = useSearchParams();
   const onSearch = usePathname() === '/search';
   return (
-    <form action="/search" role="search" className="search-box">
+    <form action="/search" role="search" className="search-box" data-search="1">
       <span className="search-mark" aria-hidden="true">
         <img src="/brand/favicon.png" alt="" className="brand-img light" />
         <img src="/brand/favicon-white.png" alt="" className="brand-img dark" />

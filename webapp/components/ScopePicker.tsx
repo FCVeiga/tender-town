@@ -7,6 +7,7 @@ import { useT } from '@/lib/i18n/client';
 import { chooseScope, rememberFocus, rememberIntent } from '@/app/scope/actions';
 import { Modal } from '@/components/settings/SettingsUI';
 import type { FocusModel } from '@/lib/scopeFocus';
+import { track } from '@/components/Track';
 
 type Gate = { action: 'switch' | 'create'; kind: 'plan' | 'permission' | 'signup' | 'limit'; scopeId?: string };
 
@@ -64,6 +65,7 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
       if ('kind' in result) {
         window.dispatchEvent(new CustomEvent('tt-scope-cancel', { detail: id }));
         setGate({ action: 'switch', kind: result.kind, scopeId: id });
+        track('gate_viewed', { scopeId: id, entitlement: result.kind, path: window.location.pathname });
         if (model.hold) {
           const url = new URL(window.location.href);
           url.searchParams.delete('scope');
@@ -75,6 +77,7 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
       }
       const url = new URL(window.location.href);
       url.searchParams.delete('n');
+      track('scope_selected', { scopeId: id, path: window.location.pathname });
       if (result.slug) url.searchParams.set('scope', result.slug);
       else url.searchParams.delete('scope');
       const queryString = url.searchParams.toString();
@@ -267,7 +270,7 @@ function GateModal({ gate, model, onClose }: { gate: Gate; model: FocusModel; on
       <div className="modal-actions">
         <button type="button" className="btn" onClick={onClose}>{t('Close')}</button>
         {signup && (
-          <Link className="btn primary" href={`/signup?next=${encodeURIComponent(next)}`}>{t('Sign up and choose a plan')}</Link>
+          <Link className="btn primary" href={`/signup?next=${encodeURIComponent(next)}`} data-track="signup_cta_clicked" data-placement="gate" data-cta="signup" data-gate="scope">{t('Sign up and choose a plan')}</Link>
         )}
         {!signup && !permission && (
           <button type="button" className="btn primary" disabled={pending} onClick={upgrade}>{t('Upgrade plan')}</button>

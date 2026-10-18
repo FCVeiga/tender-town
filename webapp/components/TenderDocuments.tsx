@@ -75,7 +75,7 @@ export default function TenderDocuments({ docs }: { docs: Doc[] }) {
                 const type = fileType(`${d.name_en || ''} ${d.name}`);
                 const showType = type && kind?.label !== 'PDF';
                 return (
-                  <a key={d.document_id} className="doc-item" href={d.url ?? '#'} target="_blank" rel="noopener noreferrer" title={kind ? t(kind.title) : undefined}>
+                  <a key={d.document_id} className="doc-item" href={d.url ?? '#'} target="_blank" rel="noopener noreferrer" title={kind ? t(kind.title) : undefined} data-track="document_opened" data-content={d.document_id} data-page="tender">
                     <span className="doc-name">
                       {firstInLanguage(d.name_en) ?? d.name}
                       {showType && <span className="doc-type"> {type}</span>}

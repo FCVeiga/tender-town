@@ -956,6 +956,8 @@ table.data-table .num { text-align: right; }
 .dash-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 8px 0 4px; }
 .dash-kpis-2 { grid-template-columns: repeat(2, minmax(0, 240px)); margin-bottom: 16px; }
 .dash-kpi { margin: 0; padding: 12px 14px; background: var(--fill); border-radius: 8px; }
+.dash-kpi-link { color: inherit; text-decoration: none; }
+.dash-kpi-link:hover .dash-kpi { background: var(--fill-hover); }
 .dash-kpi span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
 .dash-kpi strong { display: block; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .dash-chip-row { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 16px; }
@@ -2359,3 +2361,34 @@ a.st-row { text-decoration: none; }
 .topbar { overflow: visible; }
 :root[data-theme="dark"] .topbar { background: rgba(0, 0, 0, 0.92); border-color: var(--border); }
 @media (prefers-color-scheme: dark) { :root[data-theme="auto"] .topbar { background: rgba(0, 0, 0, 0.92); border-color: var(--border); } }
+
+.diag-tabs { display: flex; gap: 18px; overflow-x: auto; border-bottom: 1px solid var(--border); margin: 8px 0 12px; }
+.diag-tabs a { padding: 8px 0; color: var(--muted); white-space: nowrap; text-decoration: none; }
+.diag-tabs a[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+.diag-filters { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: end; margin: 8px 0 12px; }
+.diag-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); min-width: 0; }
+.diag-filters input, .diag-filters select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
+.diag-check { flex-direction: row !important; align-items: center; gap: 6px; padding-bottom: 6px; }
+.diag-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.dash-kpi em, .dash-kpi small { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); font-style: normal; font-weight: 500; }
+.diag-charts, .diag-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.diag-chart { margin: 8px 0 16px; }
+.diag-chart svg { width: 100%; height: auto; }
+.diag-chart text { font-size: 10px; fill: var(--muted); }
+.diag-chart figcaption { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.diag-chart figcaption i { width: 10px; height: 10px; border-radius: 99px; display: inline-block; }
+.diag-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.diag-table th, .diag-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.diag-table th { color: var(--muted); font-weight: 650; font-size: 12px; }
+.diag-scroll { overflow-x: auto; }
+.diag-note, .diag-empty, .diag-zone, .diag-excluded { color: var(--muted); font-size: 14px; }
+.diag-paths { list-style: none; padding: 0; margin: 8px 0 16px; }
+.diag-paths li { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.diag-map svg { width: 100%; height: auto; border-radius: 8px; }
+.diag-map figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.diag-tip { margin-left: 4px; color: var(--muted); text-decoration: none; cursor: help; border-bottom: 1px dotted var(--muted); }
+.diag h2 { font-size: 16px; margin: 22px 0 8px; }
+@media (max-width: 800px) {
+  .diag-charts, .diag-split, .diag-kpis { grid-template-columns: 1fr; }
+  .diag-filters label { flex: 1 1 140px; }
+}

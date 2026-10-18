@@ -13,6 +13,8 @@ import { friendly, lockEvaluation, unlockEvaluation } from '@/lib/scopeWork';
 import { getScope } from '@/lib/scopes';
 import { agentRunAllowance, recordAgentRun } from '@/lib/agentQuota';
 import { getT } from '@/lib/i18n/server';
+import { getCurrentUser } from '@/lib/auth';
+import { recordProductEvent } from '@/lib/productRecord';
 import { submissionDocumentTexts } from '@/lib/tenderAnalysis';
 import { normaliseBrief, parseProposalBrief } from '@/lib/proposalBrief';
 
@@ -47,23 +49,41 @@ export async function ensureProposal(opportunityId: string, scopeId: string, wor
   if (!(await isAgentEnabled('proposal_manager', scopeId))) return { status: 'error', message: 'the Proposal Manager Agent is switched off for this scope' };
   const allowance = await agentRunAllowance('proposal_manager');
   const t = await getT();
-  if (!onboard && allowance.block) return { status: 'error', message: t('Proposal briefs are included on Teams.') };
+  const user = await getCurrentUser();
+  const base = { userId: user?.id || null, scopeId, contentId: opportunityId, path: `/tenders/${opportunityId}`, pageType: 'tender' as const, demo: false };
+  if (!onboard && allowance.block) {
+    const entitlement = allowance.block === 'quota' ? 'usage_exhausted' : 'plan_restriction';
+    await recordProductEvent({ ...base, name: 'gate_viewed', entitlement, errorCode: allowance.block, ok: false });
+    await recordProductEvent({ ...base, name: 'proposal_brief_failed', entitlement, errorCode: allowance.block, ok: false });
+    return { status: 'error', message: t('Proposal briefs are included on Teams.') };
+  }
   const owner = await proposalWorkspace(scopeId, workspaceId);
   const { data: existing } = await (owner
     ? getSupabaseServerClient().from('scope_evaluations').select('evaluation').match({ scope_id: scopeId, opportunity_id: opportunityId, workspace_id: owner })
     : getSupabaseServerClient().from('scope_evaluations').select('evaluation').eq('scope_id', scopeId).eq('opportunity_id', opportunityId).is('workspace_id', null)
   ).maybeSingle();
-  if (!existing?.evaluation) return { status: 'error', message: 'run the Tender Evaluation Agent for this scope first' };
-  if (!(await hasCompanyContext(scopeId))) return { status: 'error', message: t(NEED_CONTEXT) };
+  if (!existing?.evaluation) {
+    await recordProductEvent({ ...base, name: 'gate_viewed', entitlement: 'missing_evaluation', errorCode: 'prerequisite', ok: false });
+    await recordProductEvent({ ...base, name: 'proposal_brief_failed', entitlement: 'missing_evaluation', errorCode: 'prerequisite', ok: false });
+    return { status: 'error', message: 'run the Tender Evaluation Agent for this scope first' };
+  }
+  if (!(await hasCompanyContext(scopeId))) {
+    await recordProductEvent({ ...base, name: 'gate_viewed', entitlement: 'missing_company_context', errorCode: 'context', ok: false });
+    await recordProductEvent({ ...base, name: 'proposal_brief_failed', entitlement: 'missing_company_context', errorCode: 'context', ok: false });
+    return { status: 'error', message: t(NEED_CONTEXT) };
+  }
   if (!(await lockEvaluation(scopeId, opportunityId, owner, 'proposal_started_at', 'proposal_error', LOCK_MINUTES))) return { status: 'running' };
   try {
+    await recordProductEvent({ ...base, name: 'proposal_brief_requested', entitlement: onboard ? 'onboard' : null, ok: true });
     await runProposal(opportunityId, scopeId, owner);
     if (!onboard && allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'proposal_manager');
     await unlockEvaluation(scopeId, opportunityId, owner, 'proposal_started_at', 'proposal_error', null);
+    await recordProductEvent({ ...base, name: 'proposal_brief_completed', entitlement: onboard ? 'onboard' : 'included', ok: true });
     return { status: 'done' };
   } catch (e: any) {
     const message = friendly(e);
     await unlockEvaluation(scopeId, opportunityId, owner, 'proposal_started_at', 'proposal_error', message);
+    await recordProductEvent({ ...base, name: 'proposal_brief_failed', errorCode: 'run_failed', ok: false });
     return { status: 'error', message };
   }
 }

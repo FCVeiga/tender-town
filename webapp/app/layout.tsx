@@ -23,6 +23,7 @@ import { logOut } from '@/app/auth/actions';
 import { BottomNav, BottomNavLinks, MenuBackdrop, MenuButton } from '@/components/MobileNav';
 import { isSuperAdmin } from '@/lib/admin';
 import { SHARE_IMAGE } from '@/lib/seo';
+import Track from '@/components/Track';
 
 // Every page reads live from Supabase. Without this, Next prerenders pages
 // with no searchParams at build time and serves that frozen snapshot forever.
@@ -86,7 +87,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {user ? <UserMenu user={{ username: user.username, displayName: user.displayName, avatarUrl: user.avatarUrl }} workspaces={workspaces} currentWorkspace={ctx?.workspace.id ?? null} dashboard={dashboard} /> : (
               <>
                 <Link href="/login" className="btn">{t('Log in')}</Link>
-                <Link href="/signup" className="btn primary">{t('Sign up')}</Link>
+                <Link href="/signup" className="btn primary" data-track="signup_cta_clicked" data-placement="header" data-cta="signup">{t('Sign up')}</Link>
                 <GuestMenu />
               </>
             )}
@@ -138,6 +139,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Suspense fallback={<BottomNavLinks guest={!user} />}>
           <BottomNav guest={!user} />
         </Suspense>
+        <Track />
         </I18nProvider>
       </body>
     </html>

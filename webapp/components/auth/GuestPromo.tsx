@@ -15,7 +15,7 @@ export default function GuestPromo() {
         <p className="guest-lead">{t('Join for tailored tender signals, news and community')}</p>
         <div className="guest-actions">
           <GoogleButton next="/" bare />
-          <Link href="/signup" className="btn primary">
+          <Link href="/signup" className="btn primary" data-track="signup_cta_clicked" data-placement="sidebar" data-cta="email">
             <svg className="guest-mail" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 7 9-7" /></svg>
             {t('Continue with email')}
           </Link>

@@ -6,6 +6,7 @@ import { setBannerCompact } from '@/app/scope/actions';
 import FindChat from '@/components/FindChat';
 import { Modal } from '@/components/settings/SettingsUI';
 import type { FocusModel } from '@/lib/scopeFocus';
+import { track } from '@/components/Track';
 
 const HEADING = 'Specialised AI agents for your next tender.';
 const COPY = 'Choose your market, or tell an agent about your company and see the best open tender.';
@@ -78,7 +79,7 @@ export default function ScopeBanner({ model, compact: compactSaved }: {
         )}
       <div className="scope-banner-actions">
         <button type="button" className="btn primary scope-banner-find" onClick={() => setFind(true)}>{t(FIND)}</button>
-        <button type="button" className="scope-banner-create" onClick={() => setAgents(true)}>{t(CONNECT)}</button>
+        <button type="button" className="scope-banner-create" data-track="agent_connection_opened" data-placement="banner" onClick={() => setAgents(true)}>{t(CONNECT)}</button>
         <button type="button" className="scope-banner-fold" aria-expanded={!compact} aria-label={compact ? t('Expand') : t('Collapse')} onClick={toggleCompact}>
           <Chevron up={!compact} />
         </button>
@@ -104,6 +105,7 @@ function AgentModal({ onClose }: { onClose: () => void }) {
         <button type="button" className="btn primary" onClick={async () => {
           try {
             await navigator.clipboard.writeText(AGENT_PROMPT);
+            track('agent_instructions_copied', { placement: 'banner', path: '/' });
             setCopied(true);
             window.setTimeout(() => setCopied(false), 1500);
           } catch { /* the prompt stays on screen for a manual copy */ }

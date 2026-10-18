@@ -10,6 +10,8 @@ import { clientIp } from '@/lib/internal';
 import { ensureProfile, usernameTaken } from '@/lib/profiles';
 import { notify } from '@/lib/social';
 import { applyProfilePrefs, getT } from '@/lib/i18n/server';
+import { recordProductEvent } from '@/lib/productRecord';
+import { safeId } from '@/lib/productModel';
 
 export type AuthState = { ok: boolean; message: string } | null;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -24,24 +26,37 @@ function requestPlace() {
 
 export async function signUp(_prev: AuthState, form: FormData): Promise<AuthState> {
   const t = await getT();
+  const started = Date.now();
+  const flow = safeId(String(form.get('flow') || ''));
   const email = String(form.get('email') || '').trim().toLowerCase();
   const password = String(form.get('password') || '');
   const username = String(form.get('username') || '').trim();
-  if (!EMAIL.test(email)) return { ok: false, message: t('Enter a valid email address.') };
-  if (!USERNAME.test(username)) return { ok: false, message: t('Usernames are 3–24 letters, numbers or underscores.') };
-  if (password.length < 8) return { ok: false, message: t('Use a password of at least 8 characters.') };
-  if (password !== String(form.get('confirm') || '')) return { ok: false, message: t('The passwords don’t match.') };
-  if (await usernameTaken(username)) return { ok: false, message: t('u/{username} is taken — try another.', { username }) };
+  const reject = async (code: string, message: string) => {
+    await recordProductEvent({ name: 'signup_validation_failed', flow, errorCode: code, ok: false, path: '/signup', pageType: 'signup', cta: 'email' });
+    return { ok: false, message };
+  };
+  await recordProductEvent({ name: 'signup_submitted', flow, path: '/signup', pageType: 'signup', cta: 'email' });
+  if (!EMAIL.test(email)) return reject('email', t('Enter a valid email address.'));
+  if (!USERNAME.test(username)) return reject('username', t('Usernames are 3–24 letters, numbers or underscores.'));
+  if (password.length < 8) return reject('password', t('Use a password of at least 8 characters.'));
+  if (password !== String(form.get('confirm') || '')) return reject('confirm', t('The passwords don’t match.'));
+  if (await usernameTaken(username)) return reject('username_taken', t('u/{username} is taken — try another.', { username }));
 
   // Created confirmed: email verification needs an email provider on Supabase (see Help).
   const { data, error } = await getSupabaseServerClient().auth.admin.createUser({
     email, password, email_confirm: true, user_metadata: { username },
   });
   if (error || !data.user) {
-    return { ok: false, message: /already|registered|exists/i.test(error?.message || '') ? t('An account with this email already exists — log in instead.') : error?.message || t('Could not create the account.') };
+    const exists = /already|registered|exists/i.test(error?.message || '');
+    await recordProductEvent({ name: exists ? 'signup_validation_failed' : 'authentication_failed', flow, errorCode: exists ? 'email_exists' : 'create_failed', ok: false, path: '/signup', pageType: 'signup', cta: 'email' });
+    return { ok: false, message: exists ? t('An account with this email already exists — log in instead.') : t('Could not create the account.') };
   }
   const place = requestPlace();
   await ensureProfile(data.user.id, email, { username }, place.country, place.ip);
+  await recordProductEvent({
+    name: 'account_created', userId: data.user.id, flow, cta: 'email', ok: true, path: '/signup', pageType: 'signup',
+    durationMs: Date.now() - started, dedupe: `account:${data.user.id}`, country: place.country,
+  });
   const { error: loginError } = await authClient().auth.signInWithPassword({ email, password });
   if (loginError) return { ok: false, message: t('Account created — please log in.') };
   redirect(safeNext(form.get('next'), `/u/${username}`));
@@ -53,7 +68,11 @@ export async function logIn(_prev: AuthState, form: FormData): Promise<AuthState
   const password = String(form.get('password') || '');
   if (!email || !password) return { ok: false, message: t('Enter your email and password.') };
   const { data, error } = await authClient().auth.signInWithPassword({ email, password });
-  if (error || !data.user) return { ok: false, message: t('Wrong email or password.') };
+  if (error || !data.user) {
+    await recordProductEvent({ name: 'authentication_failed', errorCode: 'credentials_rejected', ok: false, path: '/login', pageType: 'login', cta: 'email' });
+    return { ok: false, message: t('Wrong email or password.') };
+  }
+  await recordProductEvent({ name: 'login_completed', userId: data.user.id, ok: true, path: '/login', pageType: 'login', cta: 'email', dedupe: `login:${data.user.id}:${Date.now()}` });
   const place = requestPlace();
   await ensureProfile(data.user.id, email, data.user.user_metadata, place.country, place.ip);
   await applyProfilePrefs(data.user.id);
@@ -66,12 +85,19 @@ export async function continueWithGoogle(next?: string): Promise<AuthState> {
   const settings = await fetch(`${process.env.SUPABASE_URL}/auth/v1/settings`, {
     headers: { apikey: process.env.SUPABASE_SERVICE_KEY! }, cache: 'no-store',
   }).then((r) => r.json()).catch(() => null);
-  if (!settings?.external?.google) return { ok: false, message: t('Google sign-in is coming soon — use email and password for now.') };
+  if (!settings?.external?.google) {
+    await recordProductEvent({ name: 'authentication_failed', errorCode: 'provider_disabled', ok: false, cta: 'google', path: '/signup', pageType: 'signup' });
+    return { ok: false, message: t('Google sign-in is coming soon — use email and password for now.') };
+  }
+  await recordProductEvent({ name: 'oauth_started', cta: 'google', ok: true, path: '/signup', pageType: 'signup' });
   const { data, error } = await authClient().auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: `${siteOrigin()}/auth/callback?next=${encodeURIComponent(safeNext(next))}` },
   });
-  if (error || !data.url) return { ok: false, message: error?.message || t('Could not reach Google.') };
+  if (error || !data.url) {
+    await recordProductEvent({ name: 'authentication_failed', errorCode: 'provider_unreachable', ok: false, cta: 'google', path: '/signup', pageType: 'signup' });
+    return { ok: false, message: t('Could not reach Google.') };
+  }
   redirect(data.url);
 }
 

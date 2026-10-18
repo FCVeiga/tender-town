@@ -128,6 +128,10 @@ export async function deliverFind(brief: FindBrief): Promise<{ status: 'done'; i
     chars: text.length,
   });
   if (docError) return { status: 'error', message: docError.message };
+  const { recordProductEvent } = await import('@/lib/productRecord');
+  const { getCurrentUser } = await import('@/lib/auth');
+  const user = await getCurrentUser();
+  await recordProductEvent({ name: 'company_context_saved', userId: user?.id || null, scopeId: scope.id, path: '/find', pageType: 'find', ok: true, entitlement: 'onboard' });
   const id = await pickOpenTender(brief);
   if (!id) return { status: 'error', message: t('No open tender matches that yet.') };
   const evaluation = await ensureEvaluation(id, scope.id, workspaceId, true);

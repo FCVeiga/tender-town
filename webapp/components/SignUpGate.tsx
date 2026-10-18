@@ -7,7 +7,7 @@ export default async function SignUpGate() {
   return (
     <div className="profile-empty">
       <p className="profile-empty-title">{t('Create an account to see this content')}</p>
-      <Link href="/signup" className="btn primary profile-empty-cta">{t('Create account')}</Link>
+      <Link href="/signup" className="btn primary profile-empty-cta" data-track="signup_cta_clicked" data-placement="gate" data-cta="signup">{t('Create account')}</Link>
     </div>
   );
 }

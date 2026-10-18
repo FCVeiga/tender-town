@@ -9,6 +9,7 @@ import EvaluationCriteria from '@/components/EvaluationCriteria';
 import type { ShownCriterion } from '@/lib/award';
 import { useT } from '@/lib/i18n/client';
 import TenderView from '@/components/TenderView';
+import { track } from '@/components/Track';
 
 export type ExampleRequirement = {
   id: string;
@@ -67,12 +68,14 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
   const groups = GROUPS.map((group) => ({ ...group, rows: requirements.filter((row) => row.group === group.key) })).filter((group) => group.rows.length);
 
   function runEvaluation() {
+    track('example_evaluation_started', { path: '/example', pageType: 'example', demo: true });
     setPhase('evaluating');
-    window.setTimeout(() => setPhase('evaluated'), 2200);
+    window.setTimeout(() => { track('example_evaluation_completed', { path: '/example', pageType: 'example', demo: true }); setPhase('evaluated'); }, 2200);
   }
   function runBrief() {
+    track('example_brief_started', { path: '/example', pageType: 'example', demo: true });
     setPhase('briefing');
-    window.setTimeout(() => setPhase('briefed'), 2600);
+    window.setTimeout(() => { track('example_brief_completed', { path: '/example', pageType: 'example', demo: true }); setPhase('briefed'); }, 2600);
   }
   function download() {
     const file = new Blob([briefMarkdown(deadline, sourceDocs)], { type: 'text/markdown' });

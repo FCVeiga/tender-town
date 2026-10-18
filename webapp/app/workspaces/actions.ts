@@ -191,6 +191,10 @@ export async function registerCompanyDocument(scopeId: string, kind: string, sto
     text_content: text.slice(0, 400_000) || null, chars: text.length,
   });
   if (insertError) return { error: insertError.message };
+  const { recordProductEvent } = await import('@/lib/productRecord');
+  const { getCurrentUser } = await import('@/lib/auth');
+  const user = await getCurrentUser();
+  await recordProductEvent({ name: 'company_context_saved', userId: user?.id || null, scopeId, path: `/workspaces/${access.workspaceId || scopeId}`, pageType: 'settings', ok: true });
   refresh(scopeId);
   return { ok: true, chars: text.length };
 }

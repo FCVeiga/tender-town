@@ -13,6 +13,8 @@ import { friendly, lockEvaluation, unlockEvaluation } from '@/lib/scopeWork';
 import { getScope } from '@/lib/scopes';
 import { agentRunAllowance, recordAgentRun } from '@/lib/agentQuota';
 import { getT } from '@/lib/i18n/server';
+import { getCurrentUser } from '@/lib/auth';
+import { recordProductEvent } from '@/lib/productRecord';
 
 export const EVALUATION_AGENT = 'Tender Evaluation Agent';
 const MODEL = 'claude-opus-5-5';
@@ -69,8 +71,18 @@ export async function ensureEvaluation(opportunityId: string, scopeId: string, w
   if (!(await isAgentEnabled('tender_evaluation', scopeId))) return { status: 'error', message: 'the Tender Evaluation Agent is switched off for this scope' };
   const allowance = await agentRunAllowance('tender_evaluation');
   const t = await getT();
-  if (!onboard && allowance.block === 'plan') return { status: 'error', message: t('This plan does not include Tender Evaluation.') };
-  if (!onboard && allowance.block === 'quota') return { status: 'error', message: t('This workspace has used its {n} tender evaluations for this month.', { n: allowance.limit ?? 0 }) };
+  const user = await getCurrentUser();
+  const base = { userId: user?.id || null, scopeId, contentId: opportunityId, path: `/tenders/${opportunityId}`, pageType: 'tender' as const, demo: false };
+  if (!onboard && allowance.block === 'plan') {
+    await recordProductEvent({ ...base, name: 'gate_viewed', entitlement: 'plan_restriction', errorCode: 'plan', ok: false });
+    await recordProductEvent({ ...base, name: 'evaluation_failed', entitlement: 'plan_restriction', errorCode: 'plan', ok: false });
+    return { status: 'error', message: t('This plan does not include Tender Evaluation.') };
+  }
+  if (!onboard && allowance.block === 'quota') {
+    await recordProductEvent({ ...base, name: 'gate_viewed', entitlement: 'usage_exhausted', errorCode: 'quota', ok: false });
+    await recordProductEvent({ ...base, name: 'evaluation_failed', entitlement: 'usage_exhausted', errorCode: 'quota', ok: false });
+    return { status: 'error', message: t('This workspace has used its {n} tender evaluations for this month.', { n: allowance.limit ?? 0 }) };
+  }
   const owner = await evaluationWorkspace(scopeId, workspaceId);
   if (workspaceId && !owner) {
     const db = getSupabaseServerClient();
@@ -92,15 +104,19 @@ export async function ensureEvaluation(opportunityId: string, scopeId: string, w
       const { error } = await mark;
       if (error) throw new Error(error.message);
       await unlockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', null);
+      await recordProductEvent({ ...base, name: 'gate_viewed', entitlement: 'missing_company_context', errorCode: 'context', ok: false });
       return { status: 'done' };
     }
+    await recordProductEvent({ ...base, name: 'evaluation_requested', entitlement: onboard ? 'onboard' : null, ok: true });
     await runEvaluation(opportunityId, scopeId, owner);
     if (!onboard && allowance.accountId && allowance.limit != null) await recordAgentRun(allowance.accountId, 'tender_evaluation');
     await unlockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', null);
+    await recordProductEvent({ ...base, name: 'evaluation_completed', entitlement: onboard ? 'onboard' : 'included', ok: true, dedupe: `eval-live:${scopeId}:${opportunityId}:${owner || 'shared'}:${Date.now()}` });
     return { status: 'done' };
   } catch (e: any) {
     const message = friendly(e);
     await unlockEvaluation(scopeId, opportunityId, owner, 'evaluation_started_at', 'evaluation_error', message);
+    await recordProductEvent({ ...base, name: 'evaluation_failed', errorCode: 'run_failed', ok: false });
     return { status: 'error', message };
   }
 }
