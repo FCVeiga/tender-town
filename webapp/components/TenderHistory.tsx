@@ -7,13 +7,14 @@ import { Doc } from '@/components/TenderDocuments';
 const when = (iso: string) => iso ? new Date(iso).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
 /** Notices and recorded changes, one line each. */
-export default function TenderHistory({ notices, changes, archived, evidence, verifiedAt, note }: {
+export default function TenderHistory({ notices, changes, archived, evidence, verifiedAt, note, linked = true }: {
   notices: Doc[];
   changes: UpdateEvent[];
   archived: boolean;
   evidence: string | null;
   verifiedAt: string | null;
   note?: string | null;
+  linked?: boolean;
 }) {
   const t = getTSync();
   const entries = tenderHistory(notices, changes);
@@ -37,11 +38,11 @@ export default function TenderHistory({ notices, changes, archived, evidence, ve
                 <time>{when(entry.at)}</time>
                 <div className="history-body">
                   {entry.change ? <UpdateComment e={entry.change} compact /> : (
-                    entry.notice?.url
+                    linked && entry.notice?.url
                       ? <a href={entry.notice.url} target="_blank" rel="noopener noreferrer">{noticeName}</a>
                       : <span>{noticeName}</span>
                   )}
-                  {entry.change && entry.notice?.url && (
+                  {linked && entry.change && entry.notice?.url && (
                     <a className="history-doc" href={entry.notice.url} target="_blank" rel="noopener noreferrer">{noticeName} ↗</a>
                   )}
                 </div>

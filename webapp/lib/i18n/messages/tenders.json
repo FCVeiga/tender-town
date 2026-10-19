@@ -1748,5 +1748,19 @@
     "fr": "Ce qui est évalué",
     "de": "Was bewertet wird",
     "it": "Che cosa si valuta"
+  },
+  "to see the sources.": {
+    "pt": "para ver as fontes.",
+    "es": "para ver las fuentes.",
+    "fr": "pour voir les sources.",
+    "de": "um die Quellen zu sehen.",
+    "it": "per vedere le fonti."
+  },
+  "Sign up to see and download the tender documents.": {
+    "pt": "Registe-se para ver e descarregar os documentos do concurso.",
+    "es": "Regístrate para ver y descargar los documentos de la licitación.",
+    "fr": "Inscrivez-vous pour voir et télécharger les documents de l’avis.",
+    "de": "Registriere dich, um die Ausschreibungsunterlagen anzusehen und herunterzuladen.",
+    "it": "Registrati per vedere e scaricare i documenti della gara."
   }
 }

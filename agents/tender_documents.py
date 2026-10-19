@@ -207,6 +207,12 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
                 rows += [(name, hint or classify(name), dl, None, None) for name, hint, dl in found]
                 if found:
                     continue
+            if "tender-details/" in url:
+                from agents.official_notice import funding_documents
+                found = funding_documents(url.split("#")[0])
+                rows += [(name, hint or classify(name), dl, published, None) for name, hint, dl, published in found]
+                if found:
+                    continue
         except Exception:
             pass  # portal unreachable: fall back to the link below
         rows.append((f"Tender documents on {host.removeprefix('www.')}", "TENDER_SPECIFICATIONS", url, None, None))

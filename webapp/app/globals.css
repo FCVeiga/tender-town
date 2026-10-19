@@ -344,6 +344,7 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
 .source-more { margin-top: 14px; }
 .source-more h3 { font-size: 13px; font-weight: 650; margin: 0 0 4px; }
 .source-list { list-style: none; margin: 0; padding: 0; }
+a.text-link { text-decoration: underline; text-underline-offset: 2px; }
 .source-list li { padding: 6px 0; border-top: 1px solid var(--border); font-size: 14px; }
 .summary-block p { font-size: 15.5px; line-height: 1.75; color: var(--text); margin-bottom: 12px; }
 .summary-block .feed-image { max-height: 360px; margin-bottom: 16px; }

@@ -444,13 +444,18 @@ def verify_opportunities(session, errors: list) -> int:
             .all())
     checked = 0
     for o in todo:
-        is_ted = "ted.europa.eu" in (o.official_url or "")
+        ted_ref = (o.reference or "").startswith("TED:")
+        is_ted = "ted.europa.eu" in (o.official_url or "") or ted_ref
         if is_ted and o.deadline:
-            continue  # TED's structured deadline already decides it
+            continue  # the notice deadline already decides it
         try:
             if is_ted:
-                status, deadline, evidence = V.verify_ted(ted, o.official_url.rstrip("/").split("/")[-1],
-                                                          o.opportunity_type, now)
+                publication = o.official_url.rstrip("/").split("/")[-1] if "ted.europa.eu" in (o.official_url or "") else None
+                if not publication and ted_ref:
+                    from agents.tender_documents import _procedure_notices
+                    notices = _procedure_notices(o.reference[4:])
+                    publication = notices[-1]["publication-number"] if notices else None
+                status, deadline, evidence = V.verify_ted(ted, publication, o.opportunity_type, now)
                 category = o.opportunity_type
             else:
                 v = V.llm_verify(o.opportunity_type, o.title, V.fetch_page_text(o.official_url, tavily), now)
@@ -806,6 +811,12 @@ def main():
     # --- 3. Verification: is each opportunity actually open today? ----------
     verified = verify_opportunities(session, errors)  # internal agent: always on
     print(f"Verification: {verified} opportunities checked against their source")
+
+    # A tender found on a news page still needs its portal, deadline and documents.
+    from agents.official_notice import resolve_official
+    linked = resolve_official(session, errors)
+    if linked:
+        print(f"Official notices: {linked} tenders linked to the portal they were called on")
 
     # Tender documents (TED notices + buyer portal lists) and what bidders must meet.
     from agents.tender_documents import collect_all

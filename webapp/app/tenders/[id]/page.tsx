@@ -261,7 +261,6 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                 {o.tender_summary
                   ? <p className="summary-note">{t('Tender Analysis Agent')} · {o.official_url?.includes('ted.europa.eu') ? t('from the notice and the tender documents') : t('from the notice and the tender page')}</p>
                   : summaryRaw ? <p className="summary-note">{t('Preliminary summary.')}</p> : null}
-                {o.official_url && <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>}
               </section>
             )}
             <TenderHistory
@@ -271,13 +270,17 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
               evidence={o.status_evidence}
               verifiedAt={o.verified_at}
               note={stage === 'uncertain' ? t('The bidding status is not confirmed.') : null}
+              linked={!!user}
             />
             <section className="detail-block" id="sources">
-              <h2>{t('Source')}</h2>
-              {o.official_url
-                ? <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>
-                : <p className="mono">{t('Not recorded')}</p>}
-              <ItemSources type="tender" id={o.opportunity_id} skip={o.official_url} />
+              <h2>{t('Sources')}</h2>
+              {user ? (
+                <ul className="source-list">
+                  <ItemSources type="tender" id={o.opportunity_id} official={o.official_url} itemsOnly />
+                </ul>
+              ) : (
+                <p className="muted"><Link className="text-link" href={`/signup?next=${encodeURIComponent(`/tenders/${o.opportunity_id}`)}`} data-track="signup_cta_clicked" data-placement="tender_sources" data-cta="signup">{t('Sign up')}</Link> {t('to see the sources.')}</p>
+              )}
             </section>
           </>
         )}
@@ -388,7 +391,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
             )}
           </section>
         )}
-        documents={<TenderDocuments docs={(documents || []) as Doc[]} />}
+        documents={<TenderDocuments docs={(documents || []) as Doc[]} signedIn={!!user} signupHref={`/signup?next=${encodeURIComponent(`/tenders/${o.opportunity_id}`)}`} />}
         comments={<CommentsSection itemType="tender" itemId={o.opportunity_id} loginNext={`/tenders/${o.opportunity_id}`} />}
       />
     </div>

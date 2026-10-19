@@ -83,11 +83,17 @@ def store_award_criteria(session, opportunity_id: str, award: list) -> int:
 def analyse_tenders(session, errors: list) -> dict:
     """Award criteria from each TED notice's XML."""
     import requests
-    opps = session.execute(text("""select opportunity_id, official_url from opportunities
-            where official_url like '%ted.europa.eu%'""")).fetchall()
+    opps = session.execute(text("""select opportunity_id, official_url, reference from opportunities
+            where official_url like '%ted.europa.eu%' or reference like 'TED:%'""")).fetchall()
     done = {"award": 0}
     for o in opps:
-        pub = o.official_url.rstrip("/").split("/")[-1]
+        pub = o.official_url.rstrip("/").split("/")[-1] if "ted.europa.eu" in (o.official_url or "") else None
+        if not pub and (o.reference or "").startswith("TED:"):
+            from agents.tender_documents import _procedure_notices
+            notices = _procedure_notices(o.reference[4:])
+            pub = notices[-1]["publication-number"] if notices else None
+        if not pub:
+            continue
         try:
             xml = requests.get(f"https://ted.europa.eu/en/notice/{pub}/xml", timeout=40,
                                headers={"User-Agent": "Mozilla/5.0 TenderTown/1.0"}).text

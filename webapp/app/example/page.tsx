@@ -108,7 +108,6 @@ export default async function ExamplePage() {
             <h2>{t('Summary')}</h2>
             <PostMarkdown>{summaryRaw}</PostMarkdown>
             <p className="summary-note">{o.tender_summary ? `${t('Tender Analysis Agent')} · ${t('from the notice and the tender documents')}` : t('Preliminary summary.')}</p>
-            {o.official_url && <p><a className="ext-link" href={o.official_url} target="_blank" rel="noopener noreferrer">{o.official_url} ↗</a></p>}
           </section>
         ) : null}
         documents={<TenderDocuments docs={(documents || []) as Doc[]} />}

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { firstInLanguage } from '@/lib/english';
 import { getTSync } from '@/lib/i18n/server';
 
@@ -58,9 +59,18 @@ function ordered(group: string, items: Doc[]): Doc[] {
   });
 }
 
-/** Tender documents grouped by type. Large groups start closed. */
-export default function TenderDocuments({ docs }: { docs: Doc[] }) {
+/** Tender documents grouped by type. Large groups start closed. Logged-out visitors get the signup gate, not the files. */
+export default function TenderDocuments({ docs, signedIn = true, signupHref = '/signup' }: { docs: Doc[]; signedIn?: boolean; signupHref?: string }) {
   const t = getTSync();
+  if (!signedIn && docs.length > 0) {
+    return (
+      <section className="detail-block" id="documents">
+        <h2>{t('Tender Documents')} <span className="uc-count">{docs.length}</span></h2>
+        <p className="muted">{t('Sign up to see and download the tender documents.')}</p>
+        <p className="eval-run"><Link className="btn primary" href={signupHref} data-track="signup_cta_clicked" data-placement="tender_documents" data-cta="signup">{t('Sign up')}</Link></p>
+      </section>
+    );
+  }
   const groups = ORDER.map((g) => ({ g, items: ordered(g, docs.filter((d) => groupOf(d.document_type) === g)) })).filter((x) => x.items.length);
   return (
     <section className="detail-block" id="documents">
