@@ -63,20 +63,33 @@ def run_triage_llm(candidate: Candidate, system_prompt: str = None) -> dict:
     )
 
 
+# Importance at or below this is a market note. It is not shown, so it gets no
+# summary call and no feed post. The figure stored on a news row is importance.
+NEWS_NOTE_MAX = 15
+
+
+def news_worth_showing(triage: dict) -> bool:
+    """True when a news classification is above the market-note floor."""
+    raw = triage.get("importance")
+    score = int(triage.get("relevance") or 0) if raw is None or raw == "" else int(raw or 0)
+    return score > NEWS_NOTE_MAX
+
+
 def needs_public_copy(triage: dict, *, category: str | None, from_news_search: bool,
                       promote_at: int = 50) -> bool:
     """True when promote() will keep this row and the summary or the reason is still missing.
 
     A tender is kept at relevance >= promote_at with a category. A news story is
-    kept when the hit came from a news search, the type is NEWS_ONLY, and
-    relevance is above 0. A row that already has both texts (a scope's own
-    full prompt) does not need the second call."""
+    kept when the hit came from a news search, the type is NEWS_ONLY, relevance
+    is above 0, and importance is above the market-note floor. A row that already
+    has both texts does not need the second call."""
     if (triage.get("summary") or "").strip() and (triage.get("reason") or "").strip():
         return False
     relevance = int(triage.get("relevance") or 0)
     if category and relevance >= promote_at:
         return True
-    return (triage.get("type") or "").upper() == "NEWS_ONLY" and from_news_search and relevance > 0
+    return ((triage.get("type") or "").upper() == "NEWS_ONLY" and from_news_search
+            and relevance > 0 and news_worth_showing(triage))
 
 
 def run_triage_copy(candidate: Candidate, system_prompt: str, scored: dict) -> dict:

@@ -22,7 +22,7 @@ from services.llm_client import call_llm_json, load_prompt, CHEAP_MODEL  # noqa:
 from services.agent_settings import target_language  # noqa: E402
 
 BATCH = 20
-MAX_BATCHES_PER_RUN = 25
+MAX_BATCHES_PER_RUN = 2  # a backlog drains over later runs; one run does not translate the queue
 
 # The translation prompt lives in prompts/translation.md (fine-tunable on Settings).
 

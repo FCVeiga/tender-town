@@ -24,9 +24,11 @@ from urllib.parse import urlparse
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "database"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from models import ChangeEvent, Country, FeedPost, NewsItem, Opportunity  # noqa: E402
-from services.llm_client import call_llm_json_premium, load_prompt  # noqa: E402
+from agents.triage import NEWS_NOTE_MAX  # noqa: E402
+from services.llm_client import CHEAP_MODEL, call_llm_json, load_prompt  # noqa: E402
 
 HALF_LIFE_DAYS = 4          # keep in sync with webapp/lib/feed.ts
+MAX_POSTS_PER_RUN = 24      # a backlog drains over later runs instead of one model bill
 UNSCORED = 30               # items whose score is unknown rank as "marginal"
 UPDATE_WINDOW_DAYS = 14     # only recent changes become posts
 SIGNAL_MAX_AGE_DAYS = 183   # keep in sync with webapp/lib/data.ts
@@ -117,7 +119,7 @@ def write(event: str, facts: dict) -> dict:
     global _PROMPT
     if _PROMPT is None:
         _PROMPT = load_prompt("feed_post.md")
-    out = call_llm_json_premium(_PROMPT, f"Event: {event}\n{_facts(facts)}")
+    out = call_llm_json(_PROMPT, f"Event: {event}\n{_facts(facts)}", model=CHEAP_MODEL, max_tokens=512)
     headline, body = (out.get("headline") or "").strip(), (out.get("body") or "").strip()
     if not headline:
         raise ValueError(f"empty headline: {out}")
@@ -187,7 +189,7 @@ def plan_posts(session, now: datetime, rewrite: bool = False) -> list:
 
     for n in session.query(NewsItem):
         pid = f"news:{n.news_id}"
-        if pid in have:
+        if pid in have or (n.relevance_score is not None and n.relevance_score <= NEWS_NOTE_MAX):
             continue
         plans.append((dict(post_id=pid, kind="news", event="news", news_id=n.news_id, category=n.category,
                            country=n.country, score=n.relevance_score,
@@ -200,12 +202,16 @@ def plan_posts(session, now: datetime, rewrite: bool = False) -> list:
 
 
 def publish_new_posts(session, errors: list, now=None, rewrite: bool = False) -> int:
-    """Write and store posts for every new event (failed ones retry next run).
-    rewrite=True regenerates the copy of existing posts, keeping their ranks."""
+    """Write and store posts for new events. A run writes at most MAX_POSTS_PER_RUN;
+    the rest wait. rewrite=True regenerates existing copy and keeps ranks."""
     now = now or datetime.utcnow()
     plans = plan_posts(session, now, rewrite)
     # Plain posts are retried from their facts only: no page fetch (and search credit) every run.
     plain_ids = {pid for (pid,) in session.query(FeedPost.post_id).filter(FeedPost.plain.is_(True))}
+    # Highest scores first, and a plain retry after a new event. The cap then
+    # spends the run on posts worth reading.
+    plans.sort(key=lambda plan: (plan[0]["post_id"] in plain_ids, -(plan[0].get("score") or 0)))
+    plans = plans[:MAX_POSTS_PER_RUN]
 
     def run(plan):
         fields, event, facts, url = plan
@@ -217,15 +223,22 @@ def publish_new_posts(session, errors: list, now=None, rewrite: bool = False) ->
             return fields, write(event, facts | {k: v for k, v in extra.items() if v}), backfill, None
         except Exception as e:
             copy = plain_copy(event, facts)
-            return (fields, copy | {"plain": True}, {}, None) if copy else (fields, None, {}, e)
+            return (fields, (copy | {"plain": True}) if copy else None, {}, e)
 
     published = 0
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        for fields, copy, backfill, err in pool.map(run, plans):
-            if err or not copy:
-                if err:
-                    errors.append(f"feed post {fields['post_id']}: {err}")
-                continue
+    streak = 0
+
+    def store(fields, copy, backfill, err) -> bool:
+        nonlocal published, streak
+        if err:
+            errors.append(f"feed post {fields['post_id']}: {err}"[:300])
+            streak += 1
+            text = str(err).lower()
+            if "credit balance" in text or "api_key" in text or "overloaded" in text or "rate_limit" in text:
+                streak = 3
+        else:
+            streak = 0
+        if copy:
             from services.facts import correct_known_facts
             copy["headline"] = correct_known_facts(copy.get("headline") or "")[:140]
             copy["body"] = correct_known_facts(copy.get("body") or "")[:400]
@@ -242,6 +255,18 @@ def publish_new_posts(session, errors: list, now=None, rewrite: bool = False) ->
                 session.add(FeedPost(**fields, **copy, created_at=now))
             session.commit()
             published += 1
+        # One outage should not start the rest of the batch.
+        return streak >= 3
+
+    if not plans:
+        return 0
+    if store(*run(plans[0])) or len(plans) == 1:
+        return published
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for item in pool.map(run, plans[1:]):
+            if store(*item):
+                pool.shutdown(wait=False, cancel_futures=True)
+                break
     return published
 
 

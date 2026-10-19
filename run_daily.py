@@ -30,7 +30,7 @@ from database.models import (  # noqa: E402
 from agents.digest import render_daily_digest, CoverageStats  # noqa: E402
 from agents.discovery import run_discovery, build_query_combinations  # noqa: E402
 from agents.triage import (  # noqa: E402
-    heuristic_prefilter, run_triage_llm, run_triage_copy, needs_public_copy, apply_triage_result,
+    heuristic_prefilter, run_triage_llm, run_triage_copy, needs_public_copy, news_worth_showing, apply_triage_result,
 )
 from services.llm_client import take_cache_usage  # noqa: E402
 from services.deduplicator import fingerprint, headline_key, procurement_score, same_story
@@ -69,8 +69,8 @@ PROMOTE_THRESHOLD = 50
 
 # Tavily news-mode queries (last 30 days). Only candidates from this pack are
 # eligible for the News page — general web results for NEWS_ONLY are mostly
-# vendor product pages. Triage relevance is bid-oriented, so news only needs
-# relevance > 0 (0 = off-topic / suppressed).
+# vendor product pages. Triage relevance is bid-oriented. A story is kept when
+# relevance is above 0 and importance is above the market-note floor.
 NEWS_QUERIES = [
     "EUDI Wallet rollout",
     "European Digital Identity Wallet certification",
@@ -395,7 +395,7 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
         return "opportunity", opp
 
     from_news_search = "news" in (candidate.potential_categories or [])
-    if ctype == "NEWS_ONLY" and from_news_search and relevance > 0:
+    if ctype == "NEWS_ONLY" and from_news_search and relevance > 0 and news_worth_showing(t):
         category = t.get("news_category") if t.get("news_category") in NEWS_CATEGORIES else "market"
         fields = dict(
             title=candidate.title or "(untitled)", category=category,

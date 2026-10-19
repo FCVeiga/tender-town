@@ -15,7 +15,7 @@ except ImportError:
 
 CHEAP_MODEL = "claude-haiku-4-5-20251001"
 STRONG_MODEL = "claude-sonnet-4-6"
-WRITER_MODEL = "claude-opus-5-5"   # feed copy: quality matters, volume is small
+WRITER_MODEL = "claude-opus-5-5"   # on-click writing where the reply is the product
 
 
 def _get_client() -> "anthropic.Anthropic":
