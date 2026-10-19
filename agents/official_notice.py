@@ -21,7 +21,37 @@ TED_SEARCH = "https://api.ted.europa.eu/v3/notices/search"
 _PORTALS = (
     "ted.europa.eu", "contractsfinder.service.gov.uk", "find-tender.service.gov.uk",
     "publiccontractsscotland.gov.uk", "boamp.fr", "tenderned.nl", "ecepp.ebrd.com",
+    "bbg.gv.at", "publicprocurement.be", "aop.bg", "simap.ch", "eprocurement.gov.cy",
+    "portal-vz.cz", "udbud.dk", "riigihanked.riik.ee", "contrataciondelestado.es",
+    "hankintailmoitukset.fi", "eaadhsy.gr", "javnanabava.hr", "kozbeszerzes.hu",
+    "etenders.gov.ie", "utbodsvefur.is", "anticorruzione.it", "vpt.lt", "marches.public.lu",
+    "iub.gov.lv", "contracts.gov.mt", "doffin.no", "uzp.gov.pl", "base.gov.pt",
+    "e-licitatie.ro", "upphandlingsmyndigheten.se", "enarocanje.si", "uvo.gov.sk",
 )
+# TED's buyer-country filter is ISO 3166-1 alpha-3.
+_ISO3 = {
+    "AT": "AUT", "AU": "AUS", "BA": "BIH", "BD": "BGD", "BE": "BEL", "BG": "BGR", "BR": "BRA",
+    "CH": "CHE", "CI": "CIV", "CY": "CYP", "CZ": "CZE", "DE": "DEU", "DK": "DNK", "EE": "EST",
+    "ES": "ESP", "FI": "FIN", "FR": "FRA", "GB": "GBR", "GR": "GRC", "HR": "HRV", "HU": "HUN",
+    "IE": "IRL", "IN": "IND", "IT": "ITA", "LT": "LTU", "LU": "LUX", "LV": "LVA", "MK": "MKD",
+    "MT": "MLT", "MY": "MYS", "NL": "NLD", "NO": "NOR", "PL": "POL", "PT": "PRT", "RO": "ROU",
+    "SA": "SAU", "SE": "SWE", "SI": "SVN", "SK": "SVK", "TN": "TUN", "TR": "TUR", "UA": "UKR",
+    "UK": "GBR", "US": "USA", "ZA": "ZAF",
+}
+# A headline word that does not name a particular purchase.
+_GENERIC = {
+    "digital", "identity", "wallet", "wallets", "european", "europe", "national", "public",
+    "tender", "tenders", "procurement", "system", "systems", "service", "services", "project",
+    "programme", "program", "government", "call", "open", "plan", "plans", "planned", "update",
+    "news", "launch", "launches", "launched", "about", "after", "before", "their", "this",
+    "that", "will", "have", "been", "more", "than", "rollout", "prepares", "prepare", "across",
+    "scheme", "framework", "infrastructure", "backend", "operation", "operations",
+    "development", "platform", "contract", "contracts", "notice", "market", "global",
+    "announces", "announced", "seeks", "seeking", "first", "next", "under", "with", "from",
+    "into", "over", "croatia", "germany", "finland", "france", "spain", "italy", "poland",
+    "sweden", "norway", "ireland", "portugal", "romania", "greece", "belgium", "austria",
+    "netherlands", "denmark", "estonia", "latvia", "lithuania", "malta", "cyprus", "hungary",
+}
 _CODE = re.compile(r"\b[A-Z][A-Z0-9]{1,24}(?:[/-][A-Z0-9]{1,24}){2,8}\b")
 _CFT = re.compile(r"tender-details/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:-[A-Za-z0-9]+)?", re.I)
 _TED_PUB = re.compile(r"/(\d{5,7}-\d{4})(?:[/?#]|$)")
@@ -46,7 +76,11 @@ def is_portal_url(url: str) -> bool:
     host = _host(url)
     if host == "ted.europa.eu" or host.endswith(".ted.europa.eu"):
         return bool(_TED_PUB.search(url))
-    return host in _PORTALS and urlparse(url).path not in ("", "/")
+    parsed = urlparse(url)
+    if re.search(r"\.(css|js|mjs|png|jpe?g|gif|svg|webp|ico|woff2?|map|ttf)$", parsed.path, re.I):
+        return False
+    # The notice id is often in the query (etenders resourceId), not the path.
+    return host in _PORTALS and parsed.path not in ("", "/") and bool(re.search(r"\d", parsed.path + (parsed.query or "")))
 
 
 def codes_from(*parts) -> list:
@@ -186,21 +220,27 @@ def _from_portal(url: str):
     }
 
 
-def _from_ted(publication: str):
+def _from_ted(publication: str, procedure: str = None):
     xml = _get(f"https://ted.europa.eu/en/notice/{publication}/xml")
-    procedure = re.search(r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})", xml, re.I)
+    folder = re.search(r"<cbc:ContractFolderID>\s*([0-9a-f-]{36})", xml, re.I)
+    procedure = procedure or (folder.group(1).lower() if folder else None)
+    awarded = bool(re.search(r"<cbc:NoticeTypeCode[^>]*>\s*can-", xml))
     portal = next((u for u in re.findall(r"<cbc:URI>([^<]+)</cbc:URI>", xml) if "tender-details/" in u), None)
     if portal:
         found = _from_portal(portal.split("#")[0])
         found["publication"] = found["publication"] or publication
+        found["procedure"] = found.get("procedure") or procedure
+        found["awarded"] = awarded
         return found
-    deadlines = re.findall(r"<cbc:EndDate>(\d{4}-\d{2}-\d{2})", xml)
+    # Only the submission deadline. A later EndDate is often the contract period.
+    deadlines = re.findall(r"<cac:TenderSubmissionDeadlinePeriod>.*?<cbc:EndDate>(\d{4}-\d{2}-\d{2})", xml, re.S)
     return {
         "portal_url": f"https://ted.europa.eu/en/notice/-/detail/{publication}",
-        "procedure": procedure.group(1).lower() if procedure else None,
+        "procedure": procedure,
         "publication": publication,
         "title": None,
-        "deadline": deadlines[-1] if deadlines else None,
+        "deadline": None if awarded else (deadlines[-1] if deadlines else None),
+        "awarded": awarded,
         "value": None, "currency": None, "country": None,
     }
 
@@ -235,15 +275,106 @@ def _hop(code: str):
     return None
 
 
-def find_official(source_url: str, text: str = ""):
-    """The portal record for a tender first seen at source_url, or None."""
+def _name_tokens(title: str) -> list:
+    """Words that can identify one purchase: a product name, not 'wallet' or 'tender'."""
+    ranked = []
+    seen = set()
+    for word in re.findall(r"[^\W\d_](?:[^\W_]|[0-9]|-){2,}", title or ""):
+        key = word.lower()
+        if key in seen or key in _GENERIC:
+            continue
+        named = word.isupper() or any(ch.isupper() for ch in word[1:]) or any(ch.isdigit() for ch in word) or len(word) >= 8
+        if not named:
+            continue
+        seen.add(key)
+        ranked.append(((any(ch.isdigit() for ch in word), any(ch.isupper() for ch in word[1:]), len(word)), word))
+    ranked.sort(reverse=True)
+    return [word for _, word in ranked[:3]]
+
+
+def _notice_title(notice: dict) -> str:
+    title = notice.get("notice-title")
+    if isinstance(title, dict):
+        title = title.get("eng") or next(iter(title.values()), "")
+    if isinstance(title, list):
+        title = " ".join(str(part) for part in title)
+    return str(title or "")
+
+
+def _pub_key(publication: str):
+    try:
+        number, year = str(publication).split("-")
+        return (int(year), int(number))
+    except (ValueError, AttributeError):
+        return (0, 0)
+
+
+def _ted_notices(query: str):
+    body = {"query": query, "fields": ["publication-number", "procedure-identifier", "notice-title", "buyer-country"], "limit": 15}
+    response = requests.post(TED_SEARCH, json=body, headers=UA, timeout=40)
+    if response.status_code == 429:
+        import time
+        time.sleep(2)
+        response = requests.post(TED_SEARCH, json=body, headers=UA, timeout=40)
+        if response.status_code == 429:
+            return None
+    response.raise_for_status()
+    return response.json().get("notices") or []
+
+
+def _ted_for_title(title: str, country: str = None):
+    """The one TED procedure whose title is this same purchase, or None.
+
+    A headline with no call code still gets a search. Several procedures, or
+    none that read as the same purchase, are left alone.
+    """
+    from services.deduplicator import same_procurement
+    tokens = _name_tokens(title)
+    if not tokens:
+        return None
+    iso = _ISO3.get((country or "").upper())
+    attempts = [tokens[:2]] if len(tokens) >= 2 else []
+    attempts.append(tokens[:1])
+    for chosen in attempts:
+        parts = [f'FT~"{token}"' for token in chosen]
+        if iso:
+            parts.append(f"buyer-country = {iso}")
+        parts.append("PD>=20240101")
+        try:
+            notices = _ted_notices(" AND ".join(parts))
+        except Exception:
+            return None
+        if notices is None:
+            return None
+        if not notices:
+            continue
+        winners = {}
+        for notice in notices:
+            procedure = notice.get("procedure-identifier")
+            publication = notice.get("publication-number")
+            if not procedure or not publication or not same_procurement(title, _notice_title(notice)):
+                continue
+            winners.setdefault(procedure, []).append(publication)
+        if len(winners) != 1:
+            return None
+        procedure, publications = next(iter(winners.items()))
+        return {"procedure": procedure, "publication": sorted(publications, key=_pub_key)[-1]}
+    return None
+
+
+def find_official(source_url: str, text: str = "", country: str = None, headline: str = None, follow_links: bool = True):
+    """The portal record for a tender first seen at source_url, or None.
+
+    follow_links is for a page that is itself about one purchase. A news
+    article's sidebar can point at a different notice, so that path stays off.
+    """
     html = ""
     if source_url and not is_portal_url(source_url):
         try:
             html = _get(source_url)
         except Exception:
             html = ""
-    for link in _links(html, source_url or ""):
+    for link in (_links(html, source_url or "") if follow_links else []):
         if not is_portal_url(link):
             continue
         found = _from_ted(_TED_PUB.search(link).group(1)) if _TED_PUB.search(link) and "tender-details/" not in link else _from_portal(link)
@@ -255,7 +386,7 @@ def find_official(source_url: str, text: str = ""):
         except Exception:
             ted = None
         if ted and ted.get("publication"):
-            return _from_ted(ted["publication"])
+            return _from_ted(ted["publication"], ted.get("procedure"))
         try:
             jumped = _hop(code)
         except Exception:
@@ -267,6 +398,12 @@ def find_official(source_url: str, text: str = ""):
         found = _from_portal(jumped)
         if found and found.get("portal_url"):
             return found
+    try:
+        ted = _ted_for_title(headline or text, country)
+    except Exception:
+        ted = None
+    if ted and ted.get("publication"):
+        return _from_ted(ted["publication"], ted.get("procedure"))
     return None
 
 
@@ -294,7 +431,8 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
             continue
         try:
             found = find_official(opp.official_url or "", " ".join(
-                part for part in (opp.title, opp.title_en, opp.summary) if part))
+                part for part in (opp.title, opp.title_en, opp.summary) if part),
+                opp.country, headline=opp.title_en or opp.title)
         except Exception as exc:
             session.rollback()
             errors.append(f"official {opp.opportunity_id}: {exc}"[:300])
@@ -304,8 +442,11 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
         now = datetime.utcnow()
         _remember(session, opp.opportunity_id, opp.official_url, opp.title)
         old_deadline = opp.deadline.replace(tzinfo=None) if opp.deadline else None
-        new_deadline = datetime.strptime(found["deadline"], "%Y-%m-%d") if found.get("deadline") else None
-        if new_deadline and old_deadline != new_deadline:
+        new_deadline = datetime.strptime(found["deadline"], "%Y-%m-%d") if found.get("deadline") and not found.get("awarded") else None
+        if found.get("awarded"):
+            opp.status = "AWARDED"
+            opp.status_evidence = "The contract award notice is published."
+        elif new_deadline and old_deadline != new_deadline:
             verb = "extended" if old_deadline and new_deadline > old_deadline else "brought forward" if old_deadline else "set"
             old = old_deadline.strftime("%d %b %Y") if old_deadline else "none"
             session.add(ChangeEvent(
@@ -339,5 +480,79 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
             except Exception as exc:
                 session.rollback()
                 errors.append(f"documents {opp.opportunity_id}: {exc}"[:300])
+        linked += 1
+    return linked
+
+
+def _scopes_for(session, item_type: str, item_id: str, opportunity_id: str):
+    """The scopes that already carry this story also carry the tender it turned out to be."""
+    session.execute(text("""
+        insert into scope_items (scope_id, item_type, item_id, relevance, candidate_type, reason)
+        select scope_id, 'tender', :opp, relevance, candidate_type, reason
+        from scope_items
+        where item_type = :kind and item_id = :item
+        on conflict (scope_id, item_type, item_id) do nothing
+    """), {"opp": opportunity_id, "kind": item_type, "item": item_id})
+
+
+def resolve_from_news(session, errors: list, only_id: str = None, limit: int = 40) -> int:
+    """A news story in any scope that is really a call becomes a tender on the official notice.
+
+    The article stays on the news page. The tender is added to the same scopes.
+    """
+    from database.models import Opportunity, NewsItem
+    from agents.tender_documents import collect_documents
+    from services.deduplicator import fingerprint
+    query = session.query(NewsItem)
+    if only_id:
+        query = query.filter(NewsItem.news_id == only_id)
+    else:
+        query = query.order_by(NewsItem.published_date.desc().nullslast(), NewsItem.created_at.desc()).limit(limit)
+    linked = 0
+    for item in query.all():
+        if is_portal_url(item.source_url or ""):
+            continue
+        headline = item.title_en or item.title or ""
+        try:
+            found = find_official(item.source_url or "", " ".join(
+                part for part in (item.title, item.title_en, item.summary) if part),
+                item.country, headline=headline, follow_links=False)
+        except Exception as exc:
+            session.rollback()
+            errors.append(f"official news {item.news_id}: {exc}"[:300])
+            continue
+        if not found or not found.get("portal_url"):
+            continue
+        reference = f"TED:{found['procedure']}" if found.get("procedure") else None
+        existing = session.query(Opportunity).filter_by(reference=reference).first() if reference else None
+        if not existing:
+            existing = session.query(Opportunity).filter_by(official_url=found["portal_url"]).first()
+        now = datetime.utcnow()
+        if not existing:
+            deadline = datetime.strptime(found["deadline"], "%Y-%m-%d") if found.get("deadline") else None
+            opportunity_id = fingerprint(item.country or "", "", found.get("procedure"), found.get("title") or headline)
+            existing = session.get(Opportunity, opportunity_id) or Opportunity(
+                opportunity_id=opportunity_id, first_detected=now,
+                title=found.get("title") or item.title, title_en=found.get("title") or headline,
+                country=item.country, opportunity_type="rfp",
+                status=("OPEN" if deadline and deadline >= now else "CLOSED") if deadline else "UNVERIFIED",
+                summary=item.summary, deadline=deadline, publication_date=item.published_date,
+                official_url=found["portal_url"][:1024], reference=reference,
+                estimated_value=found.get("value"), currency=found.get("currency"),
+                relevance_score=item.relevance_score or 0,
+                opportunity_relevance_score=item.relevance_score or 0,
+                last_checked=now, verified_at=now,
+                status_evidence=(f"The contract notice deadline is {deadline.strftime('%d %B %Y').lstrip('0')}." if deadline else None),
+            )
+            session.add(existing)
+        _remember(session, existing.opportunity_id, item.source_url, headline)
+        _scopes_for(session, "news", item.news_id, existing.opportunity_id)
+        session.commit()
+        if found.get("procedure"):
+            try:
+                collect_documents(session, existing.opportunity_id, found["procedure"])
+            except Exception as exc:
+                session.rollback()
+                errors.append(f"documents {existing.opportunity_id}: {exc}"[:300])
         linked += 1
     return linked

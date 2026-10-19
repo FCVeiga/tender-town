@@ -812,11 +812,13 @@ def main():
     verified = verify_opportunities(session, errors)  # internal agent: always on
     print(f"Verification: {verified} opportunities checked against their source")
 
-    # A tender found on a news page still needs its portal, deadline and documents.
-    from agents.official_notice import resolve_official
+    # A tender or a news story found off a portal still needs the official notice.
+    # This covers every scope: the rows are not filtered by which scope saved them.
+    from agents.official_notice import resolve_official, resolve_from_news
     linked = resolve_official(session, errors)
-    if linked:
-        print(f"Official notices: {linked} tenders linked to the portal they were called on")
+    from_news = resolve_from_news(session, errors)
+    if linked or from_news:
+        print(f"Official notices: {linked} tenders updated, {from_news} found from news")
 
     # Tender documents (TED notices + buyer portal lists) and what bidders must meet.
     from agents.tender_documents import collect_all
