@@ -22,6 +22,7 @@ type ScopeEvalProps = {
   evaluatorOn: boolean; proposerOn: boolean; analysedAt: string | null;
   lead?: string | null;
   archived?: boolean;
+  awarded?: boolean;
   contextHref?: string | null;
   /** Set on the first scope when the month still has runs. */
   runsLeft?: number | null;
@@ -40,7 +41,7 @@ function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, sign
 }
 
 /** One scope's evaluation of a tender. The proposal brief is a separate section. */
-export default function TenderScopeEvaluation({ opportunityId, scope, row, canRun, signedIn, evaluatorOn, analysedAt, locked = null, lead = null, archived = false, contextHref = null, runsLeft = null, runsLimit = null, quotaLimit = null }: ScopeEvalProps) {
+export default function TenderScopeEvaluation({ opportunityId, scope, row, canRun, signedIn, evaluatorOn, analysedAt, locked = null, lead = null, archived = false, awarded = false, contextHref = null, runsLeft = null, runsLimit = null, quotaLimit = null }: ScopeEvalProps) {
   const t = getTSync();
   const evaluation = (row?.evaluation ?? null) as Evaluation | null;
   const running = !!row?.evaluation_started_at && Date.now() - new Date(row.evaluation_started_at).getTime() < 5 * 60_000;
@@ -58,7 +59,7 @@ export default function TenderScopeEvaluation({ opportunityId, scope, row, canRu
         {showReport && <span className={`verdict eval-${evaluation.verdict}`}>{VERDICTS[evaluation.verdict] ? t(VERDICTS[evaluation.verdict]) : evaluation.verdict}</span>}
       </div>
       {lead && <p className="agent-intro">{lead}</p>}
-      {archived && <p className="summary-note">{t('This tender is archived.')}</p>}
+      {awarded ? <p className="summary-note">{t('This contract has been awarded.')}</p> : archived ? <p className="summary-note">{t('This tender is archived.')}</p> : null}
       {showReport && analysedAt && row?.evaluated_at && analysedAt > row.evaluated_at && (
         <p className="summary-note">{t('Requirements changed since this report — re-run it.')}</p>
       )}

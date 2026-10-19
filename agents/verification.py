@@ -94,6 +94,8 @@ def verify_ted(ted_provider, publication_number: str, category: str, today: date
     """TED notices without a deadline in the search fields: read the XML."""
     d = ted_provider.notice_dates(publication_number)
     deadline, planned = _date(d.get("deadline")), _date(d.get("planned_date"))
+    if d.get("awarded"):
+        return "AWARDED", None, "The contract award notice is published."
     if deadline:
         status = "OPEN" if deadline >= today else "CLOSED"
         return status, deadline, f"TED notice deadline {deadline.date().isoformat()}"

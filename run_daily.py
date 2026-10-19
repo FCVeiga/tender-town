@@ -299,7 +299,7 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
         # Only TED's structured deadline is trusted at this point. Anything else
         # starts UNVERIFIED and is settled by verify_opportunities() against
         # the source page (triage only saw a snippet and doesn't know the date).
-        deadline = ted.get("deadline")
+        deadline = None if awarded else ted.get("deadline")
         if awarded:
             status = "AWARDED"
         elif deadline:
@@ -319,6 +319,8 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
             # Triage writes these in the platform language (Translator Agent's target).
             lang=_written_lang({"title_en": t.get("title_en"), "authority_en": t.get("authority"), "summary": summary}),
         )
+        if awarded:
+            fields["status_evidence"] = "The contract award notice is published."
         if reference:
             fields["reference"] = reference
 
@@ -467,11 +469,15 @@ def verify_opportunities(session, errors: list) -> int:
         except Exception as e:
             errors.append(f"verify {o.opportunity_id}: {e}")
             status, deadline, category, evidence = "UNVERIFIED", None, o.opportunity_type, f"Source could not be read: {e}"[:300]
-        if o.verified_at:  # the first check is a correction, not a change worth announcing
-            record_changes(session, o, {"status": status, "deadline": deadline}, now)
+        incoming_deadline = None if status == "AWARDED" else deadline
+        changes = record_changes(session, o, {"status": status, "deadline": incoming_deadline}, now) if o.verified_at else []
         o.status, o.opportunity_type, o.status_evidence, o.verified_at = status, category, evidence, now
-        if deadline:
+        if status == "AWARDED":
+            o.deadline = None
+        elif deadline:
             o.deadline = deadline
+        if changes:
+            o.last_change = now
         session.commit()
         checked += 1
     return checked
@@ -814,11 +820,14 @@ def main():
 
     # A tender or a news story found off a portal still needs the official notice.
     # This covers every scope: the rows are not filtered by which scope saved them.
-    from agents.official_notice import resolve_official, resolve_from_news
+    from agents.official_notice import align_summaries, refresh_open, resolve_official, resolve_from_news
     linked = resolve_official(session, errors)
     from_news = resolve_from_news(session, errors)
-    if linked or from_news:
-        print(f"Official notices: {linked} tenders updated, {from_news} found from news")
+    aligned = align_summaries(session)
+    refreshed = refresh_open(session, errors)
+    if linked or from_news or aligned or refreshed:
+        print(f"Official notices: {linked} tenders linked, {from_news} found from news, "
+              f"{aligned} summaries aligned, {refreshed} re-read from the latest notice")
 
     # Tender documents (TED notices + buyer portal lists) and what bidders must meet.
     from agents.tender_documents import collect_all

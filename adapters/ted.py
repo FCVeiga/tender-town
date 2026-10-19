@@ -94,8 +94,10 @@ class TedSearchProvider(SearchProvider):
 
         deadlines = sorted(d for tag in _XML_DEADLINES for d in end_dates(tag))
         planned = re.search(r"<cbc:PlannedDate>(\d{4}-\d{2}-\d{2})", xml)
+        awarded = bool(re.search(r"<cbc:NoticeTypeCode[^>]*>\s*(?:can-|veat)", xml))
         return {"deadline": deadlines[-1] if deadlines else None,
-                "planned_date": planned.group(1) if planned else None}
+                "planned_date": planned.group(1) if planned else None,
+                "awarded": awarded}
 
     def notice_details(self, publication_number: str) -> dict:
         """Substance of a notice from its eForms XML: estimated value,

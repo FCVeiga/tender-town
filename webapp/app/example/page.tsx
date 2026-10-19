@@ -80,8 +80,7 @@ export default async function ExamplePage() {
       <div className="detail-head">
         <div className="opp-tags">
           <span className="tag">{t('Example')}</span>
-          <StatusTags o={o as Opportunity} archived={stage === 'closed'} />
-          {o.status === 'AWARDED' && <span className="tag">{t('AWARDED')}</span>}
+          <StatusTags o={o as Opportunity} archived={stage === 'closed' && o.status !== 'AWARDED'} />
           {stage === 'open' && <span className="tag">{t(shownStatus)}</span>}
         </div>
         <h1>{titleOf(o)}</h1>

@@ -3,12 +3,13 @@ When a tender was found on a news page rather than a procurement portal,
 look up the call and attach the official notice: portal link, deadline,
 value and the buyer's documents.
 
-A match needs a reference code from the article (or a portal link on that
-page). A title alone is not enough. The news URL is kept as another source.
+A match needs a reference code, a portal link, or one TED notice whose title
+is the same purchase. The news URL is kept as another source. The public
+summary is rewritten when it still describes a different deadline or an open call.
 """
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import quote, urljoin, urlparse
 
 import requests
@@ -407,6 +408,133 @@ def find_official(source_url: str, text: str = "", country: str = None, headline
     return None
 
 
+_STALE_CLAIM = re.compile(
+    r"open until|not yet confirmed|not yet specified|not yet announced|not yet published|"
+    r"no bid deadline|no deadline|deadline is not|deadline has not|has not yet been|"
+    r"is running a public tender|with no (?:bid |submission )?deadline|without a confirmed",
+    re.I,
+)
+_DATE_CLAIM = re.compile(r"deadline|open until", re.I)
+_MONTHS = {name: n for n, name in enumerate(
+    ["january", "february", "march", "april", "may", "june", "july", "august",
+     "september", "october", "november", "december"], 1)}
+_LONG_DATE = re.compile(r"\b(\d{1,2})\s+([A-Za-z]+)\s+(20\d{2})\b")
+_ISO_DATE = re.compile(r"\b(20\d{2})-(\d{2})-(\d{2})\b")
+_AWARD_LEAD = "The contract has been awarded."
+
+
+def _dates_in(sentence: str) -> list:
+    found = []
+    for day, month, year in _LONG_DATE.findall(sentence):
+        number = _MONTHS.get(month.lower())
+        if number:
+            found.append((int(year), number, int(day)))
+    for year, month, day in _ISO_DATE.findall(sentence):
+        found.append((int(year), int(month), int(day)))
+    return found
+
+
+def _conflicts(sentence: str, deadline, awarded: bool) -> bool:
+    """A sentence that states a deadline the notice does not."""
+    dates = _dates_in(sentence)
+    claim = bool(_STALE_CLAIM.search(sentence))
+    dated = bool(dates) and bool(_DATE_CLAIM.search(sentence))
+    if awarded:
+        return claim or dated
+    if deadline is None:
+        return False
+    if claim and not dates:
+        return True
+    when = deadline.replace(tzinfo=None) if getattr(deadline, "tzinfo", None) else deadline
+    return dated and any((y, m, d) != (when.year, when.month, when.day) for y, m, d in dates)
+
+
+def summary_aligned(summary: str, status: str, deadline):
+    """The summary with sentences that contradict the notice removed.
+
+    None when the text already agrees with the record. An award leads with
+    that fact, so a leftover article cannot keep another call's deadline.
+    """
+    text = (summary or "").strip()
+    if not text or status not in ("AWARDED", "CLOSED", "OPEN"):
+        return None
+    awarded = status == "AWARDED"
+    parts = [part for part in re.split(r"(?<=[.!?])\s+", text) if part]
+    kept = [part for part in parts if not _conflicts(part, deadline, awarded)]
+    if len(kept) == len(parts):
+        return None
+    body = " ".join(kept).strip()
+    if awarded:
+        if body.lower().startswith(_AWARD_LEAD.lower()):
+            return body
+        return f"{_AWARD_LEAD} {body}".strip() if body else _AWARD_LEAD
+    return body or None
+
+
+def _mark_summary(opp, summary: str):
+    opp.summary = summary
+    lang = dict(opp.lang or {})
+    lang["summary"] = "en"
+    opp.lang = lang
+
+
+def _apply_notice(session, opp, found: dict, now: datetime) -> bool:
+    """Write the latest notice onto the tender. A material change is a status
+    or a submission deadline, which is the only thing that counts as an update."""
+    from database.models import ChangeEvent, ChangeImportance
+    awarded = bool(found.get("awarded"))
+    old_deadline = opp.deadline.replace(tzinfo=None) if opp.deadline else None
+    new_deadline = datetime.strptime(found["deadline"], "%Y-%m-%d") if found.get("deadline") and not awarded else None
+    material = False
+    if awarded:
+        if opp.status != "AWARDED":
+            session.add(ChangeEvent(
+                opportunity_id=opp.opportunity_id, event_type="status", importance=ChangeImportance.MATERIAL,
+                description=f"Status changed: {opp.status} → AWARDED",
+                detected_at=now, notice_url=found.get("portal_url"),
+                note_source="Read from the official notice"))
+            material = True
+        opp.status = "AWARDED"
+        opp.deadline = None
+        opp.status_evidence = "The contract award notice is published."
+    elif new_deadline and old_deadline != new_deadline:
+        verb = "extended" if old_deadline and new_deadline > old_deadline else "brought forward" if old_deadline else "set"
+        old = old_deadline.strftime("%d %b %Y") if old_deadline else "none"
+        session.add(ChangeEvent(
+            opportunity_id=opp.opportunity_id, event_type="deadline", importance=ChangeImportance.MATERIAL,
+            description=f"Deadline {verb}: {old} → {new_deadline.strftime('%d %b %Y')}",
+            detected_at=now, notice_url=found.get("portal_url"),
+            note_source="Read from the official notice"))
+        opp.deadline = new_deadline
+        opp.status = "OPEN" if new_deadline >= now else "CLOSED"
+        opp.status_evidence = f"The contract notice deadline is {new_deadline.strftime('%d %B %Y').lstrip('0')}."
+        material = True
+    source_changed = bool(found.get("portal_url") and found["portal_url"] != opp.official_url)
+    if source_changed:
+        _remember(session, opp.opportunity_id, opp.official_url, opp.title)
+        opp.official_url = found["portal_url"][:1024]
+    if found.get("procedure"):
+        opp.reference = f"TED:{found['procedure']}"[:128]
+    if found.get("title"):
+        opp.title = found["title"]
+        opp.title_en = found["title"]
+    if found.get("value"):
+        opp.estimated_value = found["value"]
+        opp.currency = found.get("currency") or opp.currency
+        opp.value_source = None
+    aligned = summary_aligned(opp.summary, opp.status or "", opp.deadline)
+    if aligned and aligned != (opp.summary or "").strip():
+        _mark_summary(opp, aligned)
+    if material or source_changed:
+        opp.tender_summary = None
+        opp.tender_analysed_at = None
+    if material:
+        opp.last_change = now
+    opp.last_checked = now
+    opp.verified_at = now
+    return material
+
+
 def _remember(session, opportunity_id: str, url: str, title: str):
     if not url:
         return
@@ -420,7 +548,7 @@ def _remember(session, opportunity_id: str, url: str, title: str):
 
 def resolve_official(session, errors: list, only_id: str = None) -> int:
     """Attach the official portal to open tenders that were found somewhere else."""
-    from database.models import ChangeEvent, ChangeImportance, Opportunity
+    from database.models import Opportunity
     from agents.tender_documents import collect_documents
     query = session.query(Opportunity).filter(Opportunity.status.in_(["OPEN", "SIGNAL", "UNVERIFIED"]))
     if only_id:
@@ -439,40 +567,7 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
             continue
         if not found or not found.get("portal_url") or found["portal_url"] == opp.official_url:
             continue
-        now = datetime.utcnow()
-        _remember(session, opp.opportunity_id, opp.official_url, opp.title)
-        old_deadline = opp.deadline.replace(tzinfo=None) if opp.deadline else None
-        new_deadline = datetime.strptime(found["deadline"], "%Y-%m-%d") if found.get("deadline") and not found.get("awarded") else None
-        if found.get("awarded"):
-            opp.status = "AWARDED"
-            opp.status_evidence = "The contract award notice is published."
-        elif new_deadline and old_deadline != new_deadline:
-            verb = "extended" if old_deadline and new_deadline > old_deadline else "brought forward" if old_deadline else "set"
-            old = old_deadline.strftime("%d %b %Y") if old_deadline else "none"
-            session.add(ChangeEvent(
-                opportunity_id=opp.opportunity_id, event_type="deadline", importance=ChangeImportance.MATERIAL,
-                description=f"Deadline {verb}: {old} → {new_deadline.strftime('%d %b %Y')}",
-                detected_at=now, notice_url=found["portal_url"],
-                note_source="Read from the official notice"))
-            opp.deadline = new_deadline
-            opp.status = "OPEN" if new_deadline >= now else "CLOSED"
-            opp.last_change = now
-        opp.official_url = found["portal_url"][:1024]
-        if found.get("procedure"):
-            opp.reference = f"TED:{found['procedure']}"[:128]
-        if found.get("title"):
-            opp.title = found["title"]
-            opp.title_en = found["title"]
-        if found.get("value"):
-            opp.estimated_value = found["value"]
-            opp.currency = found.get("currency") or opp.currency
-            opp.value_source = None
-        opp.tender_summary = None
-        opp.tender_analysed_at = None
-        opp.last_checked = now
-        opp.verified_at = now
-        if new_deadline:
-            opp.status_evidence = f"The contract notice deadline is {new_deadline.strftime('%d %B %Y').lstrip('0')}."
+        _apply_notice(session, opp, found, datetime.utcnow())
         session.commit()
         if found.get("procedure"):
             try:
@@ -529,22 +624,32 @@ def resolve_from_news(session, errors: list, only_id: str = None, limit: int = 4
             existing = session.query(Opportunity).filter_by(official_url=found["portal_url"]).first()
         now = datetime.utcnow()
         if not existing:
-            deadline = datetime.strptime(found["deadline"], "%Y-%m-%d") if found.get("deadline") else None
+            if found.get("awarded"):
+                deadline, status = None, "AWARDED"
+                evidence = "The contract award notice is published."
+            elif found.get("deadline"):
+                deadline = datetime.strptime(found["deadline"], "%Y-%m-%d")
+                status = "OPEN" if deadline >= now else "CLOSED"
+                evidence = f"The contract notice deadline is {deadline.strftime('%d %B %Y').lstrip('0')}."
+            else:
+                deadline, status, evidence = None, "UNVERIFIED", None
+            summary = summary_aligned(item.summary, status, deadline) or item.summary
             opportunity_id = fingerprint(item.country or "", "", found.get("procedure"), found.get("title") or headline)
             existing = session.get(Opportunity, opportunity_id) or Opportunity(
                 opportunity_id=opportunity_id, first_detected=now,
                 title=found.get("title") or item.title, title_en=found.get("title") or headline,
                 country=item.country, opportunity_type="rfp",
-                status=("OPEN" if deadline and deadline >= now else "CLOSED") if deadline else "UNVERIFIED",
-                summary=item.summary, deadline=deadline, publication_date=item.published_date,
+                status=status, summary=summary, deadline=deadline, publication_date=item.published_date,
                 official_url=found["portal_url"][:1024], reference=reference,
                 estimated_value=found.get("value"), currency=found.get("currency"),
                 relevance_score=item.relevance_score or 0,
                 opportunity_relevance_score=item.relevance_score or 0,
-                last_checked=now, verified_at=now,
-                status_evidence=(f"The contract notice deadline is {deadline.strftime('%d %B %Y').lstrip('0')}." if deadline else None),
+                last_checked=now, verified_at=now, status_evidence=evidence,
+                lang={"summary": "en"} if summary != item.summary else None,
             )
             session.add(existing)
+        else:
+            _apply_notice(session, existing, found, now)
         _remember(session, existing.opportunity_id, item.source_url, headline)
         _scopes_for(session, "news", item.news_id, existing.opportunity_id)
         session.commit()
@@ -556,3 +661,69 @@ def resolve_from_news(session, errors: list, only_id: str = None, limit: int = 4
                 errors.append(f"documents {existing.opportunity_id}: {exc}"[:300])
         linked += 1
     return linked
+
+
+def align_summaries(session) -> int:
+    """Drop summary sentences that disagree with the status and deadline already stored."""
+    from database.models import Opportunity
+    changed = 0
+    for opp in session.query(Opportunity).filter(Opportunity.status.in_(["AWARDED", "CLOSED", "OPEN"])).all():
+        aligned = summary_aligned(opp.summary, opp.status or "", opp.deadline)
+        if not aligned or aligned == (opp.summary or "").strip():
+            continue
+        _mark_summary(opp, aligned)
+        changed += 1
+    if changed:
+        session.commit()
+    return changed
+
+
+def refresh_open(session, errors: list, limit: int = 20) -> int:
+    """Re-read the latest notice of tenders that can still change.
+
+    An award clears the bid deadline. A later contract notice moves it.
+    A notice that states neither is left alone, so a failed read cannot wipe a date.
+    """
+    from database.models import Opportunity
+    from agents.tender_documents import _procedure_notices
+    now = datetime.utcnow()
+    open_cutoff = now - timedelta(hours=20)
+    settled_cutoff = now - timedelta(days=7)
+    rows = (session.query(Opportunity)
+            .filter(Opportunity.reference.like("TED:%"))
+            .filter(Opportunity.status.in_(["OPEN", "SIGNAL", "UNVERIFIED", "AWARDED", "CLOSED"]))
+            .all())
+    open_rows, settled_rows = [], []
+    for opp in rows:
+        checked = opp.last_checked.replace(tzinfo=None) if opp.last_checked else None
+        if opp.status in ("OPEN", "SIGNAL", "UNVERIFIED") and (checked is None or checked < open_cutoff):
+            open_rows.append(opp)
+        elif opp.status in ("AWARDED", "CLOSED") and (checked is None or checked < settled_cutoff):
+            settled_rows.append(opp)
+    stamp = lambda opp: opp.last_checked.replace(tzinfo=None) if opp.last_checked else datetime.min
+    open_rows.sort(key=stamp)
+    settled_rows.sort(key=stamp)
+    due = open_rows[:limit] + settled_rows[:max(5, limit // 4)]
+    updated = 0
+    for opp in due:
+        procedure = (opp.reference or "")[4:]
+        try:
+            notices = _procedure_notices(procedure)
+            latest = notices[-1] if notices else None
+            found = _from_ted(latest["publication-number"], procedure) if latest else None
+        except Exception as exc:
+            session.rollback()
+            errors.append(f"refresh {opp.opportunity_id}: {exc}"[:300])
+            continue
+        kind = (latest or {}).get("notice-type") or ""
+        if found:
+            found["awarded"] = bool(found.get("awarded") or kind.startswith(("can-", "veat")))
+        if not found or not (found.get("awarded") or found.get("deadline")):
+            opp.last_checked = now
+            opp.verified_at = now
+            session.commit()
+            continue
+        if _apply_notice(session, opp, found, now):
+            updated += 1
+        session.commit()
+    return updated

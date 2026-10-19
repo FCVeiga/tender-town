@@ -20,13 +20,16 @@ export function DeadlineText({ deadline, closed = false }: { deadline: string | 
 
 export function StatusTags({ o, archived = false }: { o: Opportunity; archived?: boolean }) {
   const t = getTSync();
+  const stage = stageOf(o);
+  const awarded = (o.status || '').toUpperCase() === 'AWARDED';
   return (
     <>
       {isNew(o) && <span className="tag new">{t('New')}</span>}
-      {!isNew(o) && isUpdated(o) && <span className="tag updated">{t('Updated')}</span>}
+      {!isNew(o) && isUpdated(o) && stage !== 'closed' && <span className="tag updated">{t('Updated')}</span>}
       {o.opportunity_type && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
-      {stageOf(o) === 'closed' && <span className="tag closed">{archived ? t('Archived') : t('Closed')}</span>}
-      {stageOf(o) === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
+      {awarded && <span className="tag">{t('Awarded')}</span>}
+      {stage === 'closed' && !awarded && <span className="tag closed">{archived ? t('Archived') : t('Closed')}</span>}
+      {stage === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
     </>
   );
 }

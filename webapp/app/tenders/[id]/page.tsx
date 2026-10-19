@@ -212,8 +212,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
       <div className="detail-head">
         <div className="detail-tags-row">
           <div className="opp-tags">
-            <StatusTags o={o as Opportunity} archived={stage === 'closed'} />
-            {o.status === 'AWARDED' && <span className="tag">{t('AWARDED')}</span>}
+            <StatusTags o={o as Opportunity} archived={stage === 'closed' && o.status !== 'AWARDED'} />
             {stage === 'open' && shownStatus && <span className="tag">{t(shownStatus)}</span>}
           </div>
           <HeartButton type="tender" id={o.opportunity_id} liked={likes.liked.has(o.opportunity_id)} signedIn={likes.signedIn} className="page-heart" />
@@ -231,8 +230,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
       <div className="stat-grid">
         <div className="stat">
           <div className="stat-label">{t('Deadline')}</div>
-          <div className="stat-num small"><DeadlineText deadline={o.deadline} closed={stage === 'closed'} /></div>
-          {stage === 'closed' && <div className="stat-label">{t('Archived')}</div>}
+          <div className="stat-num small">{o.status === 'AWARDED' && !o.deadline ? t('Awarded') : <DeadlineText deadline={o.deadline} closed={stage === 'closed'} />}</div>
+          {stage === 'closed' && o.status !== 'AWARDED' && <div className="stat-label">{t('Archived')}</div>}
         </div>
         <div className="stat">
           <div className="stat-label">{t('Estimated value')}</div>
@@ -266,7 +265,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
             <TenderHistory
               notices={notices}
               changes={(changes || []) as UpdateEvent[]}
-              archived={stage === 'closed'}
+              archived={stage === 'closed' && o.status !== 'AWARDED'}
               evidence={o.status_evidence}
               verifiedAt={o.verified_at}
               note={stage === 'uncertain' ? t('The bidding status is not confirmed.') : null}
@@ -347,7 +346,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                   row={user ? evalOf(scope.id) : null} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
                   evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
                   analysedAt={o.tender_analysed_at ?? null}
-                  lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed'}
+                  lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed' && o.status !== 'AWARDED'} awarded={index === 0 && o.status === 'AWARDED'}
                   contextHref={scopeCanRun(scope) ? contextHrefOf(scope) : null}
                   runsLeft={index === 0 ? runsLeft : null}
                   runsLimit={index === 0 && evalAllowance?.limit != null && !evalAllowance.block ? evalAllowance.limit : null}
@@ -359,7 +358,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                     <div className="agent-id"><h2>{t('Tender Evaluation')}</h2></div>
                   </div>
                   <p className="agent-intro">{compare}</p>
-                  {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
+                  {o.status === 'AWARDED' ? <p className="summary-note">{t('This contract has been awarded.')}</p> : stage === 'closed' ? <p className="summary-note">{t('This tender is archived.')}</p> : null}
                   <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
                 </>
               )}
@@ -373,7 +372,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
               <div className="agent-id"><h2>{t('Proposal brief')}</h2></div>
             </div>
             <p className="agent-intro">{briefLead}</p>
-            {stage === 'closed' && <p className="summary-note">{t('This tender is archived.')}</p>}
+            {o.status === 'AWARDED' ? <p className="summary-note">{t('This contract has been awarded.')}</p> : stage === 'closed' ? <p className="summary-note">{t('This tender is archived.')}</p> : null}
             {!proposalsAllowed ? (
               <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
             ) : (

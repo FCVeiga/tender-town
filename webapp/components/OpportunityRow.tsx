@@ -75,8 +75,9 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
       <div className="opp-main">
         <div className="opp-tags">
           {isNew(o) && <span className="tag new">{t('New')}</span>}
-          {!isNew(o) && isUpdated(o) && <span className="tag updated">{t('Updated')}</span>}
-          {stage === 'closed' && <span className="tag closed">{t('Closed')}</span>}
+          {!isNew(o) && isUpdated(o) && stage !== 'closed' && <span className="tag updated">{t('Updated')}</span>}
+          {o.status === 'AWARDED' && <span className="tag">{t('Awarded')}</span>}
+          {stage === 'closed' && o.status !== 'AWARDED' && <span className="tag closed">{t('Closed')}</span>}
           {stage === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
           {o.opportunity_type && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
           {o.duration_months ? <span className="opp-chip">{o.duration_months >= 24 ? t('{n} years', { n: +(o.duration_months / 12).toFixed(1) }) : t('{n} months', { n: o.duration_months })}</span> : null}
@@ -96,8 +97,8 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
         <div className={`metric deadline ${urgent && stage !== 'closed' ? 'urgent' : ''}`}>
           {stage === 'closed' ? (
             <>
-              <span className="metric-big muted">{t('Closed')}</span>
-              <span className="metric-label">{o.deadline ? new Date(o.deadline).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : t('No deadline')}</span>
+              <span className="metric-big muted">{o.status === 'AWARDED' ? t('Awarded') : t('Closed')}</span>
+              <span className="metric-label">{o.deadline ? new Date(o.deadline).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : o.status === 'AWARDED' ? '\u00a0' : t('No deadline')}</span>
             </>
           ) : days != null && days >= 0 ? (
             <>

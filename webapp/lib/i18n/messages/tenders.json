@@ -1762,5 +1762,12 @@
     "fr": "Inscrivez-vous pour voir et télécharger les documents de l’avis.",
     "de": "Registriere dich, um die Ausschreibungsunterlagen anzusehen und herunterzuladen.",
     "it": "Registrati per vedere e scaricare i documenti della gara."
+  },
+  "This contract has been awarded.": {
+    "pt": "Este contrato foi adjudicado.",
+    "es": "Este contrato se ha adjudicado.",
+    "fr": "Ce marché a été attribué.",
+    "de": "Dieser Auftrag wurde vergeben.",
+    "it": "Questo contratto è stato aggiudicato."
   }
 }
