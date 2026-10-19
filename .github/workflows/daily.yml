@@ -2,13 +2,18 @@ name: Tender Town pipeline
 
 on:
   schedule:
-    # Every 4 hours: each scope runs as often as its plan allows (1, 2, 3 or 6 times a day).
+    # Every 4 hours, the Teams cadence. run_daily.py skips the tick unless the
+    # fastest paying plan (owner accounts excluded) is due. No paid plan: once a day.
     - cron: "0 */4 * * *"
   workflow_dispatch: {}
 
 # The last step commits the digest back to the repo.
 permissions:
   contents: write
+
+concurrency:
+  group: tender-town-pipeline
+  cancel-in-progress: false
 
 jobs:
   daily-run:
@@ -36,6 +41,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PIPELINE_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
         run: |
           python run_daily.py
 

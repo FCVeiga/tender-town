@@ -44,6 +44,9 @@ DEFAULT_SCOPE_NAME = "General"
 # Free is 0 custom scopes. Catalog scopes and General run once a day (see _due).
 RUNS_PER_DAY = {"free": 1, "starter": 2, "pro": 3, "teams": 6}
 SCOPES_PER_PLAN = {"free": 0, "starter": 1, "pro": 5, "teams": 1000}
+# The owner's accounts do not set the pipeline cadence. Paying customers do.
+_CADENCE_EXCLUDED_EMAILS = ("s3mztube@gmail.com", "s3mzube@gmail.com", "filipe.veiga@wallid.io")
+_PAYING_STATUS = ("active", "trialing", "past_due")
 
 _state = {"loaded": False, "enabled": {}, "overrides": {}, "scopes": [], "default": None}
 
@@ -144,6 +147,57 @@ def mark_failed(session, scope, error: str) -> None:
     """The latest collection did not finish. An earlier success, if any, stays in place."""
     session.execute(text("""update scopes set last_attempt_at = now(), last_run_error = :e
         where id = cast(:i as uuid)"""), {"i": scope.id, "e": (error or "Collection failed")[:300]})
+    session.commit()
+
+
+def paid_runs_per_day(session) -> int:
+    """How often the whole pipeline should run: the fastest cadence any paying
+    personal plan is entitled to. Free, comped and the owner's accounts count
+    as one run a day. A lookup failure also stays at one run a day."""
+    try:
+        excluded = ", ".join("'" + email.replace("'", "") + "'" for email in _CADENCE_EXCLUDED_EMAILS)
+        paying = ", ".join("'" + status + "'" for status in _PAYING_STATUS)
+        rows = session.execute(text(f"""
+            select a.plan from accounts a
+            join auth.users u on u.id = a.owner_id
+            where a.kind = 'personal'
+              and a.plan in ('starter', 'pro', 'teams')
+              and a.plan_status in ({paying})
+              and lower(u.email) not in ({excluded})
+        """)).fetchall()
+    except Exception as e:
+        session.rollback()
+        print(f"Pipeline cadence: could not read paid plans ({str(e)[:120]}), using 1/day")
+        return 1
+    return max((RUNS_PER_DAY.get(r.plan, 1) for r in rows), default=1)
+
+
+def pipeline_due(session, now=None) -> tuple:
+    """Whether this cron tick should do the work. The schedule fires every 4
+    hours (Teams). A slower paid cadence, or none, skips the tick. A manual
+    run (PIPELINE_FORCE=1) always proceeds. Returns (due, runs_per_day, reason)."""
+    from datetime import datetime
+    runs = paid_runs_per_day(session)
+    if os.environ.get("PIPELINE_FORCE") == "1":
+        return True, runs, "manual run"
+    last = session.execute(text("select value->>'at' from app_settings where key = 'pipeline_run'")).scalar()
+    if not last:
+        return True, runs, f"{runs}/day, no earlier run recorded"
+    at = datetime.fromisoformat(last)
+    now = now or datetime.utcnow()
+    hours = (now - at).total_seconds() / 3600
+    gap = 24 / runs - 0.5
+    if hours >= gap:
+        return True, runs, f"{runs}/day, last run {hours:.1f}h ago"
+    return False, runs, f"{runs}/day, last run {hours:.1f}h ago"
+
+
+def mark_pipeline_ran(session) -> None:
+    """Remember a finished pipeline run so the next ticks can skip."""
+    from datetime import datetime
+    session.execute(text("""insert into app_settings (key, value) values ('pipeline_run', jsonb_build_object('at', cast(:t as text)))
+                            on conflict (key) do update set value = excluded.value"""),
+                    {"t": datetime.utcnow().isoformat()})
     session.commit()
 
 

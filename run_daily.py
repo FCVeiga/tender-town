@@ -475,6 +475,12 @@ def verify_opportunities(session, errors: list) -> int:
 def main():
     engine = init_db()
     session = get_session(engine)
+    due, runs, reason = S.pipeline_due(session)
+    if not due:
+        print(f"Pipeline skipped ({reason}). The schedule stays every 4 hours so a paid plan can speed it up.")
+        session.close()
+        return None
+    print(f"Pipeline running ({reason}).")
     errors = []
 
     # A bid deadline that has passed is a closed tender, on every market.
@@ -879,6 +885,7 @@ def main():
     agent_run.finished_at = datetime.utcnow()
     agent_run.status = "COMPLETE"
     session.commit()
+    S.mark_pipeline_ran(session)
     session.close()
     print(f"Digest written to {out_path}" + (f" ({len(errors)} errors)" if errors else ""))
     return out_path
