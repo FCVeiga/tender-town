@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n/client';
 import { chooseScope, rememberFocus, rememberIntent } from '@/app/scope/actions';
+import { createScope } from '@/app/workspaces/actions';
 import { Modal } from '@/components/settings/SettingsUI';
 import type { FocusModel } from '@/lib/scopeFocus';
 import { track } from '@/components/Track';
@@ -30,6 +31,7 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
+  const [creating, startCreate] = useTransition();
   const [gate, setGate] = useState<Gate | null>(model.deny ? { action: 'switch', kind: model.deny.kind, scopeId: model.deny.scopeId } : null);
   const box = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -50,6 +52,19 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
   const shownPublic = published.filter(matches);
   const shownYours = yours.filter(matches);
   const shown = [...shownPublic, ...shownYours];
+  const createIndex = shown.length;
+
+  const beginCreate = () => {
+    setOpen(false);
+    if (model.create === 'ok' && model.workspaceId) {
+      const workspaceId = model.workspaceId;
+      startCreate(() => { void createScope(workspaceId); });
+      return;
+    }
+    const kind = model.create === 'ok' ? 'permission' : model.create;
+    setGate({ action: 'create', kind });
+    track('gate_viewed', { entitlement: kind, path: window.location.pathname });
+  };
 
   const apply = (id: string) => {
     window.dispatchEvent(new CustomEvent('tt-scope-pending', { detail: id }));
@@ -127,6 +142,13 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
   useEffect(() => {
     if (!open) return;
     list.current?.querySelector<HTMLInputElement>('input')?.focus();
+    const node = button.current;
+    if (!node) return;
+    const bottom = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bottom-h')) || 0;
+    if (bottom <= 0) return;
+    const room = window.innerHeight - node.getBoundingClientRect().bottom - bottom - 12;
+    if (room >= 332) return;
+    window.scrollTo({ top: Math.max(0, window.scrollY + node.getBoundingClientRect().top - 12) });
   }, [open]);
 
   useEffect(() => {
@@ -151,7 +173,7 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
   };
 
   const onListKey = (event: React.KeyboardEvent) => {
-    const max = Math.max(0, shown.length - 1);
+    const max = createIndex;
     if (event.key === 'Escape') {
       event.preventDefault();
       setOpen(false);
@@ -162,9 +184,10 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
     if (event.key === 'ArrowUp') { event.preventDefault(); setActive((n) => Math.max(0, n - 1)); }
     if (event.key === 'Home') { event.preventDefault(); setActive(0); }
     if (event.key === 'End') { event.preventDefault(); setActive(max); }
-    if (event.key === 'Enter' && shown[active]) {
+    if (event.key === 'Enter') {
       event.preventDefault();
-      go(shown[active].id, shown[active].locked);
+      if (active === createIndex) beginCreate();
+      else if (shown[active]) go(shown[active].id, shown[active].locked);
     }
   };
 
@@ -212,6 +235,13 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
             <Option key={choice.id} choice={choice} active={shown[active]?.id === choice.id} selected={choice.id === current?.id} onPick={() => go(choice.id, choice.locked)} />
           ))}
           {shown.length === 0 && <p className="scope-menu-empty">{t('No scopes match that search.')}</p>}
+          <button
+            type="button" role="option" data-active={active === createIndex ? 'true' : undefined} aria-selected={false}
+            tabIndex={-1} className="scope-option create" disabled={creating}
+            onClick={beginCreate} onMouseEnter={(event) => { setActive(createIndex); event.currentTarget.focus(); }}>
+            <span><strong>{t('Create scope')}</strong></span>
+            <Plus />
+          </button>
         </div>
       )}
       {gate && <GateModal gate={gate} model={model} onClose={() => setGate(null)} />}
@@ -288,4 +318,7 @@ function Check() {
 }
 function Lock() {
   return <svg className="scope-lock" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.2" /><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" /></svg>;
+}
+function Plus() {
+  return <svg className="scope-check" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" /></svg>;
 }

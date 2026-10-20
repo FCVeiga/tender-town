@@ -191,6 +191,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   const compare = t('Get the requirements and eligibility criteria, and a fit assessment against your company information.');
   const briefLead = t('Prepare the submission pack from the tender’s templates, fill each document from your company file, and list the next steps.');
   const scopeCanRun = (scope: { id: string; isDefault: boolean }) => canRun && (!scope.isDefault || !!ctx?.isPlatformAdmin);
+  const planBlocksEvaluation = !evaluationAllowed || locked === 'plan';
+  const storedEvaluations = planBlocksEvaluation ? viewScopes.filter((scope) => !!evalOf(scope.id)?.evaluation) : [];
 
   const origin = siteOrigin();
   const headline = titleOf(o);
@@ -341,7 +343,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
               </>
             )}
             <div className="analysis-block" id="evaluation">
-              {evaluationAllowed && viewScopes.length > 0 ? viewScopes.map((scope, index) => (
+              {!planBlocksEvaluation && viewScopes.length > 0 ? viewScopes.map((scope, index) => (
                 <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
                   row={user ? evalOf(scope.id) : null} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
                   evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
@@ -351,7 +353,18 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                   runsLeft={index === 0 ? runsLeft : null}
                   runsLimit={index === 0 && evalAllowance?.limit != null && !evalAllowance.block ? evalAllowance.limit : null}
                   quotaLimit={index === 0 && evalAllowance?.block === 'quota' ? evalAllowance.limit : null} />
-              )) : (
+              )) : storedEvaluations.length > 0 ? (
+                <>
+                  {storedEvaluations.map((scope, index) => (
+                    <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
+                      row={evalOf(scope.id)} canRun={false} signedIn={!!user} locked={null}
+                      evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={false}
+                      analysedAt={o.tender_analysed_at ?? null}
+                      lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed' && o.status !== 'AWARDED'} awarded={index === 0 && o.status === 'AWARDED'} />
+                  ))}
+                  <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=/tenders/${o.opportunity_id}`} />
+                </>
+              ) : (
                 <>
                   <div className="agent-head">
                     <AgentAvatar agent="tender_evaluation" />

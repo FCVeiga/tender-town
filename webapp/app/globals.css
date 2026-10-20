@@ -530,13 +530,14 @@ a.text-link { text-decoration: underline; text-underline-offset: 2px; }
 }
 .scope-banner-copy { margin: 0; max-width: 52ch; font-size: 15.5px; line-height: 1.45; color: rgba(255, 255, 255, 0.94); }
 .scope-banner-jobs {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 12px 0 0; padding: 0; list-style: none;
-  font-size: 13.5px; font-weight: 600; line-height: 1.3; color: rgba(255, 255, 255, 0.96);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; margin: 14px 0 0; padding: 0; list-style: none;
+  font-size: 17px; font-weight: 700; line-height: 1.3; color: #fff;
+  text-shadow: 0 1px 2px rgba(2, 18, 40, 0.35);
 }
-.scope-banner-jobs li { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.scope-banner-jobs li { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .scope-banner-jobs svg {
-  width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6;
-  stroke-linecap: round; stroke-linejoin: round; opacity: 0.92;
+  width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round; opacity: 1;
 }
 .scope-banner-note {
   margin: 0; flex: 0 1 auto; min-width: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
@@ -638,6 +639,8 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .scope-option em { font-style: normal; font-size: 12px; line-height: 1.35; color: var(--muted); }
 .scope-option:hover, .scope-option:focus-visible { background: var(--fill-hover); }
 .scope-option.on { background: var(--accent-soft); }
+.scope-option.create { margin-top: 4px; border-top: 1px solid var(--border); border-radius: 0 0 8px 8px; }
+.scope-option.create strong { color: var(--accent); }
 .scope-option-mark { width: 16px; flex: none; }
 .scope-option strong, .scope-option em { overflow-wrap: anywhere; }
 .scope-search {
@@ -656,6 +659,7 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
   .scope-banner-slot { margin-top: -16px; }
   .scope-banner { padding: 22px 0 20px; }
   .scope-banner-kicker { font-size: 22px; }
+  .scope-banner-jobs { font-size: 15.5px; gap: 8px 16px; }
   .scope-banner-inner { padding: 0 16px; gap: 14px; align-items: stretch; }
   .scope-banner-lead { max-width: none; }
   .scope-banner-art { width: 100%; opacity: 0.55; object-position: center 62%; }
@@ -1349,7 +1353,7 @@ th.num .sort-head { justify-content: flex-end; }
   }
   .modal.find-modal[open] { animation: none; }
   .modal.find-modal .modal-body { padding-bottom: calc(18px + var(--keyboard-inset, 0px)); }
-  body:has(dialog.find-modal[open]) .bottom-nav { visibility: hidden; pointer-events: none; }
+  body:has(dialog.modal[open]) .bottom-nav { visibility: hidden; pointer-events: none; }
   .modal[open] { animation: sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
   .modal-body { padding: 10px 16px 18px; }
   .modal-body::before { content: ''; display: block; width: 40px; height: 5px; border-radius: 3px; background: var(--border-strong); margin: 0 auto 6px; }

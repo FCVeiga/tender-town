@@ -4,7 +4,7 @@ import { useT } from '@/lib/i18n/client';
 import { BannerJobs } from '@/components/ScopeBanner';
 import AgentLoader from '@/components/AgentLoader';
 
-const HEADING = 'Specialised AI agents for your next tender.';
+const HEADING = 'Specialized AI agents workforce';
 const COPY = 'Choose your market, or tell an agent about your company and see the best open tender.';
 const NOTE = 'Your specialised tender agents';
 

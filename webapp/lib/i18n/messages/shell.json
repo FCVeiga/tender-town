@@ -2687,5 +2687,19 @@
     "fr": "Trouvez le meilleur appel d’offres pour votre entreprise maintenant",
     "de": "Finde jetzt die beste Ausschreibung für dein Unternehmen",
     "it": "Trova ora la migliore gara per la tua azienda"
+  },
+  "Specialized AI agents workforce": {
+    "pt": "Equipa de agentes de IA especializados",
+    "es": "Equipo de agentes de IA especializados",
+    "fr": "Équipe d’agents d’IA spécialisés",
+    "de": "Belegschaft spezialisierter KI-Agenten",
+    "it": "Team di agenti di IA specializzati"
+  },
+  "Create scope": {
+    "pt": "Criar âmbito",
+    "es": "Crear ámbito",
+    "fr": "Créer un périmètre",
+    "de": "Bereich erstellen",
+    "it": "Crea ambito"
   }
 }
