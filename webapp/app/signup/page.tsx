@@ -15,7 +15,7 @@ export default async function SignupPage({ searchParams }: { searchParams: { nex
   if (await getCurrentUser()) redirect(next);
   const t = await getT();
   return (
-    <AuthCard title={t('Sign up')} sub={t('Stay on top of every tender, news or discussion that matters to your business')}>
+    <AuthCard title={t('Sign up')} sub={t('An AI bidding workforce that finds the best tenders and handles the analysis and the paperwork.')}>
       <SignupForm next={next} />
     </AuthCard>
   );

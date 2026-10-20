@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: { searchParams: { next
   if (await getCurrentUser()) redirect(next);
   const t = await getT();
   return (
-    <AuthCard title={t('Log in')} sub={t('Stay on top of every tender, news or discussion that matters to your business')}>
+    <AuthCard title={t('Log in')} sub={t('Your tenders, evaluations and proposal briefs.')}>
       <LoginForm next={next} error={searchParams.error} />
     </AuthCard>
   );
