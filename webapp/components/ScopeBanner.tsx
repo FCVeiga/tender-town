@@ -9,7 +9,6 @@ import type { FocusModel } from '@/lib/scopeFocus';
 import { track } from '@/components/Track';
 
 const HEADING = 'Specialized AI agents workforce';
-const COPY = 'Choose your market, or tell an agent about your company and see the best open tender.';
 const FIND = 'Find best tender for your company now';
 const NOTE = 'Your specialised tender agents';
 const CONNECT = 'Connect your own agents';
@@ -73,7 +72,6 @@ export default function ScopeBanner({ model, compact: compactSaved }: {
         ) : (
           <div className="scope-banner-lead">
             <p className="scope-banner-kicker">{t(HEADING)}</p>
-            <p className="scope-banner-copy">{t(COPY)}</p>
             <BannerJobs />
           </div>
         )}

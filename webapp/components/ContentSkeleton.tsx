@@ -5,7 +5,6 @@ import { BannerJobs } from '@/components/ScopeBanner';
 import AgentLoader from '@/components/AgentLoader';
 
 const HEADING = 'Specialized AI agents workforce';
-const COPY = 'Choose your market, or tell an agent about your company and see the best open tender.';
 const NOTE = 'Your specialised tender agents';
 
 function Bars({ n, className }: { n: number; className: string }) {
@@ -33,7 +32,6 @@ export function BannerSkeleton({ compact = false }: { compact?: boolean }) {
           ) : (
             <div className="scope-banner-lead">
               <p className="scope-banner-kicker">{t(HEADING)}</p>
-              <p className="scope-banner-copy">{t(COPY)}</p>
               <BannerJobs />
             </div>
           )}
