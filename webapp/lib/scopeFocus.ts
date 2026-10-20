@@ -3,6 +3,7 @@
  * Guests may open any published scope. Signed-in accounts may open General and
  * the scopes their workspace has turned on, within the owner's plan. A scope
  * they could still turn on stays selectable; choosing it uses that allowance.
+ * A plan with one default scope can switch which catalog scope is on.
  * A link or a direct request never loads a scope the plan or the workspace forbids.
  */
 import 'server-only';
@@ -104,7 +105,7 @@ export const resolveFocus = cache(async (): Promise<FocusModel> => {
   const defaultLimit = !ctx || ctx.isDefault ? null : ctx.plan.defaultScopes;
   const customLimit = !ctx || ctx.isDefault ? null : ctx.plan.customScopes;
   const isAdmin = !!ctx?.isAdmin;
-  const catalogRoom = isAdmin && scopeRoom(use.pickIds.length, defaultLimit);
+  const catalogRoom = isAdmin && (defaultLimit === 1 || scopeRoom(use.pickIds.length, defaultLimit));
   const customRoom = isAdmin && customLimit !== 0 && scopeRoom(use.custom, customLimit);
   const custom = own.filter((s) => !s.isDefault && !s.catalog);
   const pool = [...publics, ...custom];

@@ -12,6 +12,12 @@ import { UpgradeReport } from '@/components/UpgradeReport';
 import { PlanUpgradeButton } from '@/components/settings/PlanPanel';
 import SignUpGate from '@/components/SignUpGate';
 import { getLocale, getT } from '@/lib/i18n/server';
+import { NOINDEX } from '@/lib/seo';
+
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: `${t('Workspace')} — Tender Town`, ...NOINDEX };
+}
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -34,7 +40,9 @@ export default async function WorkspaceDetailPage({ params }: { params: { id: st
   const wsId = ctx.workspace.id;
   const [ownScopes, catalog, use] = await Promise.all([getWorkspaceScopes(wsId), getCatalogScopes(), workspaceScopeUse(wsId)]);
   const { data: wsRow } = await db.from('workspaces').select('show_default').eq('id', wsId).maybeSingle();
-  const picked = new Set(use.pickIds);
+  const defaultLimit = ctx.isDefault ? null : ctx.plan.defaultScopes;
+  const visiblePicks = defaultLimit == null ? use.pickIds : use.pickIds.slice(0, Math.max(0, defaultLimit));
+  const picked = new Set(visiblePicks);
   const otherActive = ownScopes.some((s) => s.active && !s.isDefault && !s.catalog) || picked.size > 0;
   const showDefault = wsRow?.show_default !== false || !otherActive;
   const { data: defaultRow } = await db.from('scopes').select('*').eq('is_default', true).maybeSingle();
@@ -73,10 +81,9 @@ export default async function WorkspaceDetailPage({ params }: { params: { id: st
   const count = (rows: any[] | null, id: string) => (rows || []).filter((r) => r.scope_id === id).length;
   const docCount = (id: string, shared: boolean) => (docs || []).filter((r: any) => r.scope_id === id && (shared ? r.workspace_id === wsId : !r.workspace_id)).length;
   const plan = ctx.plan;
-  const defaultLimit = ctx.isDefault ? null : plan.defaultScopes;
   const customLimit = ctx.isDefault ? null : plan.customScopes;
   const canAdd = ctx.canCustomize && scopeRoom(use.custom, customLimit);
-  const defaultFull = !scopeRoom(use.pickIds.length, defaultLimit);
+  const defaultFull = defaultLimit !== 1 && !scopeRoom(use.pickIds.length, defaultLimit);
   const viewerPlan = { key: account?.planKey ?? 'free', status: account?.planStatus ?? 'active', periodEnd: account?.periodEnd ?? null, hasBilling: !!account?.stripeCustomerId };
   const owned = mine.filter((m) => m.workspace.ownerId === user.id && !m.isDefault);
   const addScope = createScope.bind(null, wsId);

@@ -12,6 +12,12 @@ import { DeleteScopeForm, DocumentGroup, ScopeForm } from '@/components/settings
 import FollowingSection from '@/components/settings/FollowingSection';
 import { getCountryOptions, getFollowedSourceIds, getSources } from '@/lib/sources';
 import { getT } from '@/lib/i18n/server';
+import { NOINDEX } from '@/lib/seo';
+
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: `${t('Scope')} — Tender Town`, ...NOINDEX };
+}
 import { newsReportAllowance } from '@/lib/newsQuota';
 import { planIncludes, scopeRoom } from '@/lib/plans';
 
@@ -59,11 +65,12 @@ export default async function ScopePage({ params, searchParams }: { params: { id
       canToggle = ws.isAdmin && otherActive;
       showDefaultFor = ws.workspace.id;
     } else {
-      scopeOn = use.pickIds.includes(scope.id);
+      const defaultLimit = ws.isDefault ? null : ws.plan.defaultScopes;
+      const visiblePicks = defaultLimit == null ? use.pickIds : use.pickIds.slice(0, Math.max(0, defaultLimit));
+      scopeOn = visiblePicks.includes(scope.id);
       canToggle = ws.isAdmin;
       catalogFor = ws.workspace.id;
-      const defaultLimit = ws.isDefault ? null : ws.plan.defaultScopes;
-      atLimit = !scopeOn && !scopeRoom(use.pickIds.length, defaultLimit);
+      atLimit = !scopeOn && defaultLimit !== 1 && !scopeRoom(use.pickIds.length, defaultLimit);
     }
   }
 

@@ -131,14 +131,16 @@ export async function listScopes(workspaceId: string) {
     db().from('scopes').select('id, name, active').eq('is_default', true).limit(1),
     db().from('workspaces').select('show_default').eq('id', workspaceId).maybeSingle(),
   ]);
-  const picked = new Set(use.pickIds);
+  const defaultLimit = ctx.isDefault ? null : ctx.plan.defaultScopes;
+  const visiblePicks = defaultLimit == null ? use.pickIds : use.pickIds.slice(0, Math.max(0, defaultLimit));
+  const picked = new Set(visiblePicks);
   const general = (defRows || [])[0];
   const custom = own.filter((s) => !s.isDefault && !s.catalog);
   const otherOn = custom.some((s) => s.active) || picked.size > 0;
   const generalOn = ws?.show_default !== false || !otherOn;
   return {
-    defaultScopes: ctx.isDefault ? null : ctx.plan.defaultScopes,
-    defaultUsed: use.pickIds.length,
+    defaultScopes: defaultLimit,
+    defaultUsed: visiblePicks.length,
     customScopes: ctx.isDefault ? null : ctx.plan.customScopes,
     customUsed: use.custom,
     canCustomize: ctx.canCustomize,
@@ -210,10 +212,21 @@ export async function setCatalogScope(workspaceId: string, scopeId: string, enab
     return { scopeId, enabled: false };
   }
   const use = await workspaceScopeUse(workspaceId);
-  if (use.pickIds.includes(scopeId)) return { scopeId, enabled: true };
   const defaultLimit = ctx.isDefault ? null : ctx.plan.defaultScopes;
-  if (defaultLimit != null && use.pickIds.length >= defaultLimit) {
-    throw new McpDenied(`The ${ctx.plan.name} plan includes ${defaultLimit} default scope${defaultLimit === 1 ? '' : 's'}.`);
+  const replaces = defaultLimit === 1;
+  if (use.pickIds.includes(scopeId)) {
+    if (replaces && use.pickIds.length > 1) {
+      const { error } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
+      if (error) throw new McpDenied(error.message);
+    }
+    return { scopeId, enabled: true };
+  }
+  if (!replaces && defaultLimit != null && use.pickIds.length >= defaultLimit) {
+    throw new McpDenied(`The ${ctx.plan.name} plan includes ${defaultLimit} default scopes.`);
+  }
+  if (replaces && use.pickIds.length > 0) {
+    const { error } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
+    if (error) throw new McpDenied(error.message);
   }
   const { error } = await db().from('workspace_scope_picks').upsert(
     { workspace_id: workspaceId, scope_id: scopeId }, { onConflict: 'workspace_id,scope_id', ignoreDuplicates: true });

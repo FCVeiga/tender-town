@@ -82,9 +82,22 @@ export async function setCatalogPick(workspaceId: string, scopeId: string, on: b
     return {};
   }
   const use = await workspaceScopeUse(workspaceId);
-  if (use.pickIds.includes(scopeId)) return {};
   const defaultLimit = ctx.isDefault ? null : ctx.plan.defaultScopes;
-  if (!scopeRoom(use.pickIds.length, defaultLimit)) return { upgrade: true };
+  // One slot means a switch: the scope just chosen is the only one left on.
+  const replaces = defaultLimit === 1;
+  if (use.pickIds.includes(scopeId)) {
+    if (replaces && use.pickIds.length > 1) {
+      const { error } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
+      if (error) return { error: error.message };
+      revalidatePath('/', 'layout');
+    }
+    return {};
+  }
+  if (!replaces && !scopeRoom(use.pickIds.length, defaultLimit)) return { upgrade: true };
+  if (replaces && use.pickIds.length > 0) {
+    const { error } = await db().from('workspace_scope_picks').delete().eq('workspace_id', workspaceId).neq('scope_id', scopeId);
+    if (error) return { error: error.message };
+  }
   const { error } = await db().from('workspace_scope_picks').upsert(
     { workspace_id: workspaceId, scope_id: scopeId }, { onConflict: 'workspace_id,scope_id', ignoreDuplicates: true });
   if (error) return { error: error.message };

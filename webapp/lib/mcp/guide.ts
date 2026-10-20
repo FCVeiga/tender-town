@@ -20,7 +20,7 @@ export const MCP_DOC: Doc[] = [
   { p: 'A scope is one configuration of the radar: what to look for, and how its agents behave. There are three kinds.' },
   { ul: [
     'General is the shared default. Every account can read it. A workspace can hide it only while another scope is switched on. It cannot be renamed or given new instructions.',
-    'A catalog scope is a shared default scope Tender Town publishes. Turning it on uses one default-scope slot. It cannot be renamed. General does not use a slot.',
+    'A catalog scope is a shared default scope Tender Town publishes. Turning it on uses one default-scope slot. It cannot be renamed. General does not use a slot. On Free, turning another on replaces the one that is on.',
     'A custom scope belongs to one workspace. Free includes none. Starter includes 1, Pro includes 5, Teams is unlimited.',
   ] },
   { h: 3, text: 'Scope agents' },
@@ -88,7 +88,7 @@ export const MCP_DOC: Doc[] = [
     'Pro: 1 workspace, up to 10 default scopes and 5 custom scopes, 10 evaluations a month, 5 proposal briefs a month, 50 news reports a month.',
     'Teams: unlimited workspaces, members, default scopes, custom scopes, evaluations, proposal briefs and news reports.',
   ] },
-  { p: 'A default scope that is switched on uses one default-scope slot. General does not. A custom scope uses a custom-scope slot and does not use a default-scope slot. At the limit, turn one off before turning another on. Free cannot create a custom scope. Inviting a member needs Teams, and an admin of that workspace. Creating or editing a custom scope needs an admin on Starter or above. A member can read.' },
+  { p: 'A default scope that is switched on uses one default-scope slot. General does not. A custom scope uses a custom-scope slot and does not use a default-scope slot. On Free, switching to another default scope replaces the one that is on. On other plans, at the limit, turn one off before turning another on. Free cannot create a custom scope. Inviting a member needs Teams, and an admin of that workspace. Creating or editing a custom scope needs an admin on Starter or above. A member can read.' },
 
   { h: 2, text: 'Agent skills' },
   { p: 'Follow the skill that matches the job. Fetch it before the tools for that job.' },
@@ -137,7 +137,7 @@ export const MCP_DOC: Doc[] = [
   { p: 'How: scope_id, and any of name, instructions and active. For General, the only change allowed is active, and only while another scope is on. Pass workspace_id so the right workspace shows or hides General. Catalog scopes cannot be edited here.' },
   { h: 3, text: 'set_catalog_scope' },
   { p: 'Purpose: follow or stop following a shared catalog scope.' },
-  { p: 'How: workspace_id, scope_id and enabled. Turning one on uses a default-scope slot. You must be an admin. At the limit it is refused until one is turned off.' },
+  { p: 'How: workspace_id, scope_id and enabled. Turning one on uses a default-scope slot. You must be an admin. On Free, turning another on replaces the one that is on. On other plans, at the limit it is refused until one is turned off.' },
   { h: 3, text: 'list_scope_agents' },
   { p: 'Purpose: see the five scope agents, whether the plan includes each one, and whether it is switched on.' },
   { p: 'How: scope_id and optional workspace_id. You get each agent’s key, name, role, included, enabled, instructions and whether its prompt has been customised. included is false when the plan does not have that agent. Do not try to switch it on.' },
