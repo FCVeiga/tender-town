@@ -1010,6 +1010,7 @@ tr.data-row:hover td { background: #FAFBFD; }
 .original-notice summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
 .original-notice p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
 .eval-scope + .eval-scope, .proposal-block + .proposal-block { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px; }
+.eval-scope + .eval-scope.no-chrome { border-top: 0; margin-top: 0; padding-top: 0; }
 .req-table-wrap { max-width: 100%; overflow-x: auto; }
 .req-category-title { font-size: 13px; font-weight: 600; color: var(--ink); margin: 0 0 8px; }
 .submit-docs { margin: 0; padding-left: 18px; font-size: 13.5px; }

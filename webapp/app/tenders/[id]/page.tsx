@@ -192,6 +192,8 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
   const briefLead = t('Prepare the submission pack from the tender’s templates, fill each document from your company file, and list the next steps.');
   const scopeCanRun = (scope: { id: string; isDefault: boolean }) => canRun && (!scope.isDefault || !!ctx?.isPlatformAdmin);
   const planBlocksEvaluation = !evaluationAllowed || locked === 'plan';
+  const runnableScopes = viewScopes.filter((scope) => scopeCanRun(scope) || !!evalOf(scope.id)?.evaluation);
+  const evaluationScopes = runnableScopes.length ? runnableScopes : viewScopes.slice(0, 1);
   const storedEvaluations = planBlocksEvaluation ? viewScopes.filter((scope) => !!evalOf(scope.id)?.evaluation) : [];
 
   const origin = siteOrigin();
@@ -343,9 +345,9 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
               </>
             )}
             <div className="analysis-block" id="evaluation">
-              {!planBlocksEvaluation && viewScopes.length > 0 ? viewScopes.map((scope, index) => (
+              {!planBlocksEvaluation && evaluationScopes.length > 0 ? evaluationScopes.map((scope, index) => (
                 <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
-                  row={user ? evalOf(scope.id) : null} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
+                  row={user ? evalOf(scope.id) : null} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked} chrome={index === 0} named={evaluationScopes.length > 1}
                   evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
                   analysedAt={o.tender_analysed_at ?? null}
                   lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed' && o.status !== 'AWARDED'} awarded={index === 0 && o.status === 'AWARDED'}
@@ -357,7 +359,7 @@ export default async function OpportunityDetailPage({ params }: { params: { id: 
                 <>
                   {storedEvaluations.map((scope, index) => (
                     <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
-                      row={evalOf(scope.id)} canRun={false} signedIn={!!user} locked={null}
+                      row={evalOf(scope.id)} canRun={false} signedIn={!!user} locked={null} chrome={index === 0} named={storedEvaluations.length > 1}
                       evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={false}
                       analysedAt={o.tender_analysed_at ?? null}
                       lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed' && o.status !== 'AWARDED'} awarded={index === 0 && o.status === 'AWARDED'} />
