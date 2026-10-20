@@ -66,8 +66,12 @@ minimum to meet (or null); evidence is what must be submitted (or null);
 source names the document and section it comes from. Skip pure procedure
 (how to upload, remedies, contacts). Merge duplicates across documents; when
 a clarification changed a requirement, give the current version. When the
-sources state no requirements yet (a prior information notice, an announced
-plan), return an empty list and say in the summary what is still to come.
+sources state no requirements yet (a prior information notice, a market
+engagement, a preselection, or an announced plan), return an empty list.
+Say in the summary what that step asks for and what comes after it, such as
+joining a preselection or a market engagement in order to receive a later
+RFI or the tender documents. Do not invent requirements or a submission
+pack the notice does not publish.
 
 ## 3. Award criteria
 Each criterion with its weight in percent and what is assessed, in {language}.

@@ -17,9 +17,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   if (!post) return { title: 'Not found — Tender Town', robots: { index: false, follow: false } };
   return pageMeta({
     title: `${post.title} — Tender Town`,
+    socialTitle: post.title,
     description: clip(post.body || post.title),
     path: `/posts/${post.id}`,
     type: 'article',
+    published: post.createdAt,
   });
 }
 

@@ -39,6 +39,11 @@ fill is missing on this run. `needed` is what the document must contain.
 it, each step naming the document it finishes. Tie a step to the submission
 deadline when the tender states one.
 
+If the notice is only a preselection, a market engagement or a prior
+information notice, and no templates are published, the pack is that step.
+Name the action the notice asks for, and say that the later RFI or tender
+documents are not published yet. Do not invent forms.
+
 ## Output
 One JSON object, nothing before or after it. Write every string in
 {language}. Keep the tender's own document names unchanged. Copy a `url`

@@ -555,7 +555,27 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
         query = query.filter(Opportunity.opportunity_id == only_id)
     linked = 0
     for opp in query.all():
-        if is_portal_url(opp.official_url or "") or (opp.reference or "").startswith("TED:"):
+        has_ref = (opp.reference or "").startswith("TED:")
+        if has_ref:
+            continue
+        # Already a portal notice (a TED PIN, for example) but with no procedure
+        # id yet, so the document pass never sees it. Read the notice and collect.
+        if is_portal_url(opp.official_url or ""):
+            try:
+                found = _from_portal(opp.official_url or "")
+            except Exception as exc:
+                session.rollback()
+                errors.append(f"official {opp.opportunity_id}: {exc}"[:300])
+                continue
+            if found and found.get("procedure"):
+                opp.reference = f"TED:{found['procedure']}"[:128]
+                session.commit()
+                try:
+                    collect_documents(session, opp.opportunity_id, found["procedure"])
+                    session.commit()
+                except Exception as exc:
+                    session.rollback()
+                    errors.append(f"documents {opp.opportunity_id}: {exc}"[:300])
             continue
         try:
             found = find_official(opp.official_url or "", " ".join(

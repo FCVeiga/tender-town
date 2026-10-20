@@ -15,7 +15,7 @@ import { Suspense } from 'react';
 import { ScopeBannerSuspense } from './ScopeBannerSlot';
 import { ListSkeleton } from './ContentSkeleton';
 import ScopeView from './ScopeView';
-import ScopeStatus, { CheckedLine } from './ScopeStatus';
+import ScopeStatus from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 import AgentLoader from '@/components/AgentLoader';
 import ScopePicker from '@/components/ScopePicker';
@@ -118,21 +118,20 @@ async function NewsBody({ view }: { view: View }) {
   return (
       <ScopeView scopeId={focus.hold?.id ?? focus.current?.id ?? null}>
       <ScopePicker model={focus} />
-      <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />
+      {view !== 'signals' && <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />}
 
       {error && <div className="callout error"><strong>{t('Error loading news.')}</strong> {error.message}</div>}
       {kind === 'loading' && <AgentLoader />}
       {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
-        <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface={surface} signedIn={focus.signedIn} />
+        <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} surface={surface} signedIn={focus.signedIn} />
       )}
       {!error && kind === 'stale' && (
-        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface={surface} signedIn={focus.signedIn} />
+        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} surface={surface} signedIn={focus.signedIn} />
       )}
       {!error && (kind === 'ready' || kind === 'stale') && visible.length === 0 && (
         <div className="callout"><strong>{t('Nothing in this section right now.')}</strong></div>
       )}
 
-      {kind === 'ready' && <CheckedLine iso={run.lastSuccessAt} surface={surface} />}
       <div className="feed">
         {(kind === 'ready' || kind === 'stale') && visible.map((i) => <FeedCard key={i.key} item={i} now={now}
           social={{ engagement: engOf(i.href).get(likeTarget(i.href)?.[1] ?? ''), signedIn: newsEng.signedIn }} />)}

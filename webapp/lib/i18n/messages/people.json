@@ -1343,6 +1343,13 @@
     "de": "Beiträge",
     "it": "Post"
   },
+  "Posts from {name} on Tender Town.": {
+    "pt": "Publicações de {name} no Tender Town.",
+    "es": "Publicaciones de {name} en Tender Town.",
+    "fr": "Publications de {name} sur Tender Town.",
+    "de": "Beiträge von {name} auf Tender Town.",
+    "it": "Post di {name} su Tender Town."
+  },
   "Comments": {
     "pt": "Comentários",
     "es": "Comentarios",

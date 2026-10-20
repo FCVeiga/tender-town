@@ -16,6 +16,7 @@ import { getLikedPosts } from '@/lib/community';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { getEngagement } from '@/lib/engagement';
 import { getLocale, getT, getTSync } from '@/lib/i18n/server';
+import { clip, pageMeta } from '@/lib/seo';
 
 const TABS = [
   { key: 'posts', label: 'Posts' },
@@ -29,9 +30,18 @@ const fmt = (iso: string) => new Date(iso).toLocaleDateString(getLocale(), { day
 
 export async function generateMetadata({ params }: { params: { username: string } }) {
   // Settings → Privacy → "Show up in search results" off: ask search engines not to index the profile.
-  const { data } = await getSupabaseServerClient().from('profiles').select('searchable')
+  const { data } = await getSupabaseServerClient().from('profiles').select('searchable, display_name, bio')
     .ilike('username', params.username.replace(/[\\%_]/g, (c) => `\\${c}`)).maybeSingle();
-  return { title: `u/${params.username} — Tender Town`, ...(data && data.searchable === false ? { robots: { index: false, follow: false } } : {}) };
+  const t = await getT();
+  const name = data?.display_name || params.username;
+  const meta = pageMeta({
+    title: `${name} — Tender Town`,
+    socialTitle: name,
+    description: clip(data?.bio) || t('Posts from {name} on Tender Town.', { name }),
+    path: `/u/${params.username}`,
+    type: 'profile',
+  });
+  return data && data.searchable === false ? { ...meta, robots: { index: false, follow: false } } : meta;
 }
 
 /** A user's profile, laid out like Reddit's: header, tabs, and a sidebar card. */

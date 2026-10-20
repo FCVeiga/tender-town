@@ -22,20 +22,6 @@ function timeAgo(t: T, at: Date, now: Date) {
   return at.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' });
 }
 
-function Votes({ item, value }: { item: FeedItem; value: number }) {
-  const t = getTSync();
-  const title =
-    item.movement === 'up' ? t('Moved up since the last update')
-      : item.movement === 'down' ? t('Moved down since the last update') : t('No change in position');
-  return (
-    <div className={`feed-votes ${item.movement}`} title={`${title} · ${t('AI relevance {score}, top score {top}', { score: item.score, top: item.combined })}`}>
-      <svg className="arrow up" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5 13 9.5H3z" /></svg>
-      <span className="feed-votes-num">{value}</span>
-      <svg className="arrow down" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 12.5 3 6.5h10z" /></svg>
-    </div>
-  );
-}
-
 function Related({ item }: { item: FeedItem }) {
   const t = getTSync();
   if (!item.related?.length) return null;
@@ -69,7 +55,6 @@ export default function FeedCard({ item, now, value, like, social }: {
   const target = like ? likeTarget(item.href) : null;
   const card = (
     <Link href={item.href} className={`feed-item ${item.kind}`}>
-      <Votes item={item} value={value ?? item.combined} />
       <div className="feed-body">
         <div className="feed-meta">
           <span className={`feed-kind ${item.kind}`}>{t(item.kindLabel)}</span>
@@ -106,7 +91,6 @@ function SocialFeedCard({ item, now, value, social }: { item: FeedItem; now: Dat
   const e = social.engagement;
   return (
     <article className={`feed-item ${item.kind} social-card`} data-card>
-      <Votes item={item} value={value ?? item.combined} />
       <div className="feed-body">
         <div className="feed-meta cc-meta">
           <span className={`feed-kind ${item.kind}`}>{t(item.kindLabel)}</span>

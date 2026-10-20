@@ -51,6 +51,12 @@ subcontractor), "consider" (discuss — open questions decide it), or
 
 Be concrete and honest. Write everything in {language}.
 
+If the notice is a prior information notice, a market engagement or a
+preselection, and the tender documents are not published, that step is the
+task. Say so in the take and in next_steps: how to take part, and that the
+RFI or the tender comes afterwards. Do not score a full bid the notice does
+not describe. Judge fit from what is published.
+
 ## Output (JSON only)
 ```json
 {

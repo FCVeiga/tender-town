@@ -92,14 +92,18 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const post = postBySlug(params.slug);
   if (!post) return {};
   const t = await getT();
+  const origin = siteOrigin();
+  const imageUrl = post.image.startsWith('http') ? post.image : `${origin}${post.image.startsWith('/') ? post.image : `/${post.image}`}`;
   const meta = pageMeta({
     title: `${t(post.title)} — Tender Town`,
+    socialTitle: t(post.title),
     description: t(post.description),
     path: `/blog/${post.slug}`,
     type: 'article',
-    image: post.image,
+    image: imageUrl,
+    published: post.date,
   });
-  const image = { url: post.image, width: 1280, height: 720, alt: t(post.imageAlt) };
+  const image = { url: imageUrl, width: 1280, height: 720, alt: t(post.imageAlt) };
   return {
     ...meta,
     openGraph: { ...meta.openGraph, publishedTime: post.date, images: [image] },

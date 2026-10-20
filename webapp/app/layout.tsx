@@ -54,10 +54,12 @@ export async function generateMetadata() {
     twitter: { card: 'summary_large_image', description, images: [SHARE_IMAGE] },
     icons: {
       icon: [
+        { url: '/brand/favicon.png', type: 'image/png', sizes: '425x431' },
         { url: '/brand/favicon.png', media: '(prefers-color-scheme: light)', type: 'image/png' },
         { url: '/brand/favicon-white.png', media: '(prefers-color-scheme: dark)', type: 'image/png' },
       ],
       apple: '/brand/favicon.png',
+      shortcut: '/brand/favicon.png',
     },
   };
 }

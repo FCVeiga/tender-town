@@ -118,7 +118,10 @@ export async function startTenderEvaluation(opportunityId: string, scopeId: stri
   if (!/^[0-9a-f]{12,40}$/.test(opportunityId)) return { status: 'error' as const, message: t('unknown opportunity') };
   const { ensureEvaluation } = await import('@/lib/tenderEvaluation');
   const result = await ensureEvaluation(opportunityId, scopeId, target.workspaceId);
-  if (result.status === 'done') revalidatePath(`/tenders/${opportunityId}`);
+  if (result.status === 'done') {
+    revalidatePath(`/tenders/${opportunityId}`);
+    revalidatePath(`/news/signals/${opportunityId}`);
+  }
   return result;
 }
 
@@ -130,7 +133,10 @@ export async function startProposalBrief(opportunityId: string, scopeId: string)
   if (!/^[0-9a-f]{12,40}$/.test(opportunityId)) return { status: 'error' as const, message: t('unknown tender') };
   const { ensureProposal } = await import('@/lib/proposalManager');
   const result = await ensureProposal(opportunityId, scopeId, target.workspaceId);
-  if (result.status === 'done') revalidatePath(`/tenders/${opportunityId}`);
+  if (result.status === 'done') {
+    revalidatePath(`/tenders/${opportunityId}`);
+    revalidatePath(`/news/signals/${opportunityId}`);
+  }
   return result;
 }
 

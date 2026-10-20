@@ -258,6 +258,13 @@
     "de": "Noch keine Dokumente gefunden",
     "it": "Nessun documento trovato finora"
   },
+  "No agent tasks for this signal": {
+    "pt": "Não há tarefas de agente para este sinal",
+    "es": "No hay tareas de agente para esta señal",
+    "fr": "Aucune tâche d'agent pour ce signal",
+    "de": "Keine Agentenaufgaben für dieses Signal",
+    "it": "Nessuna attività dell'agente per questo segnale"
+  },
   "No proposal brief yet.": {
     "pt": "Ainda não há resumo da proposta.",
     "es": "Aún no hay resumen de la propuesta.",

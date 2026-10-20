@@ -4,10 +4,11 @@ import UserAvatar from '@/components/UserAvatar';
 import { search, searchPeople, searchWords } from '@/lib/search';
 import { getFeedLikes, likeTarget } from '@/lib/likes';
 import { getT } from '@/lib/i18n/server';
+import { pageMeta } from '@/lib/seo';
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: `${t('Search')} — Tender Town`, robots: { index: false, follow: true } };
+  return { ...pageMeta({ title: `${t('Search')} — Tender Town`, description: t('Search tenders, grants and news'), path: '/search' }), robots: { index: false, follow: true } };
 }
 
 const likeOf = (likes: { signedIn: boolean; liked: Set<string> }, href: string) => {

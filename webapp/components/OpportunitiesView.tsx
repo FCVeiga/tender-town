@@ -15,7 +15,7 @@ import { ListSkeleton } from './ContentSkeleton';
 import AgentLoader from '@/components/AgentLoader';
 import ScopePicker from '@/components/ScopePicker';
 import ScopeView from './ScopeView';
-import ScopeStatus, { CheckedLine } from './ScopeStatus';
+import ScopeStatus from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 type View = 'all' | 'new' | (typeof OPP_CATEGORIES)[number]['slug'];
 
@@ -97,10 +97,10 @@ async function OpportunitiesBody({ view }: { view: View }) {
       )}
       {kind === 'loading' && <AgentLoader />}
       {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
-        <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="tenders" signedIn={focus.signedIn} />
+        <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} surface="tenders" signedIn={focus.signedIn} />
       )}
       {!error && kind === 'stale' && (
-        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="tenders" signedIn={focus.signedIn} />
+        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} surface="tenders" signedIn={focus.signedIn} />
       )}
       {noOpen && (
         <div className="callout">
@@ -118,7 +118,6 @@ async function OpportunitiesBody({ view }: { view: View }) {
           {view === 'new' && <> {t('None in the last {n} days.', { n: NEW_WINDOW_DAYS })}</>}
         </div>
       )}
-      {kind === 'ready' && <CheckedLine iso={run.lastSuccessAt} surface="tenders" />}
       <RingGradients />
       <div className="opp-rows">
         {(kind === 'ready' || kind === 'stale') && shown.map((o) => (

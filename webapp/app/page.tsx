@@ -18,7 +18,7 @@ import { resolveFocus } from '@/lib/scopeFocus';
 import { ScopeBannerSuspense } from '@/components/ScopeBannerSlot';
 import { HomeSkeleton } from '@/components/ContentSkeleton';
 import ScopeView from '@/components/ScopeView';
-import ScopeStatus, { CheckedLine } from '@/components/ScopeStatus';
+import ScopeStatus from '@/components/ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 import AgentLoader from '@/components/AgentLoader';
 import ScopePicker from '@/components/ScopePicker';
@@ -107,12 +107,11 @@ async function HomeFeed({ n }: { n?: string }) {
         {error && <div className="callout error"><strong>{t('Error loading the feed.')}</strong> {error.message}</div>}
         {kind === 'loading' && <AgentLoader />}
         {!error && kind === 'stale' && (
-          <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="feed" signedIn={focus.signedIn} />
+          <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} surface="feed" signedIn={focus.signedIn} />
         )}
         {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
-          <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} lastSuccessAt={run.lastSuccessAt} surface="feed" signedIn={focus.signedIn} />
+          <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} surface="feed" signedIn={focus.signedIn} />
         )}
-        {kind === 'ready' && <CheckedLine iso={run.lastSuccessAt} surface="feed" />}
         <div className="feed">
           {(kind === 'ready' || kind === 'stale') && (
             <HomeFeedItems entries={slice} now={now} valueOf={(item) => item.combined}

@@ -41,15 +41,16 @@ const VERDICTS: Record<string, { label: string; note: string }> = {
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const { data } = await getSupabaseServerClient().from('news_items')
-    .select('title, title_en, language, summary, excerpt, image_url').eq('news_id', params.id).maybeSingle();
+    .select('title, title_en, language, summary, excerpt, published_date, created_at').eq('news_id', params.id).maybeSingle();
   if (!data) return { title: 'Not found — Tender Town', robots: { index: false, follow: false } };
   const title = titleOf(data);
   return pageMeta({
     title: `${title} — Tender Town`,
+    socialTitle: title,
     description: clip(publicText(firstInLanguage(data.summary, data.excerpt) || '') || title),
     path: `/news/${params.id}`,
     type: 'article',
-    image: data.image_url,
+    published: data.published_date || data.created_at,
   });
 }
 

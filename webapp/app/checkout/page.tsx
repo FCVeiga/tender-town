@@ -3,7 +3,13 @@ import { redirect } from 'next/navigation';
 import { startCheckout } from '@/app/settings/actions';
 import { getCurrentUser } from '@/lib/auth';
 import { getT } from '@/lib/i18n/server';
+import { NOINDEX } from '@/lib/seo';
 import type { BillingInterval } from '@/lib/billing';
+
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: `${t('Subscribe')} — Tender Town`, ...NOINDEX };
+}
 
 /** Lands here after sign-up from a pricing button, then opens Stripe. */
 export default async function CheckoutPage({ searchParams }: { searchParams: { plan?: string; interval?: string } }) {
