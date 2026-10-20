@@ -55,7 +55,10 @@ export async function ensureProposal(opportunityId: string, scopeId: string, wor
     const entitlement = allowance.block === 'quota' ? 'usage_exhausted' : 'plan_restriction';
     await recordProductEvent({ ...base, name: 'gate_viewed', entitlement, errorCode: allowance.block, ok: false });
     await recordProductEvent({ ...base, name: 'proposal_brief_failed', entitlement, errorCode: allowance.block, ok: false });
-    return { status: 'error', message: t('Proposal briefs are included on Teams.') };
+    if (allowance.block === 'quota') {
+      return { status: 'error', message: t('This workspace has used its {n} proposal briefs for this month.', { n: allowance.limit ?? 0 }) };
+    }
+    return { status: 'error', message: t('Proposal briefs are included from Starter.') };
   }
   const owner = await proposalWorkspace(scopeId, workspaceId);
   const { data: existing } = await (owner

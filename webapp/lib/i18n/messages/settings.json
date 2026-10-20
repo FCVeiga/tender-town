@@ -1622,5 +1622,26 @@
     "fr": "Le fil d’accueil combine la pertinence de chaque élément et sa fraîcheur, pour que les actualités importantes restent visibles plus longtemps.",
     "de": "Der Start-Feed verbindet die Relevanz jedes Eintrags mit seiner Aktualität, damit wichtige Nachrichten länger oben bleiben.",
     "it": "Il feed principale combina la rilevanza di ogni elemento con quanto è recente, così le notizie importanti restano in alto più a lungo."
+  },
+  "1 proposal brief a month": {
+    "pt": "1 resumo de proposta por mês",
+    "es": "1 resumen de propuesta al mes",
+    "fr": "1 note de proposition par mois",
+    "de": "1 Angebotsbriefing im Monat",
+    "it": "1 brief di offerta al mese"
+  },
+  "5 proposal briefs a month": {
+    "pt": "5 resumos de proposta por mês",
+    "es": "5 resúmenes de propuesta al mes",
+    "fr": "5 notes de proposition par mois",
+    "de": "5 Angebotsbriefings im Monat",
+    "it": "5 brief di offerta al mese"
+  },
+  "News Report Agent, 20 reports a month": {
+    "pt": "Agente de relatórios de notícias, 20 relatórios por mês",
+    "es": "Agente de informes de noticias, 20 informes al mes",
+    "fr": "Agent de rapports d'actualité, 20 rapports par mois",
+    "de": "Nachrichtenbericht-Agent, 20 Berichte im Monat",
+    "it": "Agente di report sulle notizie, 20 report al mese"
   }
 }

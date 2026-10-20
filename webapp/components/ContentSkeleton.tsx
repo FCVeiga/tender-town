@@ -4,7 +4,7 @@ import { useT } from '@/lib/i18n/client';
 import { BannerJobs } from '@/components/ScopeBanner';
 import AgentLoader from '@/components/AgentLoader';
 
-const HEADING = 'Specialized AI agents workforce';
+const HEADING = 'Specialised AI bidding workforce for your team';
 const NOTE = 'Your specialised tender agents';
 
 function Bars({ n, className }: { n: number; className: string }) {

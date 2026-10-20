@@ -12,7 +12,7 @@ export default function GuestPromo() {
       <img className="guest-banner light" src="/brand/sidebar-banner-light.jpg" alt="" />
       <img className="guest-banner dark" src="/brand/sidebar-banner.jpg" alt="" />
       <div className="guest-overlay">
-        <p className="guest-lead">{t('Join for tailored tender signals, news and community')}</p>
+        <p className="guest-lead">{t('Join for tailored tender signals, reports and community')}</p>
         <div className="guest-actions">
           <GoogleButton next="/" bare />
           <Link href="/signup" className="btn primary" data-track="signup_cta_clicked" data-placement="sidebar" data-cta="email">

@@ -14,7 +14,7 @@ const GIVE_UP_MS = 4 * 60_000;
  * (or, if another visitor already did, waits for it) and refreshes the page
  * when the summary and report are ready.
  */
-export default function NewsReportRunner({ newsId, scopeId, lastError, signedIn = true }: { newsId: string; scopeId: string; lastError: string | null; signedIn?: boolean }) {
+export default function NewsReportRunner({ newsId, scopeId, lastError, signedIn = true, quotaLimit = null }: { newsId: string; scopeId: string; lastError: string | null; signedIn?: boolean; quotaLimit?: number | null }) {
   const t = useT();
   const router = useRouter();
   const [state, setState] = useState<'working' | 'error'>('working');
@@ -42,7 +42,7 @@ export default function NewsReportRunner({ newsId, scopeId, lastError, signedIn 
     return <UpgradeReport signedIn={signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} actionLabel={signedIn ? undefined : 'Log in to run agent'} loginHref={signedIn ? undefined : `/login?next=/news/${newsId}`} />;
   }
   if (state === 'error' && (message === 'quota' || lastError === 'quota')) {
-    return <p className="muted">{t('This workspace has used its 50 news reports for this month.')}</p>;
+    return <p className="muted">{t('This workspace has used its {n} news reports for this month.', { n: quotaLimit ?? 0 })}</p>;
   }
   if (state === 'error') {
     return (

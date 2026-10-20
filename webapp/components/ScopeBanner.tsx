@@ -8,7 +8,7 @@ import { Modal } from '@/components/settings/SettingsUI';
 import type { FocusModel } from '@/lib/scopeFocus';
 import { track } from '@/components/Track';
 
-const HEADING = 'Specialized AI agents workforce';
+const HEADING = 'Specialised AI bidding workforce for your team';
 const FIND = 'Find best tender for your company now';
 const NOTE = 'Your specialised tender agents';
 const CONNECT = 'Connect your own agents';

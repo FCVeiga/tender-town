@@ -245,8 +245,8 @@ export async function listScopeAgents(scopeId: string) {
 
 function agentIncluded(key: string, plan: { evaluationsPerMonth: number | null; proposalsPerMonth: number | null; newsReportsPerMonth: number | null }) {
   if (key === 'tender_evaluation' && !planIncludes(plan.evaluationsPerMonth)) return 'This plan does not include Tender Evaluation.';
-  if (key === 'proposal_manager' && !planIncludes(plan.proposalsPerMonth)) return 'Proposal briefs are included on Teams.';
-  if (key === 'news_report' && !planIncludes(plan.newsReportsPerMonth)) return 'The News Report Agent is included on Pro and Teams.';
+  if (key === 'proposal_manager' && !planIncludes(plan.proposalsPerMonth)) return 'Proposal briefs are included from Starter.';
+  if (key === 'news_report' && !planIncludes(plan.newsReportsPerMonth)) return 'The News Report Agent is included from Starter.';
   return null;
 }
 
@@ -456,10 +456,10 @@ export async function runScopeAgent(scopeId: string, agent: 'tender_evaluation' 
   if (why) throw new McpDenied(why);
   if (agent === 'news_report') {
     const allowance = await newsReportAllowance();
-    if (allowance.block === 'plan') throw new McpDenied('The News Report Agent is included on Pro and Teams.');
+    if (allowance.block === 'plan') throw new McpDenied('The News Report Agent is included from Starter.');
     if (allowance.block === 'quota') throw new McpDenied(`This workspace has used its ${allowance.limit} news reports for this month.`);
     const result = await ensureNewsReport(itemId, scopeId);
-    if (result.status === 'error' && result.message === 'plan') return { status: 'error' as const, message: 'The News Report Agent is included on Pro and Teams.' };
+    if (result.status === 'error' && result.message === 'plan') return { status: 'error' as const, message: 'The News Report Agent is included from Starter.' };
     if (result.status === 'error' && result.message === 'quota') return { status: 'error' as const, message: `This workspace has used its ${allowance.limit} news reports for this month.` };
     return result;
   }

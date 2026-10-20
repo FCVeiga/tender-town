@@ -531,12 +531,12 @@
     "de": "Der Proposal Manager Agent schreibt aus dieser Bewertung einen Angebotsbrief: die Anforderungen, die Referenzen, die der Scope schon hat, die Lücken und die Schritte. Nur auf Teams, und nur nachdem eine Bewertung für diesen Scope existiert.",
     "it": "Il Proposal Manager Agent scrive un brief di proposta a partire da quella valutazione: i requisiti, i riferimenti che l’ambito ha già, i vuoti e i passi. Solo su Teams, e solo dopo che esiste una valutazione per quell’ambito."
   },
-  "News Report Agent reads one story and writes what the team should do about it. Pro includes 50 a month, Teams unlimited. Not on Free or Starter.": {
-    "pt": "O Agente de Relatório de Notícias lê uma notícia e escreve o que a equipa deve fazer. O Pro inclui 50 por mês, o Teams é ilimitado. Não está no Free nem no Starter.",
-    "es": "El News Report Agent lee una noticia y escribe qué debe hacer el equipo. Pro incluye 50 al mes, Teams es ilimitado. No está en Free ni en Starter.",
-    "fr": "Le News Report Agent lit un article et écrit ce que l’équipe devrait en faire. Pro en inclut 50 par mois, Teams est illimité. Pas sur Free ni sur Starter.",
-    "de": "Der News Report Agent liest eine Meldung und schreibt, was das Team damit tun sollte. Pro enthält 50 im Monat, Teams unbegrenzt. Nicht auf Free oder Starter.",
-    "it": "Il News Report Agent legge una notizia e scrive cosa dovrebbe fare il team. Pro ne include 50 al mese, Teams è illimitato. Non è su Free né su Starter."
+  "News Report Agent reads one story and writes what the team should do about it. Starter includes 20 a month, Pro 50, Teams unlimited. Not on Free.": {
+    "pt": "O Agente de Relatório de Notícias lê uma notícia e escreve o que a equipa deve fazer. O Starter inclui 20 por mês, o Pro 50, o Teams é ilimitado. Não está no Free.",
+    "es": "El News Report Agent lee una noticia y escribe qué debe hacer el equipo. Starter incluye 20 al mes, Pro 50, Teams es ilimitado. No está en Free.",
+    "fr": "Le News Report Agent lit un article et écrit ce que l’équipe devrait en faire. Starter en inclut 20 par mois, Pro 50, Teams est illimité. Pas sur Free.",
+    "de": "Der News Report Agent liest eine Meldung und schreibt, was das Team damit tun sollte. Starter enthält 20 im Monat, Pro 50, Teams unbegrenzt. Nicht auf Free.",
+    "it": "Il News Report Agent legge una notizia e scrive cosa dovrebbe fare il team. Starter ne include 20 al mese, Pro 50, Teams è illimitato. Non è su Free."
   },
   "Documents and the requirement list are written by the platform’s own agents. This server can read them. It cannot configure those agents, upload documents, post, comment, change the plan, or delete a workspace or a scope.": {
     "pt": "Os documentos e a lista de requisitos são escritos pelos agentes da própria plataforma. Este servidor pode lê-los. Não pode configurar esses agentes, carregar documentos, publicar, comentar, mudar o plano, nem apagar um espaço de trabalho ou um âmbito.",
@@ -951,12 +951,12 @@
     "de": "Wozu: die Nachrichten lesen, die die aktiven Scopes gefunden haben.",
     "it": "A cosa serve: leggere le notizie trovate dagli ambiti attivi."
   },
-  "How: same shape as tenders. get_news includes the News Report Agent’s stored reports, and the long summary, only on Pro and Teams. Comments are included.": {
-    "pt": "Como: a mesma forma que os concursos. get_news inclui os relatórios guardados do Agente de Relatório de Notícias, e o resumo longo, só no Pro e no Teams. Os comentários entram.",
-    "es": "Cómo: la misma forma que las licitaciones. get_news incluye los informes guardados del News Report Agent, y el resumen largo, solo en Pro y Teams. Los comentarios entran.",
-    "fr": "Comment : même forme que les appels d’offres. get_news inclut les rapports enregistrés du News Report Agent, et le résumé long, seulement sur Pro et Teams. Les commentaires sont inclus.",
-    "de": "So: gleiche Form wie die Ausschreibungen. get_news enthält die gespeicherten Berichte des News Report Agent und die lange Zusammenfassung nur auf Pro und Teams. Kommentare sind dabei.",
-    "it": "Come: la stessa forma delle gare. get_news include i report salvati del News Report Agent, e il riassunto lungo, solo su Pro e Teams. I commenti sono inclusi."
+  "How: same shape as tenders. get_news includes the News Report Agent’s stored reports, and the long summary, from Starter. Comments are included.": {
+    "pt": "Como: a mesma forma que os concursos. get_news inclui os relatórios guardados do Agente de Relatório de Notícias, e o resumo longo, a partir do Starter. Os comentários entram.",
+    "es": "Cómo: la misma forma que las licitaciones. get_news incluye los informes guardados del News Report Agent, y el resumen largo, desde Starter. Los comentarios entran.",
+    "fr": "Comment : même forme que les appels d’offres. get_news inclut les rapports enregistrés du News Report Agent, et le résumé long, à partir de Starter. Les commentaires sont inclus.",
+    "de": "So: gleiche Form wie die Ausschreibungen. get_news enthält die gespeicherten Berichte des News Report Agent und die lange Zusammenfassung ab Starter. Kommentare sind dabei.",
+    "it": "Come: la stessa forma delle gare. get_news include i report salvati del News Report Agent, e il riassunto lungo, da Starter. I commenti sono inclusi."
   },
   "list_posts, get_post and get_comments": {
     "pt": "list_posts, get_post e get_comments",
@@ -1112,19 +1112,19 @@
     "de": "Free: 1 Arbeitsbereich, 1 Standardbereich, keine eigenen Bereiche, 1 Bewertung im Monat, keine Angebotsbriefings, keine Nachrichtenberichte.",
     "it": "Free: 1 area di lavoro, 1 ambito predefinito, nessun ambito personalizzato, 1 valutazione al mese, nessun brief di proposta, nessun rapporto di notizie."
   },
-  "Starter: 1 workspace, up to 3 default scopes and 1 custom scope, 5 evaluations a month, no proposal briefs, no news reports.": {
-    "pt": "Starter: 1 espaço de trabalho, até 3 âmbitos predefinidos e 1 âmbito personalizado, 5 avaliações por mês, sem briefings de proposta, sem relatórios de notícias.",
-    "es": "Starter: 1 espacio de trabajo, hasta 3 ámbitos predeterminados y 1 ámbito personalizado, 5 evaluaciones al mes, sin briefings de propuesta, sin informes de noticias.",
-    "fr": "Starter : 1 espace de travail, jusqu’à 3 périmètres par défaut et 1 périmètre personnalisé, 5 évaluations par mois, pas de briefs de proposition, pas de rapports d’actualité.",
-    "de": "Starter: 1 Arbeitsbereich, bis zu 3 Standardbereiche und 1 eigener Bereich, 5 Bewertungen im Monat, keine Angebotsbriefings, keine Nachrichtenberichte.",
-    "it": "Starter: 1 area di lavoro, fino a 3 ambiti predefiniti e 1 ambito personalizzato, 5 valutazioni al mese, nessun brief di proposta, nessun rapporto di notizie."
+  "Starter: 1 workspace, up to 3 default scopes and 1 custom scope, 5 evaluations a month, 1 proposal brief a month, 20 news reports a month.": {
+    "pt": "Starter: 1 espaço de trabalho, até 3 âmbitos predefinidos e 1 âmbito personalizado, 5 avaliações por mês, 1 briefing de proposta por mês, 20 relatórios de notícias por mês.",
+    "es": "Starter: 1 espacio de trabajo, hasta 3 ámbitos predeterminados y 1 ámbito personalizado, 5 evaluaciones al mes, 1 briefing de propuesta al mes, 20 informes de noticias al mes.",
+    "fr": "Starter : 1 espace de travail, jusqu’à 3 périmètres par défaut et 1 périmètre personnalisé, 5 évaluations par mois, 1 brief de proposition par mois, 20 rapports d’actualité par mois.",
+    "de": "Starter: 1 Arbeitsbereich, bis zu 3 Standardbereiche und 1 eigener Bereich, 5 Bewertungen im Monat, 1 Angebotsbriefing im Monat, 20 Nachrichtenberichte im Monat.",
+    "it": "Starter: 1 area di lavoro, fino a 3 ambiti predefiniti e 1 ambito personalizzato, 5 valutazioni al mese, 1 brief di proposta al mese, 20 rapporti di notizie al mese."
   },
-  "Pro: 1 workspace, up to 10 default scopes and 5 custom scopes, 10 evaluations a month, 50 news reports a month, no proposal briefs.": {
-    "pt": "Pro: 1 espaço de trabalho, até 10 âmbitos predefinidos e 5 âmbitos personalizados, 10 avaliações por mês, 50 relatórios de notícias por mês, sem briefings de proposta.",
-    "es": "Pro: 1 espacio de trabajo, hasta 10 ámbitos predeterminados y 5 ámbitos personalizados, 10 evaluaciones al mes, 50 informes de noticias al mes, sin briefings de propuesta.",
-    "fr": "Pro : 1 espace de travail, jusqu’à 10 périmètres par défaut et 5 périmètres personnalisés, 10 évaluations par mois, 50 rapports d’actualité par mois, pas de briefs de proposition.",
-    "de": "Pro: 1 Arbeitsbereich, bis zu 10 Standardbereiche und 5 eigene Bereiche, 10 Bewertungen im Monat, 50 Nachrichtenberichte im Monat, keine Angebotsbriefings.",
-    "it": "Pro: 1 area di lavoro, fino a 10 ambiti predefiniti e 5 ambiti personalizzati, 10 valutazioni al mese, 50 rapporti di notizie al mese, nessun brief di proposta."
+  "Pro: 1 workspace, up to 10 default scopes and 5 custom scopes, 10 evaluations a month, 5 proposal briefs a month, 50 news reports a month.": {
+    "pt": "Pro: 1 espaço de trabalho, até 10 âmbitos predefinidos e 5 âmbitos personalizados, 10 avaliações por mês, 5 briefings de proposta por mês, 50 relatórios de notícias por mês.",
+    "es": "Pro: 1 espacio de trabajo, hasta 10 ámbitos predeterminados y 5 ámbitos personalizados, 10 evaluaciones al mes, 5 briefings de propuesta al mes, 50 informes de noticias al mes.",
+    "fr": "Pro : 1 espace de travail, jusqu’à 10 périmètres par défaut et 5 périmètres personnalisés, 10 évaluations par mois, 5 briefs de proposition par mois, 50 rapports d’actualité par mois.",
+    "de": "Pro: 1 Arbeitsbereich, bis zu 10 Standardbereiche und 5 eigene Bereiche, 10 Bewertungen im Monat, 5 Angebotsbriefings im Monat, 50 Nachrichtenberichte im Monat.",
+    "it": "Pro: 1 area di lavoro, fino a 10 ambiti predefiniti e 5 ambiti personalizzati, 10 valutazioni al mese, 5 brief di proposta al mese, 50 rapporti di notizie al mese."
   },
   "Teams: unlimited workspaces, members, default scopes, custom scopes, evaluations, proposal briefs and news reports.": {
     "pt": "Teams: espaços de trabalho, membros, âmbitos predefinidos, âmbitos personalizados, avaliações, briefings de proposta e relatórios de notícias ilimitados.",
@@ -1167,5 +1167,12 @@
     "fr": "Comment : workspace_id, scope_id et enabled. En activer un utilise un emplacement de périmètre par défaut. Vous devez être administrateur. À la limite, c’est refusé tant qu’un n’est pas désactivé.",
     "de": "So: workspace_id, scope_id und enabled. Einen einzuschalten belegt einen Platz für Standardbereiche. Du musst Admin sein. Am Limit wird es abgelehnt, bis einer ausgeschaltet ist.",
     "it": "Come: workspace_id, scope_id e enabled. Attivarne uno usa un posto di ambito predefinito. Devi essere amministratore. Al limite viene rifiutato finché non ne disattivi uno."
+  },
+  "Proposal Manager Agent prepares the submission pack from the tender’s templates and the company file, fills each document, and lists the next steps. Starter includes 1 a month, Pro 5, Teams unlimited. It runs only after an evaluation, and only when that scope has company information.": {
+    "pt": "O Agente Gestor de Propostas prepara o dossier de submissão a partir dos modelos do concurso e do ficheiro da empresa, preenche cada documento e lista os passos seguintes. O Starter inclui 1 por mês, o Pro 5, o Teams é ilimitado. Corre só depois de uma avaliação, e só quando esse âmbito tem informação da empresa.",
+    "es": "El Proposal Manager Agent prepara el dossier de presentación a partir de las plantillas de la licitación y el archivo de la empresa, rellena cada documento y lista los pasos siguientes. Starter incluye 1 al mes, Pro 5, Teams es ilimitado. Se ejecuta solo después de una evaluación, y solo cuando ese ámbito tiene información de la empresa.",
+    "fr": "Le Proposal Manager Agent prépare le dossier de soumission à partir des modèles de l’appel d’offres et du dossier de l’entreprise, remplit chaque document et liste les étapes suivantes. Starter en inclut 1 par mois, Pro 5, Teams est illimité. Il ne s’exécute qu’après une évaluation, et seulement lorsque ce périmètre a des informations sur l’entreprise.",
+    "de": "Der Proposal Manager Agent bereitet die Einreichungsmappe aus den Vorlagen der Ausschreibung und der Unternehmensakte vor, füllt jedes Dokument und listet die nächsten Schritte. Starter enthält 1 im Monat, Pro 5, Teams unbegrenzt. Er läuft erst nach einer Bewertung und nur, wenn dieser Scope Unternehmensangaben hat.",
+    "it": "Il Proposal Manager Agent prepara il dossier di presentazione dai modelli della gara e dal fascicolo dell’azienda, compila ogni documento ed elenca i passi successivi. Starter ne include 1 al mese, Pro 5, Teams è illimitato. Parte solo dopo una valutazione, e solo quando quell’ambito ha informazioni sull’azienda."
   }
 }

@@ -363,12 +363,12 @@
     "de": "Ausschreibungssignale, Analyse und Community.",
     "it": "Segnali di gara, analisi e community."
   },
-  "Join for tailored tender signals, news and community": {
-    "pt": "Junte-se para sinais de concursos à medida, notícias e comunidade",
-    "es": "Únete para señales de licitaciones a tu medida, noticias y comunidad",
-    "fr": "Rejoignez-nous pour des signaux d’appels d’offres sur mesure, l’actualité et la communauté",
-    "de": "Mach mit für passende Ausschreibungssignale, Nachrichten und Community",
-    "it": "Unisciti per segnali di gara su misura, notizie e community"
+  "Join for tailored tender signals, reports and community": {
+    "pt": "Junte-se para sinais de concursos à medida, relatórios e comunidade",
+    "es": "Únete para señales de licitaciones a tu medida, informes y comunidad",
+    "fr": "Rejoignez-nous pour des signaux d’appels d’offres sur mesure, des rapports et la communauté",
+    "de": "Mach mit für passende Ausschreibungssignale, Berichte und Community",
+    "it": "Unisciti per segnali di gara su misura, report e community"
   },
   "Stay on top of every tender, news or discussion that matters to your business": {
     "pt": "Fique a par de cada concurso, notícia ou discussão que importa ao seu negócio",
@@ -2701,5 +2701,96 @@
     "fr": "Créer un périmètre",
     "de": "Bereich erstellen",
     "it": "Crea ambito"
+  },
+  "Specialised AI bidding workforce for your team": {
+    "pt": "Equipa de IA especializada em propostas para a sua equipa",
+    "es": "Equipo de IA especializado en licitaciones para tu equipo",
+    "fr": "Équipe d’IA spécialisée dans les soumissions pour votre équipe",
+    "de": "Spezialisierte KI-Angebotsbelegschaft für dein Team",
+    "it": "Team di IA specializzato nelle offerte per il tuo team"
+  },
+  "Proposal briefs are included from Starter.": {
+    "pt": "Os resumos de proposta estão incluídos a partir do Starter.",
+    "es": "Los resúmenes de propuesta están incluidos desde Starter.",
+    "fr": "Les notes de proposition sont incluses à partir de Starter.",
+    "de": "Angebotsbriefings sind ab Starter enthalten.",
+    "it": "I brief di offerta sono inclusi a partire da Starter."
+  },
+  "The News Report Agent is included from Starter.": {
+    "pt": "O agente de relatórios de notícias está incluído a partir do Starter.",
+    "es": "El agente de informes de noticias está incluido desde Starter.",
+    "fr": "L’agent de rapports d’actualité est inclus à partir de Starter.",
+    "de": "Der Nachrichtenbericht-Agent ist ab Starter enthalten.",
+    "it": "L’agente di report sulle notizie è incluso a partire da Starter."
+  },
+  "This workspace has used its {n} news reports for this month.": {
+    "pt": "Este espaço de trabalho já usou os seus {n} relatórios de notícias deste mês.",
+    "es": "Este espacio de trabajo ya ha usado sus {n} informes de noticias de este mes.",
+    "fr": "Cet espace de travail a utilisé ses {n} rapports d’actualité ce mois-ci.",
+    "de": "Dieser Arbeitsbereich hat seine {n} Nachrichtenberichte für diesen Monat verbraucht.",
+    "it": "Quest’area di lavoro ha usato i suoi {n} report sulle notizie di questo mese."
+  },
+  "This workspace has used its {n} proposal briefs for this month.": {
+    "pt": "Este espaço de trabalho já usou os seus {n} resumos de proposta deste mês.",
+    "es": "Este espacio de trabajo ya ha usado sus {n} resúmenes de propuesta de este mes.",
+    "fr": "Cet espace de travail a utilisé ses {n} notes de proposition ce mois-ci.",
+    "de": "Dieser Arbeitsbereich hat seine {n} Angebotsbriefings für diesen Monat verbraucht.",
+    "it": "Quest’area di lavoro ha usato i suoi {n} brief di offerta di questo mese."
+  },
+  "They fetch tenders and news, summarise them, pull the documents, and list the requirements. Tender Evaluation scores how well a tender fits your context: 1 a month on Starter, 5 on Pro, unlimited on Teams. Proposal briefs start on Starter: 1 a month, 5 on Pro, unlimited on Teams. You configure each agent, per scope, in plain language.": {
+    "pt": "Recolhem concursos e notícias, resumem-nos, obtêm os documentos e listam os requisitos. A avaliação de concursos pontua o encaixe no seu contexto: 1 por mês no Starter, 5 no Pro, ilimitada no Teams. Os resumos de proposta começam no Starter: 1 por mês, 5 no Pro, ilimitados no Teams. Configura cada agente, por âmbito, em linguagem corrente.",
+    "es": "Recogen licitaciones y noticias, las resumen, obtienen los documentos y listan los requisitos. La evaluación de licitaciones puntúa el encaje en tu contexto: 1 al mes en Starter, 5 en Pro, ilimitada en Teams. Los resúmenes de propuesta empiezan en Starter: 1 al mes, 5 en Pro, ilimitados en Teams. Configuras cada agente, por ámbito, en lenguaje llano.",
+    "fr": "Ils récupèrent les appels d’offres et l’actualité, les résument, récupèrent les documents et listent les exigences. L’évaluation des appels d’offres note l’adéquation à votre contexte : 1 par mois dans Starter, 5 dans Pro, illimitée dans Teams. Les notes de proposition commencent dans Starter : 1 par mois, 5 dans Pro, illimitées dans Teams. Vous configurez chaque agent, par périmètre, en langage clair.",
+    "de": "Sie holen Ausschreibungen und Nachrichten, fassen sie zusammen, ziehen die Unterlagen und listen die Anforderungen. Die Ausschreibungsbewertung bewertet die Passung: 1 im Monat bei Starter, 5 bei Pro, unbegrenzt bei Teams. Angebotsbriefings beginnen bei Starter: 1 im Monat, 5 bei Pro, unbegrenzt bei Teams. Sie stellen jeden Agenten je Bereich in Klartext ein.",
+    "it": "Recuperano gare e notizie, le riassumono, scaricano i documenti ed elencano i requisiti. La valutazione delle gare assegna un punteggio di adattamento: 1 al mese in Starter, 5 in Pro, illimitata in Teams. I brief di offerta iniziano in Starter: 1 al mese, 5 in Pro, illimitati in Teams. Configuri ogni agente, per ambito, in linguaggio semplice."
+  },
+  "Yes, on Starter, Pro and Teams. Each scope has its own agents. You switch them on or off and tell them, in plain language, what to look for and how to work. Search, triage, document collection and requirements are on those plans. Tender Evaluation starts on Starter. Proposal briefs start on Starter. The News Report Agent starts on Starter.": {
+    "pt": "Sim, no Starter, Pro e Teams. Cada âmbito tem os seus agentes. Liga-os ou desliga-os e diz-lhes, em linguagem corrente, o que procurar e como trabalhar. Pesquisa, triagem, recolha de documentos e requisitos estão nesses planos. A avaliação de concursos começa no Starter. Os resumos de proposta começam no Starter. O agente de relatórios de notícias começa no Starter.",
+    "es": "Sí, en Starter, Pro y Teams. Cada ámbito tiene sus agentes. Los activas o desactivas y les dices, en lenguaje llano, qué buscar y cómo trabajar. Búsqueda, triaje, documentos y requisitos están en esos planes. La evaluación de licitaciones empieza en Starter. Los resúmenes de propuesta empiezan en Starter. El agente de informes de noticias empieza en Starter.",
+    "fr": "Oui, dans Starter, Pro et Teams. Chaque périmètre a ses agents. Vous les activez ou les désactivez et leur dites, en langage clair, quoi chercher et comment travailler. Recherche, tri, documents et exigences sont dans ces formules. L’évaluation des appels d’offres commence dans Starter. Les notes de proposition commencent dans Starter. L’agent de rapports d’actualité commence dans Starter.",
+    "de": "Ja, bei Starter, Pro und Teams. Jeder Bereich hat eigene Agenten. Du schaltest sie ein oder aus und sagst ihnen in Klartext, wonach sie suchen und wie sie arbeiten sollen. Suche, Triage, Unterlagen und Anforderungen gibt es in diesen Plänen. Die Ausschreibungsbewertung beginnt bei Starter. Angebotsbriefings beginnen bei Starter. Der Nachrichtenbericht-Agent beginnt bei Starter.",
+    "it": "Sì, in Starter, Pro e Teams. Ogni ambito ha i suoi agenti. Li accendi o li spegni e dici loro, in linguaggio semplice, cosa cercare e come lavorare. Ricerca, triage, documenti e requisiti sono in quei piani. La valutazione delle gare inizia in Starter. I brief di offerta iniziano in Starter. L’agente di report sulle notizie inizia in Starter."
+  },
+  "From Starter, the Proposal Manager turns that evaluation into a brief: the requirements, the references you already have, the gaps, and the steps. Starter includes 1 a month, Pro 5, and Teams unlimited.": {
+    "pt": "A partir do Starter, o gestor de propostas transforma essa avaliação num resumo: os requisitos, as referências que já tem, as lacunas e os passos. O Starter inclui 1 por mês, o Pro 5 e o Teams é ilimitado.",
+    "es": "Desde Starter, el gestor de propuestas convierte esa evaluación en un resumen: los requisitos, las referencias que ya tienes, las carencias y los pasos. Starter incluye 1 al mes, Pro 5 y Teams es ilimitado.",
+    "fr": "À partir de Starter, le gestionnaire d’offres transforme cette évaluation en une note : les exigences, les références que vous avez déjà, les lacunes et les étapes. Starter en inclut 1 par mois, Pro 5, et Teams est illimité.",
+    "de": "Ab Starter macht der Angebotsmanager aus dieser Bewertung ein Briefing: die Anforderungen, die Referenzen, die du schon hast, die Lücken und die Schritte. Starter enthält 1 im Monat, Pro 5, und Teams ist unbegrenzt.",
+    "it": "Da Starter, il gestore delle offerte trasforma quella valutazione in un brief: i requisiti, le referenze che hai già, le lacune e i passi. Starter ne include 1 al mese, Pro 5, e Teams è illimitato."
+  },
+  "It reads a news story and writes a full summary plus what your team should do about it. Starter includes 20 reports a month. Pro includes 50. Teams includes unlimited reports. It is not on Free.": {
+    "pt": "Lê uma notícia e escreve um resumo completo e o que a sua equipa deve fazer. O Starter inclui 20 relatórios por mês. O Pro inclui 50. O Teams inclui relatórios ilimitados. Não está no Free.",
+    "es": "Lee una noticia y escribe un resumen completo y lo que tu equipo debería hacer. Starter incluye 20 informes al mes. Pro incluye 50. Teams incluye informes ilimitados. No está en Free.",
+    "fr": "Il lit un article et rédige un résumé complet ainsi que ce que votre équipe devrait faire. Starter inclut 20 rapports par mois. Pro en inclut 50. Teams inclut des rapports illimités. Il n’est pas dans Free.",
+    "de": "Er liest eine Meldung und schreibt eine vollständige Zusammenfassung sowie was dein Team tun sollte. Starter enthält 20 Berichte im Monat. Pro enthält 50. Teams enthält unbegrenzte Berichte. Er ist nicht in Free.",
+    "it": "Legge una notizia e scrive un riepilogo completo e cosa dovrebbe fare il tuo team. Starter include 20 report al mese. Pro ne include 50. Teams include report illimitati. Non è in Free."
+  },
+  "Free includes General and 1 default scope, and cannot create a custom scope. It includes 1 tender evaluation a month. Starter includes up to 3 default scopes and 1 custom scope, 5 tender evaluations a month, 1 proposal brief a month and 20 news reports a month. Pro includes up to 10 default scopes, 5 custom scopes, 10 evaluations a month, 5 proposal briefs a month and 50 news reports a month, at €59 a month. Teams includes unlimited default scopes, custom scopes, evaluations, proposal briefs and news reports, for several workspaces and members, at €99 a month. A year costs eleven months.": {
+    "pt": "O Free inclui o General e 1 âmbito predefinido, e não pode criar um âmbito personalizado. Inclui 1 avaliação de concurso por mês. O Starter inclui até 3 âmbitos predefinidos e 1 âmbito personalizado, 5 avaliações de concurso por mês, 1 resumo de proposta por mês e 20 relatórios de notícias por mês. O Pro inclui até 10 âmbitos predefinidos, 5 âmbitos personalizados, 10 avaliações por mês, 5 resumos de proposta por mês e 50 relatórios de notícias por mês, a 59 € por mês. O Teams inclui âmbitos predefinidos, âmbitos personalizados, avaliações, resumos de proposta e relatórios de notícias ilimitados, para vários espaços de trabalho e membros, a 99 € por mês. Um ano custa onze meses.",
+    "es": "Free incluye General y 1 ámbito predeterminado, y no puede crear un ámbito personalizado. Incluye 1 evaluación de licitación al mes. Starter incluye hasta 3 ámbitos predeterminados y 1 ámbito personalizado, 5 evaluaciones de licitación al mes, 1 resumen de propuesta al mes y 20 informes de noticias al mes. Pro incluye hasta 10 ámbitos predeterminados, 5 ámbitos personalizados, 10 evaluaciones al mes, 5 resúmenes de propuesta al mes y 50 informes de noticias al mes, a 59 € al mes. Teams incluye ámbitos predeterminados, ámbitos personalizados, evaluaciones, resúmenes de propuesta e informes de noticias ilimitados, para varios espacios de trabajo y miembros, a 99 € al mes. Un año cuesta once meses.",
+    "fr": "Free comprend General et 1 périmètre par défaut, et ne peut pas créer de périmètre personnalisé. Il comprend 1 évaluation d’appel d’offres par mois. Starter comprend jusqu’à 3 périmètres par défaut et 1 périmètre personnalisé, 5 évaluations d’appels d’offres par mois, 1 note de proposition par mois et 20 rapports d’actualité par mois. Pro comprend jusqu’à 10 périmètres par défaut, 5 périmètres personnalisés, 10 évaluations par mois, 5 notes de proposition par mois et 50 rapports d’actualité par mois, à 59 € par mois. Teams comprend des périmètres par défaut, des périmètres personnalisés, des évaluations, des notes de proposition et des rapports d’actualité illimités, pour plusieurs espaces de travail et membres, à 99 € par mois. Une année coûte onze mois.",
+    "de": "Free enthält General und 1 Standardbereich und kann keinen eigenen Bereich erstellen. Es enthält 1 Ausschreibungsbewertung im Monat. Starter enthält bis zu 3 Standardbereiche und 1 eigenen Bereich, 5 Ausschreibungsbewertungen im Monat, 1 Angebotsbriefing im Monat und 20 Nachrichtenberichte im Monat. Pro enthält bis zu 10 Standardbereiche, 5 eigene Bereiche, 10 Bewertungen im Monat, 5 Angebotsbriefings im Monat und 50 Nachrichtenberichte im Monat, für 59 € im Monat. Teams enthält unbegrenzte Standardbereiche, eigene Bereiche, Bewertungen, Angebotsbriefings und Nachrichtenberichte, für mehrere Arbeitsbereiche und Mitglieder, für 99 € im Monat. Ein Jahr kostet elf Monate.",
+    "it": "Free include General e 1 ambito predefinito, e non può creare un ambito personalizzato. Include 1 valutazione di gara al mese. Starter include fino a 3 ambiti predefiniti e 1 ambito personalizzato, 5 valutazioni di gara al mese, 1 brief di offerta al mese e 20 report sulle notizie al mese. Pro include fino a 10 ambiti predefiniti, 5 ambiti personalizzati, 10 valutazioni al mese, 5 brief di offerta al mese e 50 report sulle notizie al mese, a 59 € al mese. Teams include ambiti predefiniti, ambiti personalizzati, valutazioni, brief di offerta e report sulle notizie illimitati, per più aree di lavoro e membri, a 99 € al mese. Un anno costa undici mesi."
+  },
+  "The Tender Evaluation Agent checks those requirements against the instructions and context of your scope. From Starter, the Proposal Manager outlines how a proposal could be approached: what you already have, what is missing, and the steps to take.": {
+    "pt": "O agente de avaliação de concursos confronta esses requisitos com as instruções e o contexto do seu âmbito. A partir do Starter, o gestor de propostas esboça como uma proposta poderia ser abordada: o que já tem, o que falta e os passos a dar.",
+    "es": "El agente de evaluación de licitaciones contrasta esos requisitos con las instrucciones y el contexto de tu ámbito. Desde Starter, el gestor de propuestas esboza cómo abordar una propuesta: lo que ya tienes, lo que falta y los pasos.",
+    "fr": "L’agent d’évaluation des appels d’offres confronte ces exigences aux instructions et au contexte de votre périmètre. À partir de Starter, le gestionnaire d’offres esquisse comment aborder une offre : ce que vous avez déjà, ce qui manque et les étapes.",
+    "de": "Der Bewertungsagent prüft diese Anforderungen gegen die Anweisungen und den Kontext deines Bereichs. Ab Starter skizziert der Angebotsmanager, wie ein Angebot angegangen werden könnte: was schon da ist, was fehlt und welche Schritte folgen.",
+    "it": "L’agente di valutazione delle gare confronta quei requisiti con le istruzioni e il contesto del tuo ambito. Da Starter, il gestore delle offerte delinea come affrontare un’offerta: cosa hai già, cosa manca e i passi da fare."
+  },
+  "The News Report Agent reads an article and writes a full summary and a report on what to do: publish, take part, announce, reach out, bid, or watch. It is included from Starter, up to 20 reports a month, 50 on Pro, and unlimited on Teams.": {
+    "pt": "O agente de relatórios de notícias lê um artigo e escreve um resumo completo e um relatório sobre o que fazer: publicar, participar, anunciar, contactar, concorrer ou acompanhar. Está incluído a partir do Starter, até 20 relatórios por mês, 50 no Pro, e é ilimitado no Teams.",
+    "es": "El agente de informes de noticias lee un artículo y escribe un resumen completo y un informe sobre qué hacer: publicar, participar, anunciar, contactar, presentarse o seguir. Está incluido desde Starter, hasta 20 informes al mes, 50 en Pro, e ilimitado en Teams.",
+    "fr": "L’agent de rapports d’actualité lit un article et rédige un résumé complet et un rapport sur quoi faire : publier, participer, annoncer, contacter, répondre ou surveiller. Il est inclus à partir de Starter, jusqu’à 20 rapports par mois, 50 dans Pro, et illimité dans Teams.",
+    "de": "Der Nachrichtenbericht-Agent liest einen Artikel und schreibt eine vollständige Zusammenfassung und einen Bericht, was zu tun ist: veröffentlichen, mitmachen, ankündigen, zugehen, anbieten oder beobachten. Er ist ab Starter enthalten, bis zu 20 Berichte im Monat, 50 bei Pro, und bei Teams unbegrenzt.",
+    "it": "L’agente di report sulle notizie legge un articolo e scrive un riepilogo completo e un report su cosa fare: pubblicare, partecipare, annunciare, contattare, partecipare a una gara o monitorare. È incluso da Starter, fino a 20 report al mese, 50 in Pro, e illimitato in Teams."
+  },
+  "Tenders, news and community posts can be read without an account. An account lets you follow items, keep a profile, post, comment and chat. Free includes 1 tender evaluation a month. Starter adds a scope you configure, 5 tender evaluations a month, 1 proposal brief a month and 20 news reports a month. Pro adds 10 evaluations a month, 5 proposal briefs a month and 50 news reports a month. Teams adds unlimited evaluations, proposal briefs and news reports.": {
+    "pt": "Concursos, notícias e publicações da comunidade podem ser lidos sem conta. Uma conta permite seguir itens, ter um perfil, publicar, comentar e conversar. O Free inclui 1 avaliação de concurso por mês. O Starter acrescenta um âmbito que configura, 5 avaliações de concurso por mês, 1 resumo de proposta por mês e 20 relatórios de notícias por mês. O Pro acrescenta 10 avaliações por mês, 5 resumos de proposta por mês e 50 relatórios de notícias por mês. O Teams acrescenta avaliações, resumos de proposta e relatórios de notícias ilimitados.",
+    "es": "Las licitaciones, las noticias y las publicaciones de la comunidad se pueden leer sin cuenta. Una cuenta permite seguir elementos, tener un perfil, publicar, comentar y chatear. Free incluye 1 evaluación de licitación al mes. Starter añade un ámbito que configuras, 5 evaluaciones de licitación al mes, 1 resumen de propuesta al mes y 20 informes de noticias al mes. Pro añade 10 evaluaciones al mes, 5 resúmenes de propuesta al mes y 50 informes de noticias al mes. Teams añade evaluaciones, resúmenes de propuesta e informes de noticias ilimitados.",
+    "fr": "Les appels d’offres, l’actualité et les publications de la communauté se lisent sans compte. Un compte permet de suivre des éléments, de tenir un profil, de publier, de commenter et d’écrire. Free comprend 1 évaluation d’appel d’offres par mois. Starter ajoute un périmètre que vous configurez, 5 évaluations d’appels d’offres par mois, 1 note de proposition par mois et 20 rapports d’actualité par mois. Pro ajoute 10 évaluations par mois, 5 notes de proposition par mois et 50 rapports d’actualité par mois. Teams ajoute des évaluations, des notes de proposition et des rapports d’actualité illimités.",
+    "de": "Ausschreibungen, Nachrichten und Community-Beiträge lassen sich ohne Konto lesen. Ein Konto erlaubt Folgen, ein Profil, Beiträge, Kommentare und Chat. Free enthält 1 Ausschreibungsbewertung im Monat. Starter ergänzt einen Bereich, den du einstellst, 5 Ausschreibungsbewertungen im Monat, 1 Angebotsbriefing im Monat und 20 Nachrichtenberichte im Monat. Pro ergänzt 10 Bewertungen im Monat, 5 Angebotsbriefings im Monat und 50 Nachrichtenberichte im Monat. Teams ergänzt unbegrenzte Bewertungen, Angebotsbriefings und Nachrichtenberichte.",
+    "it": "Gare, notizie e post della community si leggono senza account. Un account permette di seguire elementi, avere un profilo, pubblicare, commentare e chattare. Free include 1 valutazione di gara al mese. Starter aggiunge un ambito che configuri, 5 valutazioni di gara al mese, 1 brief di offerta al mese e 20 report sulle notizie al mese. Pro aggiunge 10 valutazioni al mese, 5 brief di offerta al mese e 50 report sulle notizie al mese. Teams aggiunge valutazioni, brief di offerta e report sulle notizie illimitati."
   }
 }

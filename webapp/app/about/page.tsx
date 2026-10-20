@@ -9,16 +9,16 @@ const META = 'Specialised AI agents for your next tender. They find opportunitie
 const QUESTIONS: [string, string][] = [
   ['What is Tender Town?', 'A platform for public tenders, grants and market news worldwide, and a community of the people who bid on them.'],
   ['Who is Tender Town for?', 'Companies, consultants and teams that look for and bid on public contracts.'],
-  ['What do the agents do?', 'They fetch tenders and news, summarise them, pull the documents, and list the requirements. Tender Evaluation scores how well a tender fits your context: 1 a month on Starter, 5 on Pro, unlimited on Teams. Proposal briefs are on Teams. You configure each agent, per scope, in plain language.'],
-  ['Can I configure the agents?', 'Yes, on Starter, Pro and Teams. Each scope has its own agents. You switch them on or off and tell them, in plain language, what to look for and how to work. Search, triage, document collection and requirements are on those plans. Tender Evaluation starts on Starter. Proposal briefs are on Teams. The News Report Agent is on Pro and Teams.'],
+  ['What do the agents do?', 'They fetch tenders and news, summarise them, pull the documents, and list the requirements. Tender Evaluation scores how well a tender fits your context: 1 a month on Starter, 5 on Pro, unlimited on Teams. Proposal briefs start on Starter: 1 a month, 5 on Pro, unlimited on Teams. You configure each agent, per scope, in plain language.'],
+  ['Can I configure the agents?', 'Yes, on Starter, Pro and Teams. Each scope has its own agents. You switch them on or off and tell them, in plain language, what to look for and how to work. Search, triage, document collection and requirements are on those plans. Tender Evaluation starts on Starter. Proposal briefs start on Starter. The News Report Agent starts on Starter.'],
   ['Does Tender Town pull the tender documents?', 'Yes. The documents agent collects the notices and files, starting from the first publication of the procedure and including later updates such as deadline extensions.'],
   ['Can it list the requirements?', 'Yes. The analysis agent reads those documents and lists the requirements. Free includes this on 2 tender pages a month, Starter on 10, and Pro and Teams on every tender.'],
   ['Can it judge whether a tender fits us?', 'From Starter, the Tender Evaluation Agent checks the requirements against the instructions and context of your scope and scores the fit. Starter includes 1 a month, Pro 5, and Teams unlimited.'],
-  ['Can it suggest how to approach a proposal?', 'On Teams, the Proposal Manager turns that evaluation into a brief: the requirements, the references you already have, the gaps, and the steps.'],
-  ['What is the News Report Agent?', 'It reads a news story and writes a full summary plus what your team should do about it. Pro includes 50 reports a month. Teams includes unlimited reports. It is not on Free or Starter.'],
+  ['Can it suggest how to approach a proposal?', 'From Starter, the Proposal Manager turns that evaluation into a brief: the requirements, the references you already have, the gaps, and the steps. Starter includes 1 a month, Pro 5, and Teams unlimited.'],
+  ['What is the News Report Agent?', 'It reads a news story and writes a full summary plus what your team should do about it. Starter includes 20 reports a month. Pro includes 50. Teams includes unlimited reports. It is not on Free.'],
   ['Is an account required?', 'No. Tenders, news and posts can be read without one. An account is for following items, posting, chat and, on Starter and above, your own scopes.'],
   ['Can my own agent use Tender Town?', 'Yes. It searches with no account. The guide is at {origin}/mcp and the procedures are at {origin}/skills.md. You create the account. After you sign in, it can configure scopes and read what the agents on this site write.'],
-  ['Which plan should I choose?', 'Free includes General and 1 default scope, and cannot create a custom scope. It includes 1 tender evaluation a month. Starter includes up to 3 default scopes and 1 custom scope, and 5 tender evaluations a month. Pro includes up to 10 default scopes, 5 custom scopes, 10 evaluations a month and 50 news reports a month, at €59 a month. Teams includes unlimited default scopes, custom scopes, evaluations and proposal briefs, for several workspaces and members, at €99 a month. A year costs eleven months.'],
+  ['Which plan should I choose?', 'Free includes General and 1 default scope, and cannot create a custom scope. It includes 1 tender evaluation a month. Starter includes up to 3 default scopes and 1 custom scope, 5 tender evaluations a month, 1 proposal brief a month and 20 news reports a month. Pro includes up to 10 default scopes, 5 custom scopes, 10 evaluations a month, 5 proposal briefs a month and 50 news reports a month, at €59 a month. Teams includes unlimited default scopes, custom scopes, evaluations, proposal briefs and news reports, for several workspaces and members, at €99 a month. A year costs eleven months.'],
   ['How often does Tender Town update?', 'A pipeline runs every four hours. Each scope refreshes as often as its plan allows: once a day on Free, twice on Starter, three times on Pro and six times on Teams.'],
 ];
 
@@ -85,9 +85,9 @@ export default function AboutPage() {
         <h3>{t('Documents and requirements')}</h3>
         <p>{t('A tender page starts from the first publication of the procedure — the original request, grant or contract notice — and then the changes since, including deadline extensions. Agents pull the documents, write a summary and list the requirements.')}</p>
         <h3>{t('Fit and the proposal')}</h3>
-        <p>{t('On Pro and Teams, the Tender Evaluation Agent checks those requirements against the instructions and context of your scope. The Proposal Manager then outlines how a proposal could be approached: what you already have, what is missing, and the steps to take.')}</p>
+        <p>{t('The Tender Evaluation Agent checks those requirements against the instructions and context of your scope. From Starter, the Proposal Manager outlines how a proposal could be approached: what you already have, what is missing, and the steps to take.')}</p>
         <h3>{t('News reports')}</h3>
-        <p>{t('The News Report Agent reads an article and writes a full summary and a report on what to do: publish, take part, announce, reach out, bid, or watch. It is included on Pro, up to 50 reports a month, and unlimited on Teams.')}</p>
+        <p>{t('The News Report Agent reads an article and writes a full summary and a report on what to do: publish, take part, announce, reach out, bid, or watch. It is included from Starter, up to 20 reports a month, 50 on Pro, and unlimited on Teams.')}</p>
 
         <h2>{t('How it works')}</h2>
         <h3>{t('Where the material comes from')}</h3>
@@ -101,7 +101,7 @@ export default function AboutPage() {
 
         <h2>{t('Accounts and plans')}</h2>
         <p>
-          {t('Tenders, news and community posts can be read without an account. An account lets you follow items, keep a profile, post, comment and chat. Free includes 1 tender evaluation a month. Starter adds a scope you configure and 5 tender evaluations a month. Pro adds 10 evaluations a month and the News Report Agent. Teams adds unlimited evaluations and proposal briefs.')}
+          {t('Tenders, news and community posts can be read without an account. An account lets you follow items, keep a profile, post, comment and chat. Free includes 1 tender evaluation a month. Starter adds a scope you configure, 5 tender evaluations a month, 1 proposal brief a month and 20 news reports a month. Pro adds 10 evaluations a month, 5 proposal briefs a month and 50 news reports a month. Teams adds unlimited evaluations, proposal briefs and news reports.')}
           {' '}<Link href="/pricing">{t('Pricing')}</Link>
         </p>
 

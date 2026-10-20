@@ -93,7 +93,7 @@ description: Drafts a Tender Town proposal as the bid manager: the submission pa
 
 # Proposal draft
 
-Proposal briefs are on Teams. Call \`get_account\` first. If \`limits.proposals.limit\` is 0, say so and stop. Do not call \`run_scope_agent\`.
+Proposal briefs start on Starter: 1 a month, 5 on Pro, unlimited on Teams. Call \`get_account\` first. If \`limits.proposals.limit\` is 0, say so and stop. Do not call \`run_scope_agent\`.
 
 A brief needs a fit analysis for that same scope and tender. If \`get_scope_report\` with \`kind\` \`tender_evaluation\` has \`report\` null, stop. Offer a fit analysis when the plan includes one and a run is left. Do not draft from the tender summary alone.
 

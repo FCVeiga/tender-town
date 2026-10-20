@@ -43,15 +43,15 @@ export const PLANS: Plan[] = [
   },
   {
     key: 'starter', name: 'Starter', priceEur: 29, kind: 'personal', workspaces: 1, defaultScopes: 3, customScopes: 1, members: 1, runsPerDay: 2, customize: true,
-    evaluationsPerMonth: 5, proposalsPerMonth: 0, newsReportsPerMonth: 0,
+    evaluationsPerMonth: 5, proposalsPerMonth: 1, newsReportsPerMonth: 20,
     blurb: '3 default scopes and 1 custom scope.',
-    features: ['One workspace', 'Up to 3 default scopes', '1 custom scope', '5 tender evaluations a month', 'Agents update twice a day'],
+    features: ['One workspace', 'Up to 3 default scopes', '1 custom scope', '5 tender evaluations a month', '1 proposal brief a month', 'News Report Agent, 20 reports a month', 'Agents update twice a day'],
   },
   {
     key: 'pro', name: 'Pro', priceEur: 59, kind: 'personal', workspaces: 1, defaultScopes: 10, customScopes: 5, members: 1, runsPerDay: 3, customize: true,
-    evaluationsPerMonth: 10, proposalsPerMonth: 0, newsReportsPerMonth: 50,
+    evaluationsPerMonth: 10, proposalsPerMonth: 5, newsReportsPerMonth: 50,
     blurb: '10 default scopes and 5 custom scopes.',
-    features: ['One workspace', 'Up to 10 default scopes', '5 custom scopes', '10 tender evaluations a month', 'News Report Agent, 50 reports a month', 'Agents update three times a day'],
+    features: ['One workspace', 'Up to 10 default scopes', '5 custom scopes', '10 tender evaluations a month', '5 proposal briefs a month', 'News Report Agent, 50 reports a month', 'Agents update three times a day'],
   },
   {
     key: 'teams', name: 'Teams', priceEur: 99, kind: 'team', workspaces: null, defaultScopes: null, customScopes: null, members: null, runsPerDay: 6, customize: true,

@@ -153,10 +153,10 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
               <UpgradeReport signedIn={likes.signedIn} note={t('This agent reads the full article and writes what your team should do about it.')} actionLabel={likes.signedIn ? undefined : 'Log in to run agent'} loginHref={likes.signedIn ? undefined : `/login?next=/news/${n.news_id}`} />
             )}
             {allowance.block !== 'plan' && !analysis && allowance.block === 'quota' && (
-              <p className="muted">{t('This workspace has used its 50 news reports for this month.')}</p>
+              <p className="muted">{t('This workspace has used its {n} news reports for this month.', { n: allowance.limit ?? 0 })}</p>
             )}
             {allowance.block !== 'plan' && !analysis && allowance.block !== 'quota' && (agentOn
-              ? <NewsReportRunner newsId={n.news_id} scopeId={scope.id} signedIn={likes.signedIn} lastError={r?.error === 'plan' || r?.error === 'quota' ? null : r?.error ?? null} />
+              ? <NewsReportRunner newsId={n.news_id} scopeId={scope.id} signedIn={likes.signedIn} quotaLimit={allowance.limit} lastError={r?.error === 'plan' || r?.error === 'quota' ? null : r?.error ?? null} />
               : <p className="muted">{t('Agent off for this scope.')}</p>)}
             {allowance.block !== 'plan' && analysis && (
               <>

@@ -149,7 +149,7 @@ export function createMcpServer(origin: string) {
   }, async ({ workspace_id, limit: n }) => call(workspace_id, () => ops.listNews(n ?? 20), 'list_news'));
 
   server.registerTool('get_news', {
-    description: 'One news story, its comments, and — on Pro and Teams — the News Report Agent’s reports for the active scopes.',
+    description: 'One news story, its comments, and — from Starter — the News Report Agent’s reports for the active scopes.',
     inputSchema: { workspace_id: workspace, id: z.string() },
   }, async ({ workspace_id, id }) => call(workspace_id, () => ops.getNews(id), 'get_news'));
 
@@ -169,7 +169,7 @@ export function createMcpServer(origin: string) {
   }, async ({ item_type, item_id }) => call(undefined, () => ops.getComments(item_type, item_id), 'get_comments'));
 
   server.registerTool('get_scope_report', {
-    description: 'A stored scope-agent report. Tender Evaluation from Starter, proposal briefs on Teams, news reports on Pro and Teams. Reading a report does not use a monthly run.',
+    description: 'A stored scope-agent report. Tender Evaluation on every plan. Proposal briefs and news reports from Starter. Reading a report does not use a monthly run.',
     inputSchema: {
       workspace_id: workspace, scope_id: z.string(), item_id: z.string(),
       kind: z.enum(['tender_evaluation', 'proposal_brief', 'news_report']),
