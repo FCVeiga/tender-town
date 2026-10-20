@@ -3,7 +3,9 @@ Generic scopes (search_config.mode == "generic") — the "General" default scope
 
 Software development in the European public market: open tenders a software
 company could bid, grant calls, and the news around that market. Relevance is
-computed here from structured signals, with no LLM.
+computed here from structured signals. The public summary is then written by
+the same pass the other scopes use, and the tender is filed on every catalog
+market that summary actually matches.
 
 Tenders (TED contract notices for software, published in the last few days):
   - only CPV division 48 (software packages) or group 722 (software programming)
@@ -31,7 +33,10 @@ from urllib.parse import urlparse
 
 from sqlalchemy import text as sql
 
-from database.models import Candidate
+from agents.market_fit import _copy_prompt, catalog_markets, place, score_card, write_summary
+from agents.tender_documents import notice_brief
+from database.models import Candidate, Opportunity
+from services.publication import publish_reason
 
 TED_API = "https://api.ted.europa.eu/v3/notices/search"
 TED_FIELDS = [
@@ -387,6 +392,8 @@ def run(session, scope, promote, country_names: dict, errors: list, tavily_cls=N
             procedures.add(key)
             unique.append(r)
     ranked = unique
+    markets = None
+    copy_prompt = None
     for score, f, n in ranked[: int(cfg["max_tenders"])]:
         pub_no = n.get("publication-number", "")
         title = _pick(n.get("notice-title")) or "(untitled)"
@@ -400,21 +407,58 @@ def run(session, scope, promote, country_names: dict, errors: list, tavily_cls=N
         snippet = (f"Buyer: {f['buyer']}. Notice type: {n.get('notice-type', '')}. Tender deadline: {deadline}. "
                    f"TED notice {pub_no}. TED procedure: {n.get('procedure-identifier') or 'n/a'}. "
                    f"Estimated value: {f['raw']:.0f} {f['currency']}.")
-        reason = (f"{_money(f['eur'])} · {f['market']} · {f['buyer_label']}"
-                  + (f" · {f['lots']} lots" if f["lots"] > 1 else "") + f" · {(f['deadline'] - now).days} days to bid")
+        card = (f"{_money(f['eur'])} · {f['market']} · {f['buyer_label']}"
+                + (f" · {f['lots']} lots" if f["lots"] > 1 else "") + f" · {(f['deadline'] - now).days} days to bid")
+        proc = n.get("procedure-identifier")
+        held = session.query(Opportunity).filter_by(reference=f"TED:{proc}").first() if proc else None
+        already = held is not None and (held.summary or "").strip() and not score_card(held.summary)
         c = candidate(_cid(url, title), url, title, snippet, country2, _deadline([n.get("publication-date")]), "ted", "general: large tenders")
         # TED's English title is "Country – CPV label – <title in the notice's language>": keep the
-        # English part as the display title until the Translator Agent renders the rest.
+        # English part as the display title until the writing pass (or the Translator Agent) replaces it.
         parts = [p.strip() for p in title.split(" – ")]
         title_en = f"{parts[1]} — {parts[0]}" if len(parts) >= 3 else title
+        summary, why = card, card
+        if already:
+            summary, why, title_en = held.summary, "", held.title_en or title_en
+        else:
+            brief = notice_brief(pub_no)
+            if brief:
+                c.description = (snippet + "\n" + brief)[:2000]
+            try:
+                if copy_prompt is None:
+                    copy_prompt = _copy_prompt(scope)
+                written = write_summary(scope, title, c.description, url, country2, f["buyer"], deadline, score, copy_prompt)
+            except Exception as e:
+                errors.append(f"generic copy {pub_no}: {e}")
+                written = None
+            if written:
+                summary = written.get("summary") or summary
+                why = written.get("reason") or why
+                title_en = written.get("title_en") or title_en
         t = {"type": "TENDER", "relevance": score, "country": country2, "title_en": title_en, "language": None,
-             "authority": f["buyer"], "summary": reason, "reason": reason}
+             "authority": f["buyer"], "deadline": deadline, "summary": summary, "reason": why or summary}
         promoted = promote(session, c, t, country_names)
         if promoted:
             kind, row = promoted[0], promoted[1]
             if row.estimated_value is None:
                 row.estimated_value, row.currency = f["raw"], f["currency"]
-            record(kind, row, score, "TENDER", reason)
+            shown = publish_reason(row.summary or summary, why) or (row.summary or summary)
+            if not already:
+                record(kind, row, score, "TENDER", shown)
+            # A later read can put the tender on a market the first filing missed.
+            # Once any other market has it, that filing stands.
+            filed = session.execute(sql("""
+                select 1 from scope_items
+                where item_id = :i and item_type = 'tender' and scope_id <> cast(:s as uuid) limit 1
+            """), {"i": row.opportunity_id, "s": scope.id}).first()
+            if not filed and not score_card(row.summary or summary):
+                if markets is None:
+                    markets = catalog_markets(session)
+                try:
+                    place(session, row.opportunity_id, row.title_en or row.title, row.summary or summary,
+                          row.country, row.authority, why, markets)
+                except Exception as e:
+                    errors.append(f"market fit {pub_no}: {e}")
             if kind == "opportunity":
                 out["tenders"].append(row)
             elif kind == "updated":

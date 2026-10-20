@@ -640,9 +640,9 @@ def main():
         targets = [sc for sc in follow.get(r.source_id, []) if sc in triaged_scopes] if r.source_id else triaged_scopes
         link([r.candidate_id], [sc.id for sc in targets])
 
-    # Generic scopes (General): structured search and scoring, no LLM (agents/generic_scope.py).
+    # Generic scopes (General): structured scoring, then the same public summary as other scopes.
     for scope in generic_scopes:
-        from agents import generic_scope
+        from agents import generic_scope, market_fit
         followed = [sid for sid, scs in follow.items() if scope in scs]
         try:
             g = generic_scope.run(session, scope, promote, country_names, errors,
@@ -655,6 +655,14 @@ def main():
         new_opps += g["tenders"]; new_news += g["news"]; updates += g["updated"]
         print(f"[{scope.name}] generic: {g['checked']} TED notices scored, {len(g['tenders'])} new tenders, "
               f"{len(g['news'])} new stories ({g['from_sources']} from followed sources)")
+        try:
+            fixed = market_fit.catch_up(session, scope, errors)
+        except Exception as e:
+            errors.append(f"{scope.name} summaries: {e}")
+            print(f"[{scope.name}] summary rewrite failed: {e}")
+        else:
+            if fixed["rewritten"] or fixed["placed"]:
+                print(f"[{scope.name}] rewrote {fixed['rewritten']} summaries, filed {fixed['placed']} onto other markets")
         S.mark_ran(session, scope)
     print(f"Sources: {monitored['checked']} of {monitored['total']} monitored sources due and checked, "
           f"{monitored['found']} new items, {from_sources} new candidates")

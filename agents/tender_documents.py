@@ -77,6 +77,30 @@ def classify(name: str) -> str:
     return "ANNEX"
 
 
+_PROJECT = re.compile(r"<cac:ProcurementProject\b.*?</cac:ProcurementProject>", re.S)
+_PROJECT_DESC = re.compile(r"<cbc:Description\b[^>]*>([^<]{40,800})</cbc:Description>")
+
+
+def notice_brief(publication_number: str) -> str:
+    """The contract's own description from the TED notice, for a summary. Empty when TED has none."""
+    num = (publication_number or "").strip()
+    if not num:
+        return ""
+    try:
+        r = _get(f"https://ted.europa.eu/en/notice/{num}/xml")
+    except Exception:
+        return ""
+    if r.status_code != 200:
+        return ""
+    texts = []
+    for block in _PROJECT.findall(r.text or "")[:6]:
+        for desc in _PROJECT_DESC.findall(block):
+            text = html.unescape(re.sub(r"\s+", " ", desc)).strip()
+            if text and text not in texts:
+                texts.append(text)
+    return "\n".join(texts)[:1600]
+
+
 def _get(url, **kw):
     for attempt in range(3):
         r = requests.get(url, headers=UA, timeout=40, **kw)
