@@ -3,6 +3,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { Opportunity, buyerOf, daysUntil, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText, stageOf, statedValue, vatTreatment } from '@/lib/publication';
 import { EXAMPLE_TENDER_ID } from '@/lib/exampleRun';
 import { StatusTags } from '@/components/OpportunityCard';
@@ -44,7 +45,7 @@ export default async function ExamplePage() {
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
   ]);
 
-  const summaryRaw = publicText(plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? ''));
+  const summaryRaw = alignSubmissionDeadline(publicText(plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? '')), o.deadline);
   const stage = stageOf(o);
   const stated = o.estimated_value ? null : statedValue(summaryRaw);
   const amount = o.estimated_value ?? stated?.amount ?? null;

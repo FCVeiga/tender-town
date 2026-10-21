@@ -449,6 +449,114 @@ def _conflicts(sentence: str, deadline, awarded: bool) -> bool:
     return dated and any((y, m, d) != (when.year, when.month, when.day) for y, m, d in dates)
 
 
+_CLAIM = re.compile(
+    r"(?:submission|tender|bid)\s+deadline\s+is\s+"
+    r"|(?<![A-Za-z])deadline\s+is\s+"
+    r"|submission\s+is\s+due(?:\s+(?:on|by))?\s+"
+    r"|open\s+until\s+",
+    re.I,
+)
+_STATED_DATE = re.compile(
+    r"^(?:on\s+|by\s+)?"
+    r"(\d{1,2}/\d{1,2}/20\d{2}|\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+\s+20\d{2}|20\d{2}-\d{2}-\d{2})",
+    re.I,
+)
+_MONTH_NAMES = ["january", "february", "march", "april", "may", "june", "july",
+                "august", "september", "october", "november", "december"]
+
+
+def _deadline_parts(deadline):
+    if not deadline:
+        return None
+    if isinstance(deadline, str):
+        try:
+            deadline = datetime.strptime(deadline[:10], "%Y-%m-%d")
+        except ValueError:
+            return None
+    when = deadline.replace(tzinfo=None) if getattr(deadline, "tzinfo", None) else deadline
+    if not (1 <= when.month <= 12 and 1 <= when.day <= 31):
+        return None
+    return when.year, when.month, when.day
+
+
+def _read_stated(token: str):
+    slash = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(20\d{2})", token)
+    if slash:
+        return int(slash.group(3)), int(slash.group(2)), int(slash.group(1))
+    iso = re.fullmatch(r"(20\d{2})-(\d{2})-(\d{2})", token)
+    if iso:
+        return int(iso.group(1)), int(iso.group(2)), int(iso.group(3))
+    long = re.fullmatch(r"(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(20\d{2})", token, re.I)
+    if not long:
+        return None
+    word = long.group(2).lower()
+    month = next((i + 1 for i, name in enumerate(_MONTH_NAMES)
+                  if name == word or (3 <= len(word) < len(name) and name.startswith(word))), None)
+    if not month:
+        return None
+    return int(long.group(3)), month, int(long.group(1))
+
+
+def _month_like(source: str, month: int) -> str:
+    name = _MONTH_NAMES[month - 1]
+    base = name[:3] if len(source) <= 3 else name
+    if source.isupper():
+        return base.upper()
+    if source[:1].isupper():
+        return base.capitalize()
+    return base
+
+
+def _ordinal(day: int) -> str:
+    if 11 <= day % 100 <= 13:
+        return "th"
+    return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+
+
+def _format_like(token: str, when) -> str:
+    year, month, day = when
+    if "/" in token:
+        left, mid, _year = token.split("/")
+        return f"{day:0{len(left)}d}/{month:0{len(mid)}d}/{year}"
+    if re.match(r"20\d{2}-", token):
+        return f"{year:04d}-{month:02d}-{day:02d}"
+    long = re.fullmatch(r"(\d{1,2})(st|nd|rd|th)?\s+([A-Za-z]+)\s+20\d{2}", token, re.I)
+    if not long:
+        return token
+    shown = f"{day:0{len(long.group(1))}d}"
+    suffix = _ordinal(day) if long.group(2) else ""
+    return f"{shown}{suffix} {_month_like(long.group(3), month)} {year}"
+
+
+def align_submission_deadline(text: str, deadline) -> str:
+    """The summary, with the submission deadline it says applies now set to the stored date.
+
+    A sentence that only recalls an earlier deadline ("the deadline was …") is left as written.
+    """
+    when = _deadline_parts(deadline)
+    body = text or ""
+    if not body or not when:
+        return body
+    out, cursor = [], 0
+    for match in _CLAIM.finditer(body):
+        before = body[max(0, match.start() - 24):match.start()].lower()
+        if "clarification" in before or "question" in before:
+            continue
+        found = _STATED_DATE.match(body[match.end():])
+        if not found:
+            continue
+        token = found.group(1)
+        stated = _read_stated(token)
+        if not stated or stated == when:
+            continue
+        at = match.end() + found.start(1)
+        out.append(body[cursor:at])
+        out.append(_format_like(token, when))
+        cursor = at + len(token)
+    out.append(body[cursor:])
+    return "".join(out)
+
+
 def summary_aligned(summary: str, status: str, deadline):
     """The summary with sentences that contradict the notice removed.
 
@@ -522,11 +630,19 @@ def _apply_notice(session, opp, found: dict, now: datetime) -> bool:
         opp.estimated_value = found["value"]
         opp.currency = found.get("currency") or opp.currency
         opp.value_source = None
-    aligned = summary_aligned(opp.summary, opp.status or "", opp.deadline)
+    current = align_submission_deadline(opp.summary, opp.deadline)
+    aligned = summary_aligned(current, opp.status or "", opp.deadline)
     if aligned and aligned != (opp.summary or "").strip():
         _mark_summary(opp, aligned)
-    if material or source_changed:
+    elif current and current != (opp.summary or "").strip():
+        _mark_summary(opp, current)
+    if awarded:
         opp.tender_summary = None
+    else:
+        revised = align_submission_deadline(opp.tender_summary, opp.deadline)
+        if revised and revised != (opp.tender_summary or ""):
+            opp.tender_summary = revised
+    if material or source_changed:
         opp.tender_analysed_at = None
     if material:
         opp.last_change = now
@@ -688,11 +804,21 @@ def align_summaries(session) -> int:
     from database.models import Opportunity
     changed = 0
     for opp in session.query(Opportunity).filter(Opportunity.status.in_(["AWARDED", "CLOSED", "OPEN"])).all():
-        aligned = summary_aligned(opp.summary, opp.status or "", opp.deadline)
-        if not aligned or aligned == (opp.summary or "").strip():
-            continue
-        _mark_summary(opp, aligned)
-        changed += 1
+        row_changed = False
+        current = align_submission_deadline(opp.summary, opp.deadline)
+        aligned = summary_aligned(current, opp.status or "", opp.deadline)
+        if aligned and aligned != (opp.summary or "").strip():
+            _mark_summary(opp, aligned)
+            row_changed = True
+        elif current and current != (opp.summary or "").strip():
+            _mark_summary(opp, current)
+            row_changed = True
+        revised = align_submission_deadline(opp.tender_summary, opp.deadline)
+        if revised and revised != (opp.tender_summary or ""):
+            opp.tender_summary = revised
+            row_changed = True
+        if row_changed:
+            changed += 1
     if changed:
         session.commit()
     return changed

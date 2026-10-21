@@ -26,7 +26,9 @@ configured for. The summary is public.
 - scope of work: deliverables, services, technologies and standards named
   (EUDI Wallet, ARF, OpenID4VC, SD-JWT, mdoc, eIDAS…);
 - value, contract duration and options, procedure type;
-- key dates: submission deadline, Q&A deadline, start date, milestones;
+- key dates: submission deadline, Q&A deadline, start date, milestones.
+  The submission deadline that applies now is the Current facts date. Give any
+  earlier submission deadline only as history;
 - how to submit (portal, language of the bid) in one sentence;
 - changes made by later notices, clarifications or Q&A answers that matter,
   after the description of the tender as first published.

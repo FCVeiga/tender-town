@@ -3,6 +3,7 @@ import { posts as blogPosts } from '@/lib/blog';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText } from '@/lib/publication';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ export async function GET() {
   const origin = siteOrigin();
   const db = getSupabaseServerClient();
   const [tenders, news, posts] = await Promise.all([
-    db.from('opportunities').select('opportunity_id, opportunity_type, title, title_en, language, summary, tender_summary, publication_date, first_detected').order('first_detected', { ascending: false }).limit(40),
+    db.from('opportunities').select('opportunity_id, opportunity_type, title, title_en, language, summary, tender_summary, deadline, publication_date, first_detected').order('first_detected', { ascending: false }).limit(40),
     db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, published_date, created_at').order('published_date', { ascending: false }).limit(40),
     db.from('posts').select('id, title, body, created_at').order('created_at', { ascending: false }).limit(20),
   ]);
@@ -26,7 +27,7 @@ export async function GET() {
       title: titleOf(r),
       link: `${origin}${opportunityPath(r)}`,
       date: r.publication_date || r.first_detected || new Date().toISOString(),
-      description: publicText(firstInLanguage(r.tender_summary, r.summary) || ''),
+      description: alignSubmissionDeadline(publicText(firstInLanguage(r.tender_summary, r.summary) || ''), r.deadline),
     })),
     ...(news.data || []).map((r: any) => ({
       title: titleOf(r),

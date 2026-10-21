@@ -14,6 +14,7 @@ import { getScope } from '@/lib/scopes';
 import { agentRunAllowance, recordAgentRun } from '@/lib/agentQuota';
 import { getT } from '@/lib/i18n/server';
 import { getCurrentUser } from '@/lib/auth';
+import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { recordProductEvent } from '@/lib/productRecord';
 
 export const EVALUATION_AGENT = 'Tender Evaluation Agent';
@@ -145,7 +146,7 @@ async function runEvaluation(opportunityId: string, scopeId: string, workspaceId
   const tender = [
     `Title: ${o.title_en || o.title}`, `Buyer: ${o.authority_en || o.authority || 'unknown'} (${o.country || 'international'})`,
     o.estimated_value && `Value: ${o.currency || ''} ${o.estimated_value}`, o.deadline && `Deadline: ${String(o.deadline).slice(0, 10)}`,
-    `\nSummary:\n${o.tender_summary || o.summary || '(none)'}`,
+    `\nSummary:\n${alignSubmissionDeadline(o.tender_summary || o.summary || '', o.deadline) || '(none)'}`,
     `\nAward criteria:\n${(award || []).map((a: any) => `- ${a.criterion} ${a.weight ?? '?'}%: ${a.subcriteria?.name_en || a.subcriteria?.name || ''} ${a.subcriteria?.description_en || ''}`).join('\n') || '(none)'}`,
     `\nRequirements:\n${reqLines.join('\n') || '(none extracted)'}`,
   ].filter(Boolean).join('\n');

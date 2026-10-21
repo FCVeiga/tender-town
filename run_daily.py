@@ -386,6 +386,14 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
                 changes = [desc]
             for k, v in fields.items():
                 setattr(existing, k, v)
+            if any(str(change).startswith("Deadline ") for change in changes) and existing.deadline:
+                from agents.official_notice import align_submission_deadline
+                for attr in ("summary", "tender_summary"):
+                    current = getattr(existing, attr) or ""
+                    fixed = align_submission_deadline(current, existing.deadline)
+                    if fixed != current:
+                        setattr(existing, attr, fixed)
+                existing.tender_analysed_at = None
             if changes:
                 existing.last_change = now
                 return "updated", existing, changes

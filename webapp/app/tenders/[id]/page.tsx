@@ -3,6 +3,7 @@ import { permanentRedirect } from 'next/navigation';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText } from '@/lib/publication';
 import { getPlatformLanguage } from '@/lib/language';
 import { clip, pageMeta } from '@/lib/seo';
@@ -13,11 +14,11 @@ export const maxDuration = 300;
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const { data } = await getSupabaseServerClient().from('opportunities')
-    .select('title, title_en, language, summary, tender_summary, authority, authority_en, country, publication_date, first_detected')
+    .select('title, title_en, language, summary, tender_summary, deadline, authority, authority_en, country, publication_date, first_detected')
     .eq('opportunity_id', params.id).maybeSingle();
   if (!data) return { title: 'Not found — Tender Town', robots: { index: false, follow: false } };
   const title = titleOf(data);
-  const description = clip(publicText(firstInLanguage(data.tender_summary, data.summary) || '') || [title, data.authority_en || data.authority, data.country].filter(Boolean).join(' · '));
+  const description = clip(alignSubmissionDeadline(publicText(firstInLanguage(data.tender_summary, data.summary) || ''), data.deadline) || [title, data.authority_en || data.authority, data.country].filter(Boolean).join(' · '));
   return pageMeta({
     title: `${title} — Tender Town`,
     socialTitle: title,

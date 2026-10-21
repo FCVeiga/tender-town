@@ -3,6 +3,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 import { Opportunity, buyerOf, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText, stageOf, statedValue, vatTreatment } from '@/lib/publication';
 import { DeadlineText, StatusTags } from '@/components/OpportunityCard';
 import { UpdateEvent } from '@/components/UpdateComment';
@@ -134,7 +135,7 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
     const rows = (r.requirement_matches || []).filter((m: any) => m.scope_id === scopeId);
     return (wsId && rows.find((m: any) => m.workspace_id === wsId)) || rows.find((m: any) => !m.workspace_id);
   };
-  const summaryRaw = publicText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? '');
+  const summaryRaw = alignSubmissionDeadline(publicText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? ''), o.deadline);
   const summaryPlain = plainText(summaryRaw);
   const stage = stageOf(o);
   const stated = o.estimated_value ? null : statedValue(summaryRaw);

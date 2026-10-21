@@ -14,6 +14,7 @@ import { getScope } from '@/lib/scopes';
 import { agentRunAllowance, recordAgentRun } from '@/lib/agentQuota';
 import { getT } from '@/lib/i18n/server';
 import { getCurrentUser } from '@/lib/auth';
+import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { recordProductEvent } from '@/lib/productRecord';
 import { submissionDocumentTexts } from '@/lib/tenderAnalysis';
 import { normaliseBrief, parseProposalBrief } from '@/lib/proposalBrief';
@@ -123,7 +124,7 @@ async function runProposal(opportunityId: string, scopeId: string, workspaceId: 
     `Value: ${o.estimated_value ? `${o.currency || ''} ${o.estimated_value}` : 'not disclosed'}`,
     `Submission deadline: ${o.deadline ? String(o.deadline).slice(0, 10) : 'not stated'}`,
     `Official notice: ${o.official_url || '—'}`,
-    `\nTender summary:\n${o.tender_summary || o.summary || '(none)'}`,
+    `\nTender summary:\n${alignSubmissionDeadline(o.tender_summary || o.summary || '', o.deadline) || '(none)'}`,
     `\nAward criteria:\n${(award || []).map((a: any) => `- ${a.criterion} ${a.weight ?? '?'}%: ${a.subcriteria?.name_en || a.subcriteria?.name || ''} ${a.subcriteria?.description_en || a.subcriteria?.description || ''}`).join('\n') || '(none published)'}`,
     `\nRequirements:\n${reqLines.join('\n') || '(none extracted)'}`,
     `\nEvaluation report: fit ${ev.fit_score}/100, verdict ${ev.verdict}. ${ev.take || ''}`,

@@ -30,7 +30,6 @@ const ROWS: { label: string; cell: (plan: Plan, t: (key: string, vars?: { n: num
   { label: 'Tender Evaluation', cell: (p, t) => monthCount(p.evaluationsPerMonth, t) },
   { label: 'Proposal briefs', cell: (p, t) => monthCount(p.proposalsPerMonth, t) },
   { label: 'News Report Agent', cell: (p, t) => monthCount(p.newsReportsPerMonth, t) },
-  { label: 'Your own instructions and context', cell: (p, t) => (p.customize ? t('Included') : t('Not included')) },
 ];
 
 function Subscribe({ plan, interval }: { plan: string; interval: 'month' | 'year' }) {

@@ -13,6 +13,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import JSZip from 'jszip';
 import { fileText } from '@/lib/fileText';
 import { getPlatformLanguage } from '@/lib/language';
+import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText, statedValue } from '@/lib/publication';
 import { isAgentEnabled } from '@/lib/settings';
 import { getSupabaseServerClient } from '@/lib/supabase';
@@ -330,7 +331,12 @@ export async function ensureTenderAnalysis(opportunityId: string) {
     const body = await pageText(o.official_url);
     if (body) docs = [{ name: `Opportunity page ${o.official_url}`, body }, ...docs];
   }
+  const deadlineOn = o.deadline ? String(o.deadline).slice(0, 10) : '';
   const listing = [
+    '## Current facts',
+    deadlineOn
+      ? `Submission deadline: ${deadlineOn}. This is the date bids are due now. An earlier submission date in a notice is history.`
+      : 'Submission deadline: not stated.',
     '## Procedure history',
     'Every official notice of this procedure, from the first publication to the latest update.',
     'Describe the tender as first published, then the changes that still stand.',
@@ -410,7 +416,7 @@ export async function ensureTenderAnalysis(opportunityId: string) {
     const { error: awardError } = await db.from('award_criteria').insert(created);
     if (awardError) throw new Error(awardError.message);
   }
-  const summary = publicText(plainSummary(out.summary || '')) || null;
+  const summary = alignSubmissionDeadline(publicText(plainSummary(out.summary || '')), o.deadline) || null;
   const money = statedContract(out, summary || '');
   const deadline = /^\d{4}-\d{2}-\d{2}$/.test(String(out.deadline || '').slice(0, 10)) ? String(out.deadline).slice(0, 10) : null;
   const country = String(out.country || '').trim().toUpperCase();
