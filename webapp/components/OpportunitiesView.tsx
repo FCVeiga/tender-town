@@ -25,11 +25,9 @@ const TITLES: Record<string, string> = {
 };
 
 export default async function OpportunitiesView({ view }: { view: View }) {
-  const t = await getT();
   return (
-    <div>
+    <div className="list-page">
       <ScopeBannerSuspense />
-      <h1 className="opps-h1">{t(TITLES[view])}</h1>
       <Suspense fallback={<ListSkeleton />}>
         <OpportunitiesBody view={view} />
       </Suspense>
@@ -89,6 +87,7 @@ async function OpportunitiesBody({ view }: { view: View }) {
 
   return (
     <ScopeView scopeId={scopeId}>
+      <h1 className="opps-h1">{t(TITLES[view])}</h1>
       <ScopePicker model={focus} />
       <SectionTabs tabs={tabs} active={activeHref} />
 

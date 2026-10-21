@@ -100,7 +100,10 @@ async function HomeFeed({ n }: { n?: string }) {
 
   return (
     <>
-      <ScopePicker model={focus} />
+      <div className="scope-tools">
+        <ScopePicker model={focus} />
+        <aside className="home-right"><LiveActivity initial={focus.hold ? [] : activity} scopeId={scopeId} /></aside>
+      </div>
 
       <div className="feed-page">
         <ScopeView scopeId={scopeId}>
@@ -125,8 +128,6 @@ async function HomeFeed({ n }: { n?: string }) {
         )}
         </ScopeView>
       </div>
-
-      <aside className="home-right"><LiveActivity initial={focus.hold ? [] : activity} scopeId={scopeId} /></aside>
     </>
   );
 }

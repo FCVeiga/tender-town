@@ -27,14 +27,11 @@ export function BannerSkeleton({ compact = false }: { compact?: boolean }) {
           <img className="scope-banner-art dark" src="/brand/sidebar-banner.jpg" alt="" />
         </div>
         <div className="scope-banner-inner">
-          {compact ? (
-            <p className="scope-banner-note">{t(NOTE)}</p>
-          ) : (
-            <div className="scope-banner-lead">
-              <p className="scope-banner-kicker">{t(HEADING)}</p>
-              <BannerJobs />
-            </div>
-          )}
+          <div className="scope-banner-lead">
+            <p className="scope-banner-kicker">{t(HEADING)}</p>
+            <BannerJobs />
+          </div>
+          {compact && <p className="scope-banner-note">{t(NOTE)}</p>}
           <div className="scope-banner-actions" aria-hidden="true">
             <div className="skel skel-btn" />
           </div>
@@ -49,15 +46,18 @@ export function HomeSkeleton() {
   const t = useT();
   return (
     <>
+      <div className="scope-tools">
+        <div className="feed-scope" aria-hidden="true"><div className="skel skel-select" /></div>
+        <aside className="home-right" aria-busy="true" aria-label={t('Live activity')}>
+          <div className="live-panel">
+            <div className="live-head"><span className="live-title"><span className="live-pulse" /><span className="live-label">{t('Live activity')}</span></span><svg className="live-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" /></svg></div>
+            <AgentLoader compact />
+          </div>
+        </aside>
+      </div>
       <div className="feed-page agent-loader-slot" aria-busy="true">
         <AgentLoader />
       </div>
-      <aside className="home-right" aria-busy="true" aria-label={t('Live activity')}>
-        <div className="live-panel">
-          <div className="live-head"><span className="live-title"><span className="live-pulse" />{t('Live activity')}</span></div>
-          <AgentLoader compact />
-        </div>
-      </aside>
     </>
   );
 }

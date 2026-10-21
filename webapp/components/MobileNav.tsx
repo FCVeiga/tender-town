@@ -36,11 +36,17 @@ export function MenuBackdrop() {
   return <div className="menu-backdrop" onClick={() => setMenu(false)} aria-hidden="true" />;
 }
 
-/** Phones: the app's sections as a bottom tab bar (Workspace is in the menu drawer). */
+/** Phones: the app's sections as a bottom tab bar. Signals, Markets and Workspaces stay in the menu. */
+const FOOTER_HREFS = ['/', '/tenders', '/news', '/history', '/community'];
+
 export function BottomNavLinks({ guest = false, scope = null }: { guest?: boolean; scope?: string | null }) {
   const t = useT();
   const path = usePathname() || '/';
-  const links = LINKS.filter((l) => l.href !== '/workspaces' && l.href !== '/markets' && l.href !== '/news/signals' && (!guest || l.href !== '/history'));
+  const links = FOOTER_HREFS.flatMap((href) => {
+    if (guest && href === '/history') return [];
+    const link = LINKS.find((item) => item.href === href);
+    return link ? [link] : [];
+  });
   return (
     <nav className={`bottom-nav${guest ? ' guest' : ''}`} aria-label={t('Sections')}>
       {links.map((l) => {

@@ -24,12 +24,9 @@ import ScopePicker from '@/components/ScopePicker';
 type View = 'all' | 'signals' | (typeof NEWS_CATEGORIES)[number]['slug'];
 
 export default async function NewsView({ view }: { view: View }) {
-  const t = await getT();
-  const heading = view === 'signals' ? { label: 'Signals' } : NEWS_CATEGORIES.find((c) => c.slug === view);
   return (
-    <div>
+    <div className="list-page">
       <ScopeBannerSuspense />
-      <h1 className="opps-h1">{heading ? t(heading.label) : t('News')}</h1>
       <Suspense fallback={<ListSkeleton />}>
         <NewsBody view={view} />
       </Suspense>
@@ -117,6 +114,7 @@ async function NewsBody({ view }: { view: View }) {
 
   return (
       <ScopeView scopeId={focus.hold?.id ?? focus.current?.id ?? null}>
+      <h1 className="opps-h1">{view === 'signals' ? t('Signals') : t(NEWS_CATEGORIES.find((c) => c.slug === view)?.label || 'News')}</h1>
       <ScopePicker model={focus} />
       {view !== 'signals' && <SectionTabs tabs={tabs} active={scope(view === 'all' ? '/news' : `/news/${view}`)} />}
 

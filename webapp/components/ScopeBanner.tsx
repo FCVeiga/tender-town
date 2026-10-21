@@ -67,14 +67,11 @@ export default function ScopeBanner({ model, compact: compactSaved }: {
     <section className={`scope-banner${compact ? ' compact' : ''}`} aria-busy={!!model.hold}>
       <BannerArt />
       <div className="scope-banner-inner">
-        {compact ? (
-          <p className="scope-banner-note">{t(NOTE)}</p>
-        ) : (
-          <div className="scope-banner-lead">
-            <p className="scope-banner-kicker">{t(HEADING)}</p>
-            <BannerJobs />
-          </div>
-        )}
+        <div className="scope-banner-lead">
+          <p className="scope-banner-kicker">{t(HEADING)}</p>
+          <BannerJobs />
+        </div>
+        {compact && <p className="scope-banner-note">{t(NOTE)}</p>}
       <div className="scope-banner-actions">
         <button type="button" className="btn primary scope-banner-find" data-track="find_opened" data-placement="banner" data-cta="find" onClick={() => setFind(true)}>{t(FIND)}</button>
         <button type="button" className="scope-banner-create" data-track="agent_connection_opened" data-placement="banner" onClick={() => setAgents(true)}>{t(CONNECT)}</button>

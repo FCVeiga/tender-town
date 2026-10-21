@@ -483,7 +483,8 @@ a.text-link { text-decoration: underline; text-underline-offset: 2px; }
   column-gap: 24px; align-items: start; min-width: 0;
 }
 .home-layout > .scope-banner-slot { grid-column: 1 / -1; grid-row: 1; }
-.home-layout > .feed-scope { grid-column: 1; grid-row: 2; }
+.scope-tools { display: contents; }
+.home-layout .feed-scope { grid-column: 1; grid-row: 2; }
 .feed-page { grid-column: 1; grid-row: 3; min-width: 0; }
 .scope-banner-slot {
   position: relative; z-index: 4;
@@ -544,6 +545,7 @@ a.text-link { text-decoration: underline; text-underline-offset: 2px; }
   line-height: 1.25; color: #fff;
 }
 .scope-banner.compact { padding: 12px 0; }
+.scope-banner.compact .scope-banner-lead { display: none; }
 .scope-banner.compact .scope-banner-inner {
   flex-direction: row; align-items: center; justify-content: flex-start; flex-wrap: wrap;
   gap: 10px 16px;
@@ -656,21 +658,27 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .la-body { min-width: 0; }
 .la-body p, .la-link { overflow-wrap: anywhere; }
 @media (max-width: 900px) {
-  .scope-banner-slot { margin-top: -16px; }
-  .scope-banner { padding: 22px 0 20px; }
-  .scope-banner-kicker { font-size: 22px; }
-  .scope-banner-jobs { font-size: 15.5px; gap: 8px 16px; }
-  .scope-banner-inner { padding: 0 16px; gap: 14px; align-items: stretch; }
+  .scope-banner-slot { margin-top: -16px; margin-bottom: 0; }
+  .scope-banner { padding: 12px 0 10px; }
+  .scope-banner-kicker { font-size: 18px; margin-bottom: 0; }
+  .scope-banner-jobs { font-size: 14px; gap: 4px 14px; margin-top: 6px; }
+  .scope-banner-inner { padding: 0 16px; gap: 8px; align-items: stretch; }
   .scope-banner-lead { max-width: none; }
   .scope-banner-art { width: 100%; opacity: 0.55; object-position: center 62%; }
   .scope-banner-bg::after { background: var(--scope-wash-narrow); }
+  .scope-banner-fold { display: none; }
+  .scope-banner.compact { padding: 12px 0 10px; }
+  .scope-banner.compact .scope-banner-lead { display: block; }
+  .scope-banner.compact .scope-banner-note { display: none; }
+  .scope-banner.compact .scope-banner-inner { flex-direction: column; align-items: stretch; }
+  .scope-banner-actions { flex-direction: column; align-items: center; width: 100%; }
+  .scope-banner-find { width: 100%; }
+  button.scope-banner-create, a.scope-banner-create {
+    align-self: center; width: auto; text-decoration: underline; text-underline-offset: 3px;
+  }
+  button.scope-banner-create:hover, a.scope-banner-create:hover { background: transparent; }
 }
 @media (max-width: 720px) {
-  .scope-banner-actions { flex-direction: column; align-items: stretch; }
-  .scope-banner-find { width: 100%; }
-  button.scope-banner-create, a.scope-banner-create { align-self: flex-start; width: auto; }
-  .scope-banner-fold { align-self: flex-end; }
-  .scope-banner.compact .scope-banner-inner { flex-direction: column; align-items: stretch; }
   .scope-menu { width: 100%; }
 }
 
@@ -773,6 +781,7 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .live-title { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 650; }
 .live-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-b); box-shadow: 0 0 0 0 rgba(0, 255, 204, 0.6); animation: pulse 2s infinite; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 204, 0.55); } 70% { box-shadow: 0 0 0 8px rgba(0, 255, 204, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 204, 0); } }
+@keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); } 70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
 @media (prefers-reduced-motion: reduce) { .live-pulse { animation: none; } }
 .live-sub { font-family: var(--font-mono-stack); font-size: 10.5px; color: rgba(255, 255, 255, 0.6); }
 .live-list { list-style: none; overflow-y: auto; min-height: 0; padding: 4px 0; }
@@ -1237,7 +1246,7 @@ th.num .sort-head { justify-content: flex-end; }
 
 @media (max-width: 1240px) {
   /* Banner, then the scope, then live activity, then the feed. */
-  .home-layout > .feed-scope { grid-row: 2; }
+  .home-layout .feed-scope { grid-row: 2; }
   .home-right { display: flex; grid-column: 1; grid-row: 3; position: static; max-height: none; margin-bottom: 14px; }
   .feed-page { grid-row: 4; }
   .live-head { cursor: pointer; gap: 10px; }
@@ -1250,7 +1259,8 @@ th.num .sort-head { justify-content: flex-end; }
 
 @media (max-width: 900px) {
   :root { --sidebar-w: 0px; --topbar-h: 56px; --bottom-h: 60px; }
-  html, body { overflow-x: hidden; }
+  /* clip, not hidden: hidden turns the page into a scroll box and sticky bars never pin. */
+  html, body { overflow-x: clip; }
   body { -webkit-tap-highlight-color: transparent; }
 
   /* Top bar: logo, search, menu. */
@@ -1260,7 +1270,7 @@ th.num .sort-head { justify-content: flex-end; }
   .brand-img { height: 22px; }
   .auth-buttons { display: none; }
   .auth-buttons.guest { display: flex; }
-  .auth-buttons.guest > .btn { display: none; }
+  .auth-buttons.guest > .btn, .guest-menu { display: none; }
   .search-box { height: 40px; padding: 0 12px; }
   .search-box input { font-size: 16px; }  /* 16px: iOS doesn't zoom into the field */
   .menu-button { display: grid; place-items: center; width: 44px; height: 44px; margin-right: -6px; border: 0; border-radius: 12px; background: none; color: var(--ink); cursor: pointer; flex-shrink: 0; }
@@ -1302,7 +1312,8 @@ th.num .sort-head { justify-content: flex-end; }
   .bottom-icon { display: grid; place-items: center; width: 52px; height: 28px; border-radius: 999px; transition: background 0.2s; }
   .bottom-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; }
   .bottom-label { font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
-  .bottom-link.active { color: var(--ink); }
+  .bottom-link.active { color: var(--accent); }
+  .bottom-link.active .bottom-label { color: var(--accent); font-weight: 700; }
   .bottom-link.active .bottom-icon { background: rgba(47, 107, 255, 0.16); color: var(--accent); }
   .bottom-link:active .bottom-icon { background: var(--surface-2); }
 
@@ -1361,6 +1372,77 @@ th.num .sort-head { justify-content: flex-end; }
   .config-edit { min-height: 50vh; font-size: 13px; }
   .modal-actions { flex-wrap: wrap; }
   .modal-actions .btn { flex: 1; min-height: 44px; }
+
+  /* Scope bar sits under the banner on phones; the title stays first on desktop. */
+  .list-page { display: flex; flex-direction: column; }
+  .list-page > * { order: 2; }
+  .list-page > .scope-banner-slot { order: 0; }
+  .list-page > .feed-scope { order: 1; }
+
+  /* Scope bar: full width under the banner, then pinned below the navbar. */
+  .feed-scope {
+    position: sticky; top: calc(var(--topbar-h) + env(safe-area-inset-top)); z-index: 45;
+    margin-left: calc(-1 * max(16px, env(safe-area-inset-left)));
+    margin-right: calc(-1 * max(16px, env(safe-area-inset-right)));
+    margin-bottom: 12px; padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+    background: var(--bg); box-shadow: 0 1px 0 var(--border);
+  }
+  .feed-scope-btn { width: 100%; max-width: none; justify-content: space-between; min-height: 44px; }
+  .feed-scope .scope-menu { left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); width: auto; }
+
+  .home-layout { display: block; }
+  .scope-tools {
+    display: flex; align-items: center; gap: 8px;
+    position: sticky; top: calc(var(--topbar-h) + env(safe-area-inset-top)); z-index: 45;
+    margin: 0 calc(-1 * max(16px, env(safe-area-inset-right))) 12px calc(-1 * max(16px, env(safe-area-inset-left)));
+    padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+    background: var(--bg); box-shadow: 0 1px 0 var(--border);
+  }
+  .scope-tools .feed-scope {
+    position: static; flex: 1; min-width: 0; margin: 0; padding: 0; background: transparent; box-shadow: none;
+  }
+  .scope-tools .feed-scope .scope-menu { left: 0; right: 0; }
+  .scope-tools .home-right {
+    display: block; flex: 0 1 auto; width: auto; max-width: 48%; min-width: 0;
+    margin: 0; position: static; max-height: none;
+  }
+  :root .scope-tools .live-panel:not(.open) {
+    background: transparent; border: 0; box-shadow: none; border-radius: 0; overflow: visible;
+  }
+  .scope-tools .live-panel:not(.open) .live-head {
+    width: auto; max-width: 100%; min-width: 0; height: 44px; padding: 0 14px; border-radius: 999px; gap: 8px;
+    background: #fff; color: #021228; border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(2, 18, 40, 0.06);
+  }
+  .scope-tools .live-panel:not(.open) .live-title { min-width: 0; font-size: 13px; font-weight: 650; color: #021228; }
+  .scope-tools .live-panel:not(.open) .live-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .scope-tools .live-panel:not(.open) > :not(.live-head) { display: none; }
+  .scope-tools .live-panel:not(.open) .live-chevron { display: block; flex: none; stroke: #021228; }
+  .scope-tools .live-pulse { background: #22C55E; animation-name: pulse-green; }
+  .scope-tools .live-panel.open {
+    position: absolute; left: 0; right: 0; top: 100%; z-index: 46;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 0 0 12px 12px;
+    box-shadow: var(--shadow-md); overflow: hidden;
+  }
+  .scope-tools .live-panel.open .live-head {
+    width: 100%; height: auto; padding: 12px 16px; border-radius: 0; border: 0; box-shadow: none;
+    background: #021228; color: #fff;
+  }
+  .scope-tools .live-panel.open .live-title { color: #fff; font-size: 14px; }
+  .scope-tools .live-panel.open .live-list {
+    display: block; max-height: min(46dvh, 360px); background: var(--surface);
+  }
+
+  /* Tender sections stay reachable once their tab bar has scrolled up. */
+  .tender-jump {
+    position: sticky; top: calc(var(--topbar-h) + env(safe-area-inset-top)); z-index: 45;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+    margin: 0 calc(-1 * max(16px, env(safe-area-inset-right))) 16px calc(-1 * max(16px, env(safe-area-inset-left)));
+    padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+    background: var(--bg); box-shadow: 0 1px 0 var(--border);
+  }
+  .tender-jump :is(a, button) { min-height: 44px; padding: 6px 4px; font-size: 12px; line-height: 1.2; border-radius: 12px; }
+  .tender-page .eval-run { justify-content: center; }
 
   /* Tender page. */
   .opp-sidebar { max-height: none; }
@@ -2366,7 +2448,19 @@ a.st-row { text-decoration: none; }
 .sidebar::-webkit-scrollbar, .topbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .topbar { overflow: visible; }
 :root[data-theme="dark"] .topbar { background: rgba(0, 0, 0, 0.92); border-color: var(--border); }
-@media (prefers-color-scheme: dark) { :root[data-theme="auto"] .topbar { background: rgba(0, 0, 0, 0.92); border-color: var(--border); } }
+:root[data-theme="dark"] .bottom-nav { background: rgba(0, 0, 0, 0.92); border-top-color: var(--border); }
+:root[data-theme="dark"] .scope-tools .live-panel.open .live-head { background: #000; color: #fff; border-bottom: 1px solid #262626; }
+:root[data-theme="dark"] .scope-tools .live-panel:not(.open) .live-head { background: #000; color: #fff; border-color: #333; box-shadow: none; }
+:root[data-theme="dark"] .scope-tools .live-panel:not(.open) .live-title { color: #fff; }
+:root[data-theme="dark"] .scope-tools .live-panel:not(.open) .live-chevron { stroke: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] .topbar { background: rgba(0, 0, 0, 0.92); border-color: var(--border); }
+  :root[data-theme="auto"] .bottom-nav { background: rgba(0, 0, 0, 0.92); border-top-color: var(--border); }
+  :root[data-theme="auto"] .scope-tools .live-panel.open .live-head { background: #000; color: #fff; border-bottom: 1px solid #262626; }
+  :root[data-theme="auto"] .scope-tools .live-panel:not(.open) .live-head { background: #000; color: #fff; border-color: #333; box-shadow: none; }
+  :root[data-theme="auto"] .scope-tools .live-panel:not(.open) .live-title { color: #fff; }
+  :root[data-theme="auto"] .scope-tools .live-panel:not(.open) .live-chevron { stroke: #fff; }
+}
 
 .diag-tabs { display: flex; gap: 18px; overflow-x: auto; border-bottom: 1px solid var(--border); margin: 8px 0 12px; }
 .diag-tabs a { padding: 8px 0; color: var(--muted); white-space: nowrap; text-decoration: none; }
