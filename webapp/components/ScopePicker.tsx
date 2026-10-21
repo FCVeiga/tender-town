@@ -196,7 +196,7 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
   return (
     <div className="feed-scope" ref={box}>
       <button
-        ref={button} type="button" className="feed-sort-link active feed-scope-btn" aria-haspopup="listbox"
+        ref={button} type="button" className="feed-scope-btn" aria-haspopup="listbox"
         aria-expanded={open} aria-controls={listId} disabled={!model.choices.length}
         onClick={() => { setQuery(''); setActive(shownAt); setOpen((v) => !v); }}
         onKeyDown={(event) => {
@@ -208,7 +208,8 @@ export default function ScopePicker({ model }: { model: FocusModel }) {
             setOpen(true);
           }
         }}>
-        <span>{current ? t(current.name) : t('Loading scope')}</span>
+        <span className="feed-scope-kicker">{t('Scope')}</span>
+        <span className="feed-scope-name">{current ? t(current.name) : t('Loading scope')}</span>
         <Chevron />
       </button>
       {!model.choices.length && <p className="form-msg err">{t('Could not load scopes.')}</p>}

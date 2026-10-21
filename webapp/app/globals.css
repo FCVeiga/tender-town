@@ -659,24 +659,39 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .la-body p, .la-link { overflow-wrap: anywhere; }
 @media (max-width: 900px) {
   .scope-banner-slot { margin-top: -16px; margin-bottom: 0; }
-  .scope-banner { padding: 12px 0 10px; }
-  .scope-banner-kicker { font-size: 18px; margin-bottom: 0; }
-  .scope-banner-jobs { font-size: 14px; gap: 4px 14px; margin-top: 6px; }
-  .scope-banner-inner { padding: 0 16px; gap: 8px; align-items: stretch; }
-  .scope-banner-lead { max-width: none; }
-  .scope-banner-art { width: 100%; opacity: 0.55; object-position: center 62%; }
-  .scope-banner-bg::after { background: var(--scope-wash-narrow); }
+  .scope-banner { padding: 22px 0 16px; }
+  .scope-banner-art { display: none; }
+  .scope-banner-bg::after { background: none; }
+  .scope-banner-inner { padding: 0 16px; gap: 18px; align-items: stretch; }
+  .scope-banner-lead { max-width: none; text-align: center; }
+  .scope-banner-kicker {
+    margin: 0 auto; max-width: 16em; font-size: 22px; font-weight: 750; line-height: 1.2;
+    letter-spacing: -0.03em; text-align: center; text-shadow: none; color: #fff;
+  }
+  .scope-banner-jobs {
+    display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 6px 14px;
+    margin: 12px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.3;
+    color: rgba(255, 255, 255, 0.72); text-shadow: none;
+  }
+  .scope-banner-jobs li { flex-direction: row; align-items: center; justify-content: center; gap: 5px; }
+  .scope-banner-jobs svg { width: 14px; height: 14px; opacity: 0.8; }
   .scope-banner-fold { display: none; }
-  .scope-banner.compact { padding: 12px 0 10px; }
+  .scope-banner.compact { padding: 22px 0 16px; }
   .scope-banner.compact .scope-banner-lead { display: block; }
   .scope-banner.compact .scope-banner-note { display: none; }
   .scope-banner.compact .scope-banner-inner { flex-direction: column; align-items: stretch; }
-  .scope-banner-actions { flex-direction: column; align-items: center; width: 100%; }
-  .scope-banner-find { width: 100%; }
-  button.scope-banner-create, a.scope-banner-create {
-    align-self: center; width: auto; text-decoration: underline; text-underline-offset: 3px;
+  .scope-banner-actions { flex-direction: column; align-items: stretch; width: 100%; gap: 4px; }
+  .scope-banner .btn.primary.scope-banner-find,
+  .scope-banner .skel-btn {
+    width: 100%; height: auto; min-height: 52px; padding: 12px 16px; border-radius: 14px;
+    font-size: 16px; font-weight: 700; line-height: 1.25; white-space: normal; text-align: center;
   }
-  button.scope-banner-create:hover, a.scope-banner-create:hover { background: transparent; }
+  button.scope-banner-create, a.scope-banner-create {
+    align-self: center; width: auto; height: auto; min-height: 36px; padding: 6px 8px;
+    font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, 0.8);
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  button.scope-banner-create:hover, a.scope-banner-create:hover { background: transparent; color: #fff; }
 }
 @media (max-width: 720px) {
   .scope-menu { width: 100%; }
@@ -813,8 +828,19 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .skel-row { height: 108px; border-radius: 14px; }
 .skel-activity { height: 58px; margin: 8px 14px; }
 .feed-scope { position: relative; z-index: 5; margin-bottom: 16px; }
-.feed-scope-btn { max-width: min(420px, 100%); font-weight: 650; }
-.feed-scope-btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.feed-scope-btn {
+  display: inline-flex; align-items: center; gap: 8px; max-width: min(420px, 100%);
+  min-height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px;
+  background: transparent; color: var(--ink); font: inherit; font-size: 13px; font-weight: 600;
+  box-shadow: none; cursor: pointer; text-align: left;
+}
+.feed-scope-btn:hover { border-color: var(--border-strong); background: var(--fill); }
+.feed-scope-btn:disabled { opacity: 0.6; cursor: default; }
+.feed-scope-kicker {
+  flex: none; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.feed-scope-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .feed-sort { display: flex; gap: 4px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
 .feed-sort::-webkit-scrollbar { display: none; }
 .feed-sort-link {
@@ -1387,7 +1413,9 @@ th.num .sort-head { justify-content: flex-end; }
     margin-bottom: 12px; padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
     background: var(--bg); box-shadow: 0 1px 0 var(--border);
   }
-  .feed-scope-btn { width: 100%; max-width: none; justify-content: space-between; min-height: 44px; }
+  .feed-scope-btn { width: 100%; max-width: none; min-height: 44px; background: transparent; }
+  .feed-scope-name { flex: 1; }
+  .feed-scope-btn .scope-chevron { margin-left: auto; }
   .feed-scope .scope-menu { left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); width: auto; }
 
   .home-layout { display: block; }
@@ -2460,6 +2488,17 @@ a.st-row { text-decoration: none; }
   :root[data-theme="auto"] .scope-tools .live-panel:not(.open) .live-head { background: #000; color: #fff; border-color: #333; box-shadow: none; }
   :root[data-theme="auto"] .scope-tools .live-panel:not(.open) .live-title { color: #fff; }
   :root[data-theme="auto"] .scope-tools .live-panel:not(.open) .live-chevron { stroke: #fff; }
+}
+/* Dark-theme art rules are more specific than the phone banner, so hide them again here. */
+@media (max-width: 900px) {
+  :root .scope-banner-art,
+  :root[data-theme="dark"] .scope-banner-art.dark,
+  :root[data-theme="light"] .scope-banner-art.light,
+  :root[data-theme="auto"] .scope-banner-art.dark,
+  :root[data-theme="auto"] .scope-banner-art.light { display: none; }
+  :root .scope-banner .btn.primary.scope-banner-find {
+    background: #fff; border-color: #fff; color: #1248c4;
+  }
 }
 
 .diag-tabs { display: flex; gap: 18px; overflow-x: auto; border-bottom: 1px solid var(--border); margin: 8px 0 12px; }
