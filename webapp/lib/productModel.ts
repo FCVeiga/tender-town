@@ -16,6 +16,7 @@ export const EVENT_NAMES = [
   'gate_viewed', 'gate_cta_clicked', 'document_opened', 'example_opened',
   'example_evaluation_started', 'example_evaluation_completed', 'example_brief_started', 'example_brief_completed',
   'agent_connection_opened', 'agent_instructions_copied', 'engagement_recorded',
+  'find_opened', 'find_brief_submitted',
 ] as const;
 
 export type EventName = (typeof EVENT_NAMES)[number];
@@ -26,11 +27,13 @@ export const CLIENT_EVENTS = new Set<EventName>([
   'gate_viewed', 'gate_cta_clicked', 'document_opened', 'example_opened',
   'example_evaluation_started', 'example_evaluation_completed', 'example_brief_started', 'example_brief_completed',
   'agent_connection_opened', 'agent_instructions_copied', 'engagement_recorded',
+  'find_opened', 'find_brief_submitted',
 ]);
 
 /** A scroll is not one of these. Opening a tender page emits tender_viewed. */
 export const MEANINGFUL = new Set<EventName>([
   'scope_selected', 'search_submitted', 'tender_viewed', 'signal_viewed', 'example_opened', 'agent_connection_opened',
+  'find_opened', 'find_brief_submitted',
 ]);
 
 export type Traffic = 'human' | 'bot' | 'unknown' | 'internal';

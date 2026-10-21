@@ -76,7 +76,7 @@ export default function ScopeBanner({ model, compact: compactSaved }: {
           </div>
         )}
       <div className="scope-banner-actions">
-        <button type="button" className="btn primary scope-banner-find" onClick={() => setFind(true)}>{t(FIND)}</button>
+        <button type="button" className="btn primary scope-banner-find" data-track="find_opened" data-placement="banner" data-cta="find" onClick={() => setFind(true)}>{t(FIND)}</button>
         <button type="button" className="scope-banner-create" data-track="agent_connection_opened" data-placement="banner" onClick={() => setAgents(true)}>{t(CONNECT)}</button>
         <button type="button" className="scope-banner-fold" aria-expanded={!compact} aria-label={compact ? t('Expand') : t('Collapse')} onClick={toggleCompact}>
           <Chevron up={!compact} />

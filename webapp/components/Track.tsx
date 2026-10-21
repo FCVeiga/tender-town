@@ -8,6 +8,7 @@ const NAMES = new Set([
   'gate_viewed', 'gate_cta_clicked', 'document_opened', 'example_opened',
   'example_evaluation_started', 'example_evaluation_completed', 'example_brief_started', 'example_brief_completed',
   'agent_connection_opened', 'agent_instructions_copied', 'engagement_recorded',
+  'find_opened', 'find_brief_submitted',
 ]);
 
 function flow() {

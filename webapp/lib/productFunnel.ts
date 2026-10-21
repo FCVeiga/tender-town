@@ -28,6 +28,7 @@ export type Diagnosis = {
   excluded: { bot: number; internal: number; unknown: number; shown: number };
   points: Point[];
   funnel: Step[];
+  find: Step[];
   direct: Step[];
   bypass: number;
   observations: Observation[];
@@ -86,6 +87,11 @@ const FUNNEL: [string, string][] = [
   ['account_created', 'Account created'],
   ['company_context_saved', 'Company context ready'],
   ['evaluation_completed', 'Evaluation completed'],
+];
+
+const FIND: [string, string][] = [
+  ['find_opened', 'Opened the finder'],
+  ['find_brief_submitted', 'Submitted the company form'],
 ];
 
 const DIRECT: [string, string][] = [
@@ -640,6 +646,7 @@ export function buildDiagnosis(input: {
     excluded,
     points: pointsOf(facts, input.accounts, input.filters),
     funnel: coverage === 'none' ? [] : stepsOf(mainVisitors, FUNNEL, (rows) => rows.find((row) => row.name === 'session_started')?.at ?? null),
+    find: coverage === 'none' ? [] : stepsOf(withSession, FIND, (rows) => rows.find((row) => row.name === 'find_opened')?.at ?? null),
     direct: coverage === 'none' ? [] : stepsOf(directVisitors, DIRECT, (rows) => rows.find((row) => row.name === 'signup_page_viewed' || row.name === 'oauth_started')?.at ?? null),
     bypass,
     observations: observationsOf({ facts, accounts: input.accounts.length, activated: activated.ids.size, log, coverage, liveAccounts }),

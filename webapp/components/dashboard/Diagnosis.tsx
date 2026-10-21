@@ -216,6 +216,8 @@ export default function DiagnosisView({
           <ScopeLists report={report} names={scopeName} t={t} format={format} />
           <h2>{t('Main funnel')} <Tip text={t('Ordered events for the same visitor, within 7 days of the session. Someone who signs up without this path is counted separately.')} /></h2>
           <Steps rows={report.funnel} t={t} />
+          <h2>{t('Find a tender')} <Tip text={t('People who clicked Find best tender for your company now, then sent a company name with a website or a note. One person counts once.')} /></h2>
+          <Steps rows={report.find} t={t} />
           <h2>{t('Direct signup')} <Tip text={t('People who opened signup or Google without a product action first. They are not missing data.')} /></h2>
           <Steps rows={report.direct} t={t} />
           <p className="diag-note">{t('{n} accounts in this range have no live signup event. That includes accounts from before this tracking and any direct creation.', { n: report.bypass })}</p>

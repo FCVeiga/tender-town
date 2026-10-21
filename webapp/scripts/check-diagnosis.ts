@@ -127,4 +127,17 @@ if (scopes.guestScopes.some((row) => row.id === otherId)) throw new Error('activ
 const phone = run([fact({ name: 'page_viewed', visitor: 'm', at: start + hour, device: 'mobile' })]);
 if (phone.devices?.mobile !== 1 || phone.devices.desktop !== 0) throw new Error('device mix missing');
 
+const found = run([
+  fact({ name: 'session_started', visitor: 'find', at: start + hour }),
+  fact({ name: 'find_opened', visitor: 'find', at: start + 2 * hour, placement: 'banner' }),
+  fact({ name: 'find_brief_submitted', visitor: 'find', at: start + 2 * hour + 5000, placement: 'banner' }),
+  fact({ name: 'find_opened', visitor: 'find', at: start + 3 * hour, placement: 'banner' }),
+  fact({ name: 'session_started', visitor: 'look', at: start + 3 * hour }),
+  fact({ name: 'find_opened', visitor: 'look', at: start + 3 * hour, placement: 'banner' }),
+  fact({ name: 'find_brief_submitted', visitor: 'only', at: start + hour, placement: 'banner' }),
+]);
+if (found.find[0]?.count !== 2 || found.find[1]?.count !== 1 || found.find[1]?.fromPrev !== 0.5) {
+  throw new Error(`find funnel: ${found.find.map((step) => `${step.key}=${step.count}`).join(', ')}`);
+}
+
 console.log('diagnosis checks passed');

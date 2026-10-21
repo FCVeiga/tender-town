@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import AgentAvatar from '@/components/AgentAvatar';
+import { track } from '@/components/Track';
 import { Modal } from '@/components/settings/SettingsUI';
 import { saveFindBrief } from '@/app/find/actions';
 import { useT } from '@/lib/i18n/client';
@@ -20,6 +21,7 @@ const NEED = 'Add the company name, and a website or a short note.';
 export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onClose: () => void }) {
   const t = useT();
   const router = useRouter();
+  const pathname = usePathname() || '/';
   const [name, setName] = useState('');
   const [website, setWebsite] = useState('');
   const [notes, setNotes] = useState('');
@@ -63,6 +65,7 @@ export default function FindChat({ signedIn, onClose }: { signedIn: boolean; onC
       return;
     }
     setError(null);
+    track('find_brief_submitted', { path: pathname, placement: 'banner', cta: 'find' });
     setPhase('working');
   }
 
