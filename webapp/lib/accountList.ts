@@ -2,11 +2,11 @@
  * Every signed-up account, for the dashboard. The plan is the personal account.
  * Scopes are the catalog picks and custom scopes on the workspaces they own.
  * General is not listed. A member with no workspace of their own shows the
- * scopes of the workspace they belong to. The journey is only what was stored
- * before the account existed.
+ * scopes of the workspace they belong to. The journey stops when the account
+ * exists. Later product actions are listed separately.
  */
 import 'server-only';
-import { companyLabel, journeyOf, type AccountOrigin, type JourneyEvent } from '@/lib/accountJourney';
+import { afterEventNames, afterSignup, companyLabel, journeyOf, type AccountOrigin, type JourneyEvent } from '@/lib/accountJourney';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import type { PlanKey } from '@/lib/plans';
 
@@ -21,6 +21,7 @@ export type AccountRow = {
   signedUp: string;
   scopes: AccountScope[];
   origin: AccountOrigin | null;
+  after: string[];
   company: string;
 };
 
@@ -82,14 +83,34 @@ async function eventsFor(visitors: string[], until: string): Promise<JourneyEven
 async function visitorsByUser(ids: string[]) {
   const db = getSupabaseServerClient();
   const found = new Map<string, string[]>();
+  const tracked = new Set<string>();
   for (let i = 0; i < ids.length; i += 80) {
     const chunk = ids.slice(i, i + 80);
     const rows = await pages<{ user_id: string; visitor: string }>((from) =>
       db.from('analytics_events').select('user_id, visitor').in('user_id', chunk).order('created_at').range(from, from + 999));
     for (const row of rows) {
       if (!row.visitor || row.visitor.startsWith('backfill:') || row.visitor.startsWith('server:')) continue;
+      tracked.add(row.user_id);
       const list = found.get(row.user_id) || [];
       if (!list.includes(row.visitor)) list.push(row.visitor);
+      found.set(row.user_id, list);
+    }
+  }
+  return { visitors: found, tracked };
+}
+
+/** Actions after an account exists. Page views are left out. */
+async function actionsByUser(ids: string[]) {
+  const db = getSupabaseServerClient();
+  const found = new Map<string, { name: string; at: string }[]>();
+  const names = afterEventNames();
+  for (let i = 0; i < ids.length; i += 40) {
+    const chunk = ids.slice(i, i + 40);
+    const rows = await pages<{ user_id: string; name: string; created_at: string }>((from) =>
+      db.from('analytics_events').select('user_id, name, created_at').in('user_id', chunk).in('name', names).eq('backfilled', false).order('created_at').range(from, from + 999));
+    for (const row of rows) {
+      const list = found.get(row.user_id) || [];
+      list.push({ name: row.name, at: row.created_at });
       found.set(row.user_id, list);
     }
   }
@@ -173,7 +194,7 @@ export async function accountList(): Promise<AccountRow[]> {
   const ids = new Set<string>([...profiles.map((profile) => profile.id), ...auth.emails.keys()]);
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const signedUpOf = (id: string) => profileById.get(id)?.created_at || auth.created.get(id) || '';
-  const visitors = await visitorsByUser([...ids]);
+  const [{ visitors, tracked }, actions] = await Promise.all([visitorsByUser([...ids]), actionsByUser([...ids])]);
   const origins = new Map<string, AccountOrigin | null>();
   await Promise.all([...ids].map(async (id) => {
     const signedUp = signedUpOf(id);
@@ -188,15 +209,18 @@ export async function accountList(): Promise<AccountRow[]> {
     const owned = ownedBy.get(id) || [];
     const using = owned.length ? owned : (memberOf.get(id) || []);
     const docs = using.flatMap((workspaceId) => docsByWorkspace.get(workspaceId) || []);
+    const signedUp = signedUpOf(id);
+    const after = afterSignup(actions.get(id) || [], signedUp);
     rows.push({
       id,
       email: auth.emails.get(id) || '',
       username: profile?.username || '',
       plan: asPlan(account?.plan),
       status: account?.plan_status || 'active',
-      signedUp: signedUpOf(id),
+      signedUp,
       scopes: scopesFor(using),
       origin: origins.get(id) || null,
+      after: after.length ? after : (tracked.has(id) ? ['Nothing after signup'] : []),
       company: companyLabel(profile?.company, docs),
     });
   }

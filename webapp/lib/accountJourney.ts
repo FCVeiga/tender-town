@@ -1,9 +1,8 @@
 /**
- * The path from the first recorded visit to the moment the account exists,
- * plus the company name they left on the profile or in a company note.
- * Visits after signup are not part of this path.
+ * The path from the first recorded visit to the account, what they did after
+ * that account existed, and the company name they left.
  */
-import { sourceLabel } from '@/lib/productModel';
+import { lisbonKey, sourceLabel } from '@/lib/productModel';
 
 export type JourneyEvent = {
   name: string;
@@ -81,6 +80,62 @@ export function journeyOf(events: JourneyEvent[], signedUp: string): AccountOrig
     if (created) push(signupStep(created.cta));
   }
   return { source, knownSource: KNOWN_SOURCE.has(source), steps: steps.slice(0, 8) };
+}
+
+export type AfterEvent = { name: string; at: string };
+
+/** Product actions worth showing. A request is dropped once its outcome is stored. */
+const AFTER_LABEL: Record<string, string> = {
+  company_context_saved: 'Company context ready',
+  find_opened: 'Opened the finder',
+  find_brief_submitted: 'Submitted the company form',
+  tender_viewed: 'Tender opened',
+  signal_viewed: 'Opened a signal',
+  search_submitted: 'Search',
+  search_results_viewed: 'Search',
+  evaluation_requested: 'Evaluation requested',
+  evaluation_completed: 'Evaluation completed',
+  evaluation_failed: 'Evaluation failed',
+  proposal_brief_requested: 'Proposal brief requested',
+  proposal_brief_completed: 'Proposal brief completed',
+  proposal_brief_failed: 'Proposal brief failed',
+  agent_connection_opened: 'Connect your own agents',
+};
+
+const AFTER_NAMES = Object.keys(AFTER_LABEL);
+
+export function afterEventNames(): string[] {
+  return AFTER_NAMES;
+}
+
+/**
+ * What they did once the account existed, in order. Empty when nothing was
+ * stored. The caller turns a tracked account with no actions into "Nothing after signup".
+ */
+export function afterSignup(events: AfterEvent[], signedUp: string): string[] {
+  const start = new Date(signedUp).getTime();
+  if (!signedUp || !Number.isFinite(start)) return [];
+  const later = events
+    .filter((event) => AFTER_LABEL[event.name] && new Date(event.at).getTime() >= start)
+    .sort((a, b) => a.at.localeCompare(b.at));
+  if (!later.length) return [];
+  const names = new Set(later.map((event) => event.name));
+  const hide = new Set<string>();
+  if (names.has('evaluation_completed') || names.has('evaluation_failed')) hide.add('evaluation_requested');
+  if (names.has('proposal_brief_completed') || names.has('proposal_brief_failed')) hide.add('proposal_brief_requested');
+  const steps: string[] = [];
+  const push = (label: string) => {
+    if (!steps.includes(label)) steps.push(label);
+  };
+  for (const event of later) {
+    if (hide.has(event.name)) continue;
+    push(AFTER_LABEL[event.name]);
+  }
+  const signupDay = lisbonKey(start, false);
+  const days = later.map((event) => lisbonKey(new Date(event.at).getTime(), false));
+  if (days[0] !== signupDay) steps.unshift('Returned on another day');
+  else if (days.some((day) => day !== signupDay)) steps.push('Returned on another day');
+  return steps.slice(0, 8);
 }
 
 /** The company they typed, or the names of files they uploaded. Empty when they added nothing. */

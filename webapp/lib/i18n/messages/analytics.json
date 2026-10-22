@@ -439,5 +439,40 @@
     "fr": "A ouvert un signal",
     "de": "Signal geöffnet",
     "it": "Ha aperto un segnale"
+  },
+  "After signup": {
+    "pt": "Depois do registo",
+    "es": "Después del registro",
+    "fr": "Après l’inscription",
+    "de": "Nach der Anmeldung",
+    "it": "Dopo l’iscrizione"
+  },
+  "Nothing after signup": {
+    "pt": "Nada depois do registo",
+    "es": "Nada después del registro",
+    "fr": "Rien après l’inscription",
+    "de": "Nichts nach der Anmeldung",
+    "it": "Niente dopo l’iscrizione"
+  },
+  "Evaluation failed": {
+    "pt": "A avaliação falhou",
+    "es": "La evaluación falló",
+    "fr": "L’évaluation a échoué",
+    "de": "Bewertung fehlgeschlagen",
+    "it": "La valutazione non è riuscita"
+  },
+  "Proposal brief requested": {
+    "pt": "Resumo da proposta pedido",
+    "es": "Informe de oferta solicitado",
+    "fr": "Note d’offre demandée",
+    "de": "Angebotsbriefing angefordert",
+    "it": "Brief dell’offerta richiesto"
+  },
+  "Proposal brief failed": {
+    "pt": "O resumo da proposta falhou",
+    "es": "El informe de oferta falló",
+    "fr": "La note d’offre a échoué",
+    "de": "Angebotsbriefing fehlgeschlagen",
+    "it": "Il brief dell’offerta non è riuscito"
   }
 }
