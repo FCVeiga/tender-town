@@ -7,10 +7,13 @@ A match needs a reference code, a portal link, or one TED notice whose title
 is the same purchase. The news URL is kept as another source. The public
 summary is rewritten when it still describes a different deadline or an open call.
 """
+import hashlib
+import html as html_lib
 import os
 import re
 from datetime import datetime, timedelta
-from urllib.parse import quote, urljoin, urlparse
+from io import BytesIO
+from urllib.parse import quote, unquote, urljoin, urlparse
 
 import requests
 from sqlalchemy import text
@@ -23,11 +26,12 @@ _PORTALS = (
     "ted.europa.eu", "contractsfinder.service.gov.uk", "find-tender.service.gov.uk",
     "publiccontractsscotland.gov.uk", "boamp.fr", "tenderned.nl", "ecepp.ebrd.com",
     "bbg.gv.at", "publicprocurement.be", "aop.bg", "simap.ch", "eprocurement.gov.cy",
-    "portal-vz.cz", "udbud.dk", "riigihanked.riik.ee", "contrataciondelestado.es",
+    "portal-vz.cz", "udbud.dk", "ethics.dk", "riigihanked.riik.ee", "contrataciondelestado.es",
     "hankintailmoitukset.fi", "eaadhsy.gr", "javnanabava.hr", "kozbeszerzes.hu",
     "etenders.gov.ie", "utbodsvefur.is", "anticorruzione.it", "vpt.lt", "marches.public.lu",
     "iub.gov.lv", "contracts.gov.mt", "doffin.no", "uzp.gov.pl", "base.gov.pt",
     "e-licitatie.ro", "upphandlingsmyndigheten.se", "enarocanje.si", "uvo.gov.sk",
+    "op.europa.eu", "ungm.org",
 )
 # TED's buyer-country filter is ISO 3166-1 alpha-3.
 _ISO3 = {
@@ -62,10 +66,18 @@ _DOC_TYPES = {
     "invitation letter": "CONTRACT_NOTICE",
     "draft contract": "CONTRACT",
 }
+# The call's own requirements file, rather than an article about it.
+_REQUIREMENT_FILE = re.compile(r"\.(pdf|docx?|xlsx?|odt|zip)(?:$|[?#&])", re.I)
+_TENDER_CATEGORIES = ("rfp", "rfi", "grant")
 
 
 def _host(url: str) -> str:
     return urlparse(url or "").netloc.lower().removeprefix("www.")
+
+
+def _portal_host(host: str) -> bool:
+    """The host, or a subdomain of it (a portal's file CDN)."""
+    return any(host == portal or host.endswith("." + portal) for portal in _PORTALS)
 
 
 def is_portal_url(url: str) -> bool:
@@ -80,8 +92,62 @@ def is_portal_url(url: str) -> bool:
     parsed = urlparse(url)
     if re.search(r"\.(css|js|mjs|png|jpe?g|gif|svg|webp|ico|woff2?|map|ttf)$", parsed.path, re.I):
         return False
-    # The notice id is often in the query (etenders resourceId), not the path.
-    return host in _PORTALS and parsed.path not in ("", "/") and bool(re.search(r"\d", parsed.path + (parsed.query or "")))
+    # ePPS (Ireland, Malta, Cyprus, …) is the same notice application on each country's host.
+    if "/epps/" in parsed.path and re.search(r"\d", (parsed.query or "") + parsed.path):
+        return True
+    # EU agencies publish the call on their own site, under /procurement/.
+    if host.endswith(".europa.eu") and "/procurement/" in parsed.path.lower():
+        return True
+    # The notice id is often in the query (etenders resourceId) or the hash
+    # (ETHICS public material), not the path.
+    if parsed.path in ("", "/") and not parsed.fragment:
+        return False
+    ident = f"{parsed.path}?{parsed.query}#{parsed.fragment}"
+    return _portal_host(host) and bool(re.search(r"\d", ident))
+
+
+def is_official_call(url: str, reference: str = None) -> bool:
+    """A procurement or grant notice, or the file that states its requirements.
+
+    A news article about a call is neither, until a notice or the requirement
+    documents are attached.
+    """
+    if (reference or "").startswith("TED:"):
+        return True
+    if is_portal_url(url or ""):
+        return True
+    parsed = urlparse(url or "")
+    return bool(_REQUIREMENT_FILE.search(f"{parsed.path}?{parsed.query}"))
+
+
+def has_requirement_documents(session, opportunity_id: str) -> bool:
+    """Files of the procedure or the grant, not a mention of them in the press."""
+    return session.execute(text(
+        "select 1 from documents where opportunity_id = :o limit 1"
+    ), {"o": opportunity_id}).first() is not None
+
+
+def release_unofficial(session) -> list:
+    """A tender with no official notice and no requirement documents becomes a signal.
+
+    Returns the ids changed. The caller commits.
+    """
+    from database.models import Opportunity
+    changed = []
+    rows = session.query(Opportunity).filter(
+        Opportunity.opportunity_type.in_(_TENDER_CATEGORIES),
+        Opportunity.status != "REJECTED",
+    ).all()
+    for opp in rows:
+        if is_official_call(opp.official_url or "", opp.reference):
+            continue
+        if has_requirement_documents(session, opp.opportunity_id):
+            continue
+        opp.opportunity_type = "signal"
+        if opp.status == "OPEN":
+            opp.status = "SIGNAL"
+        changed.append(opp.opportunity_id)
+    return changed
 
 
 def codes_from(*parts) -> list:
@@ -112,6 +178,52 @@ def _links(html: str, base: str) -> list:
         if absolute.startswith("http") and absolute not in out:
             out.append(absolute)
     return out
+
+
+# A file that is the call itself, named as such. A publisher's media kit is not.
+_FILE_URL = re.compile(r"\.(pdf|docx?|xlsx?|zip|odt)(?:$|[?#&])", re.I)
+_BID_FILE = re.compile(
+    r"bidding|bid documents?|invitation to bid|terms of reference|"
+    r"request for proposal|\brfp\b|\brfq\b|solicitation|cahier des charges|pliego|ausschreibung",
+    re.I,
+)
+_TENDER_FILE = re.compile(r"tender documents?|bidding documents?|specifications?", re.I)
+_GOV_HOST = re.compile(
+    r"(?:^|\.)gov(?:\.[a-z]{2})?$|(?:^|\.)gouv\.[a-z]{2}$|(?:^|\.)gob(?:\.[a-z]{2})?$|"
+    r"(?:^|\.)go\.[a-z]{2}$|e\.gov\.|(?:^|\.)europa\.eu$",
+    re.I,
+)
+
+
+def requirement_file_links(page_html: str, page_url: str) -> list:
+    """Bidding files linked from the article: (url, filename).
+
+    The news site's own files are skipped. A related headline is not a file,
+    so a sidebar story cannot supply the dossier.
+    """
+    page_host = _host(page_url)
+    found, seen = [], set()
+    for href, anchor in re.findall(r"""<a\b[^>]*href=["']([^"'#]+)["'][^>]*>(.*?)</a>""", page_html or "", re.I | re.S):
+        url = urljoin(page_url or "", html_lib.unescape(href.strip()))
+        parsed = urlparse(url)
+        host = _host(url)
+        if not host or host == page_host or host.endswith("." + page_host):
+            continue
+        path = unquote(parsed.path + "?" + (parsed.query or ""))
+        if not _FILE_URL.search(path):
+            continue
+        label = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", anchor)).strip()
+        blob = f"{label} {path}"
+        named = bool(_BID_FILE.search(blob))
+        official = bool(_GOV_HOST.search(host)) and bool(_TENDER_FILE.search(blob))
+        if not named and not official:
+            continue
+        if url in seen:
+            continue
+        seen.add(url)
+        filename = unquote(parsed.path.rsplit("/", 1)[-1]).strip() or label or "Bidding documents"
+        found.append((url, re.sub(r"\s+", " ", filename)[:500]))
+    return found[:6]
 
 
 def _cft_id(url: str):
@@ -225,13 +337,16 @@ def _from_ted(publication: str, procedure: str = None):
     xml = _get(f"https://ted.europa.eu/en/notice/{publication}/xml")
     folder = re.search(r"<cbc:ContractFolderID>\s*([0-9a-f-]{36})", xml, re.I)
     procedure = procedure or (folder.group(1).lower() if folder else None)
-    awarded = bool(re.search(r"<cbc:NoticeTypeCode[^>]*>\s*can-", xml))
+    kind = re.search(r"<cbc:NoticeTypeCode[^>]*>\s*([a-z0-9-]+)", xml)
+    notice_type = kind.group(1) if kind else ""
+    awarded = notice_type.startswith(("can-", "veat"))
     portal = next((u for u in re.findall(r"<cbc:URI>([^<]+)</cbc:URI>", xml) if "tender-details/" in u), None)
     if portal:
         found = _from_portal(portal.split("#")[0])
         found["publication"] = found["publication"] or publication
         found["procedure"] = found.get("procedure") or procedure
         found["awarded"] = awarded
+        found["notice_type"] = found.get("notice_type") or notice_type
         return found
     # Only the submission deadline. A later EndDate is often the contract period.
     deadlines = re.findall(r"<cac:TenderSubmissionDeadlinePeriod>.*?<cbc:EndDate>(\d{4}-\d{2}-\d{2})", xml, re.S)
@@ -242,6 +357,7 @@ def _from_ted(publication: str, procedure: str = None):
         "title": None,
         "deadline": None if awarded else (deadlines[-1] if deadlines else None),
         "awarded": awarded,
+        "notice_type": notice_type,
         "value": None, "currency": None, "country": None,
     }
 
@@ -363,18 +479,22 @@ def _ted_for_title(title: str, country: str = None):
     return None
 
 
-def find_official(source_url: str, text: str = "", country: str = None, headline: str = None, follow_links: bool = True):
+def find_official(source_url: str, text: str = "", country: str = None, headline: str = None,
+                  follow_links: bool = True, page: str = None):
     """The portal record for a tender first seen at source_url, or None.
 
     follow_links is for a page that is itself about one purchase. A news
     article's sidebar can point at a different notice, so that path stays off.
+    page is the article HTML when the caller already fetched it.
     """
-    html = ""
-    if source_url and not is_portal_url(source_url):
-        try:
-            html = _get(source_url)
-        except Exception:
-            html = ""
+    html = page
+    if html is None:
+        html = ""
+        if source_url and not is_portal_url(source_url):
+            try:
+                html = _get(source_url)
+            except Exception:
+                html = ""
     for link in (_links(html, source_url or "") if follow_links else []):
         if not is_portal_url(link):
             continue
@@ -623,6 +743,17 @@ def _apply_notice(session, opp, found: dict, now: datetime) -> bool:
         opp.official_url = found["portal_url"][:1024]
     if found.get("procedure"):
         opp.reference = f"TED:{found['procedure']}"[:128]
+    # A press story is only a signal until this notice is the source. A prior
+    # information notice stays a signal; a call becomes the tender it is.
+    if source_changed and (opp.opportunity_type or "") == "signal" and is_official_call(opp.official_url or "", opp.reference):
+        kind = found.get("notice_type") or ""
+        if kind == "pmc":
+            opp.opportunity_type = "rfi"
+        elif not (kind.startswith("pin-") and not kind.startswith("pin-cfc")):
+            opp.opportunity_type = "rfp"
+        deadline = opp.deadline.replace(tzinfo=None) if opp.deadline else None
+        if opp.opportunity_type != "signal" and opp.status == "SIGNAL" and deadline and deadline >= now:
+            opp.status = "OPEN"
     if found.get("title"):
         opp.title = found["title"]
         opp.title_en = found["title"]
@@ -662,6 +793,195 @@ def _remember(session, opportunity_id: str, url: str, title: str):
            "name": (urlparse(url).netloc.removeprefix("www.")[:200] or None)})
 
 
+_INVITATION = re.compile(
+    r"Invitation to Bid for|Invitation to Tender|Call for Tenders|Appel d'offres|Pliego de",
+    re.I,
+)
+
+
+def _pdf_excerpt(data: bytes, limit: int = 16000) -> str:
+    """The invitation, which states the buyer, the price and the deadline.
+
+    Later sections reuse words like "consumption" for a different clause, so
+    the summary is read from the invitation and the pages that follow it.
+    """
+    from pypdf import PdfReader
+    reader = PdfReader(BytesIO(data))
+    start = None
+    for index, page in enumerate(reader.pages[:40]):
+        if _INVITATION.search(page.extract_text() or ""):
+            start = index
+            break
+    chosen = []
+    if start is not None:
+        chosen = [(page.extract_text() or "") for page in reader.pages[start:start + 6]]
+    if sum(len(text) for text in chosen) < 400:
+        dated = re.compile(r"\d{1,2}\s+[A-Za-z]+\s+20\d{2}|\b20\d{2}-\d{2}-\d{2}\b")
+        scored = []
+        for index, page in enumerate(reader.pages[:90]):
+            text = page.extract_text() or ""
+            if len(text) < 80:
+                continue
+            score = 0
+            if dated.search(text) and re.search(r"deadline|pre-bid|submission of bids|Approved Budget", text, re.I):
+                score += 4
+            if re.search(r"Approved Budget for the Contract|Component\s+1", text):
+                score += 3
+            if score:
+                scored.append((score, index, text))
+        picked = sorted(sorted(scored, key=lambda row: (-row[0], row[1]))[:8], key=lambda row: row[1])
+        chosen = [text for _score, _index, text in picked]
+    if not chosen:
+        chosen = [(reader.pages[i].extract_text() or "") for i in range(min(6, len(reader.pages)))]
+    parts, used = [], 0
+    for text in chosen:
+        parts.append(text)
+        used += len(text)
+        if used >= limit:
+            break
+    body = re.sub(r"\n{3,}", "\n\n", re.sub(r"[ \t]+", " ", "\n".join(parts)))
+    return body.strip()[:limit]
+
+
+def _grounded_summary(summary: str, excerpt: str) -> str:
+    """Keep a sentence only when its words appear in the document text.
+
+    A bidding file says "one (1) year". A model that turns that into a payment
+    model writes words the file never uses, and those sentences are dropped.
+    """
+    source = excerpt.lower()
+    paragraphs = []
+    for para in re.split(r"\n\s*\n", (summary or "").strip()):
+        kept = []
+        for sentence in re.split(r"(?<=[.!?])\s+", para.strip()):
+            tokens = re.findall(r"[a-z]{6,}", sentence.lower().replace("-", " "))
+            missing = [token for token in tokens if token not in source and token.rstrip("s") not in source]
+            if len(missing) <= 1:
+                kept.append(sentence)
+        if kept:
+            paragraphs.append(" ".join(kept))
+    return "\n\n".join(paragraphs)
+
+
+def _summarize_bid(data: bytes) -> dict:
+    """A public summary from the bidding file. Empty when the file has no readable text."""
+    excerpt = _pdf_excerpt(data) if data.startswith(b"%PDF") else ""
+    if len(excerpt) < 400:
+        return {}
+    from services.agent_settings import target_language
+    from services.llm_client import call_llm_json, load_prompt
+    language, _code = target_language()
+    described = call_llm_json(
+        system_prompt=load_prompt("bid_document_summary.md").replace("{language}", language),
+        user_content=excerpt,
+        max_tokens=1200,
+    )
+    if not isinstance(described, dict):
+        return {}
+    summary = _grounded_summary(described.get("summary") or "", excerpt)
+    if re.search(r"period of one \(1\) year", excerpt, re.I) and not re.search(r"\bone year\b", summary, re.I):
+        summary = summary.rstrip() + " The subscription and managed services are provided for one year."
+    described["summary"] = summary
+    return described
+
+
+def _apply_bid_summary(opp, described: dict, now: datetime):
+    """Write what the bidding file says onto the tender. The news headline stays a source."""
+    from services.publication import neutralize
+    summary = neutralize((described.get("summary") or "").strip())
+    if summary:
+        _mark_summary(opp, summary)
+        opp.tender_summary = None
+        opp.tender_analysed_at = None
+    buyer = (described.get("buyer") or "").strip()
+    if buyer and (not opp.authority or "unclear" in (opp.authority or "").lower()):
+        opp.authority = buyer[:256]
+        opp.authority_en = buyer[:256]
+    title = re.sub(r"\s+", " ", (described.get("title") or "")).strip()
+    if title and len(title) > 40:
+        opp.title = title[:500]
+        opp.title_en = title[:500]
+    reference = (described.get("reference") or "").strip()
+    if reference and not opp.reference and any(ch.isdigit() for ch in reference) and len(reference) <= 128:
+        opp.reference = reference
+    deadline = None
+    raw_deadline = (described.get("deadline") or "")[:10]
+    try:
+        deadline = datetime.strptime(raw_deadline, "%Y-%m-%d") if raw_deadline else None
+    except ValueError:
+        deadline = None
+    if deadline:
+        opp.deadline = deadline
+        opp.status = "OPEN" if deadline >= now else "CLOSED"
+        opp.status_evidence = f"The bidding documents set the submission deadline at {deadline.strftime('%d %B %Y').lstrip('0')}."
+    elif opp.status == "SIGNAL" and opp.deadline and opp.deadline.replace(tzinfo=None) >= now:
+        opp.status = "OPEN"
+    if opp.opportunity_type == "signal":
+        opp.opportunity_type = "rfp"
+    value = described.get("value")
+    currency = (described.get("currency") or "").strip().upper()[:8]
+    try:
+        amount = float(value) if value not in (None, "") else None
+    except (TypeError, ValueError):
+        amount = None
+    if amount and amount > 0 and currency:
+        opp.estimated_value = amount
+        opp.currency = currency
+        opp.value_source = None
+
+
+def attach_bid_documents(session, opp, page_html: str) -> int:
+    """Store bidding files linked from the article and summarise the tender from them.
+
+    Returns how many files were added. The caller commits.
+    """
+    links = requirement_file_links(page_html or "", opp.official_url or "")
+    if not links:
+        return 0
+    added = []
+    now = datetime.utcnow()
+    for url, name in links:
+        if session.execute(text("select 1 from documents where opportunity_id = :o and url = :u"),
+                           {"o": opp.opportunity_id, "u": url[:1000]}).first():
+            continue
+        try:
+            response = requests.get(url, headers=UA, timeout=60)
+        except Exception:
+            continue
+        data = response.content or b""
+        if response.status_code in (401, 403):
+            from agents.tender_documents import note_gated_portal
+            note_gated_portal(session, opp.opportunity_id, url)
+            continue
+        if response.status_code != 200 or not (data.startswith(b"%PDF") or data.startswith(b"PK")):
+            continue
+        doc_id = f"{opp.opportunity_id}-{hashlib.md5(f'{name}|{url}'.encode()).hexdigest()[:10]}"
+        session.execute(text("""insert into documents (document_id, opportunity_id, name, document_type, url, downloaded_at)
+                                values (:d, :o, :n, cast('TENDER_SPECIFICATIONS' as documenttype), :u, :now)"""),
+                        {"d": doc_id, "o": opp.opportunity_id, "n": name[:500], "u": url[:1000], "now": now})
+        added.append((url, name, data if data.startswith(b"%PDF") and len(data) <= 30_000_000 else b""))
+    if not added:
+        return 0
+    _remember(session, opp.opportunity_id, opp.official_url, opp.title)
+    described = {}
+    for url, _name, data in added:
+        if not data:
+            continue
+        try:
+            described = _summarize_bid(data) or {}
+        except Exception:
+            described = {}
+        if described.get("summary"):
+            break
+    if described:
+        _apply_bid_summary(opp, described, now)
+    elif opp.opportunity_type == "signal":
+        opp.opportunity_type = "rfp"
+        if opp.status == "SIGNAL" and opp.deadline and opp.deadline.replace(tzinfo=None) >= now:
+            opp.status = "OPEN"
+    return len(added)
+
+
 def resolve_official(session, errors: list, only_id: str = None) -> int:
     """Attach the official portal to open tenders that were found somewhere else."""
     from database.models import Opportunity
@@ -693,14 +1013,29 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
                     session.rollback()
                     errors.append(f"documents {opp.opportunity_id}: {exc}"[:300])
             continue
+        page = ""
+        if opp.official_url and not is_portal_url(opp.official_url):
+            try:
+                page = _get(opp.official_url)
+            except Exception as exc:
+                session.rollback()
+                errors.append(f"official {opp.opportunity_id}: {exc}"[:300])
+                page = ""
         try:
             found = find_official(opp.official_url or "", " ".join(
                 part for part in (opp.title, opp.title_en, opp.summary) if part),
-                opp.country, headline=opp.title_en or opp.title)
+                opp.country, headline=opp.title_en or opp.title, page=page)
         except Exception as exc:
             session.rollback()
             errors.append(f"official {opp.opportunity_id}: {exc}"[:300])
-            continue
+            found = None
+        try:
+            if attach_bid_documents(session, opp, page):
+                session.commit()
+                linked += 1
+        except Exception as exc:
+            session.rollback()
+            errors.append(f"bid documents {opp.opportunity_id}: {exc}"[:300])
         if not found or not found.get("portal_url") or found["portal_url"] == opp.official_url:
             continue
         _apply_notice(session, opp, found, datetime.utcnow())

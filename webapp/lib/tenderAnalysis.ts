@@ -29,6 +29,12 @@ const TOTAL_CHARS = 260_000;
 const TED_SEARCH = 'https://api.ted.europa.eu/v3/notices/search';
 const UA = 'Mozilla/5.0 TenderTown/1.0';
 
+function buyerFile(url: string | null | undefined) {
+  if (!url) return false;
+  if (url.includes('downloadContractDocument') || url.includes('/de/documents/') || url.includes('/ethics/publicTenderDoc/')) return true;
+  return /\.(pdf|docx?|xlsx?|zip|odt)(?:$|[?#&])/i.test(url.split('#')[0]);
+}
+
 const clean = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
 function parseJson(text: string) {
@@ -190,7 +196,7 @@ async function documentTexts(opportunityId: string) {
   const { data } = await db.from('documents').select('name, document_type, url').eq('opportunity_id', opportunityId);
   const rank = new Map(READ_ORDER.map((t, i) => [t, i]));
   const rows = (data || [])
-    .filter((r) => rank.has(r.document_type) && (r.url?.includes('downloadContractDocument') || r.url?.includes('/de/documents/')))
+    .filter((r) => rank.has(r.document_type) && buyerFile(r.url))
     .sort((a, b) => (rank.get(a.document_type)! - rank.get(b.document_type)!) || (recency(b.name || '') - recency(a.name || '')));
   const picked: { name: string; body: string }[] = [];
   const seen = new Map<string, number>();
@@ -231,7 +237,7 @@ export async function submissionDocumentTexts(opportunityId: string) {
   const { data } = await db.from('documents').select('name, document_type, url').eq('opportunity_id', opportunityId);
   const rank = new Map(SUBMISSION_ORDER.map((t, i) => [t, i]));
   const rows = (data || [])
-    .filter((r) => rank.has(r.document_type) && r.url && (r.url.includes('downloadContractDocument') || r.url.includes('/de/documents/')))
+    .filter((r) => rank.has(r.document_type) && buyerFile(r.url))
     .sort((a, b) => (rank.get(a.document_type)! - rank.get(b.document_type)!) || (recency(b.name || '') - recency(a.name || '')));
   const picked: { name: string; type: string; body: string }[] = [];
   const seen = new Map<string, number>();

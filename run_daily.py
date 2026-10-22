@@ -307,6 +307,13 @@ def promote(session, candidate: Candidate, t: dict, country_names: dict):
         else:
             status, deadline = "UNVERIFIED", _parse_date(t.get("deadline"))
         reference = f"TED:{ted['procedure']}" if ted.get("procedure") else None
+        # A news story is not a tender. Without the notice, or the documents
+        # that state the requirements, the most it can be is a signal.
+        from agents.official_notice import is_official_call
+        if category in ("rfp", "rfi", "grant") and not is_official_call(candidate.source_url, reference):
+            category = "signal"
+            if status == "OPEN":
+                status = "SIGNAL"
         fields = dict(
             title=candidate.title or "(untitled)", country=country,
             title_en=(correct_known_facts(t.get("title_en") or "") or None), language=(t.get("language") or None),
@@ -865,6 +872,12 @@ def main():
     if S.enabled("tender_analysis"):
         analysed = analyse_tenders(session, errors)
         print(f"Award criteria: {analysed['award']} from TED notices")
+
+    from agents.official_notice import release_unofficial
+    released = release_unofficial(session)
+    if released:
+        session.commit()
+        print(f"Classification: {len(released)} items without an official notice or requirement documents kept as signals")
 
     # English titles for anything that predates triage's title_en, and for activity;
     # English notes for tender updates (shown as comments).

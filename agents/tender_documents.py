@@ -6,7 +6,9 @@ documents a bidder needs, with links that work from the site:
   - the buyer portal's own document list, where the portal shows it publicly:
       ePPS (Malta, Cyprus, Ireland, …): every file, with direct download links
       DTVP (Germany): every file by category, with direct download links
+      ETHICS (Denmark and other Mercell ETHICS buyers): the public material API
   - otherwise one link to the portal's documents page
+  - when that page needs a user login, the summary says so and gives the URL
 
 A document that appears after the first collection (a clarification note, an
 updated form, a Q&A catalogue…) is logged as a change event, so it shows as
@@ -123,8 +125,17 @@ def _procedure_notices(procedure_id: str) -> list:
     return sorted(r.json().get("notices", []), key=lambda n: n["publication-date"])
 
 
+def _notice_xml(publication_number: str) -> str:
+    """The notice XML. A rate-limit page is not an empty notice."""
+    response = _get(f"https://ted.europa.eu/en/notice/{publication_number}/xml")
+    body = response.text or ""
+    if response.status_code != 200 or "<cbc:" not in body[:8000]:
+        raise RuntimeError(f"TED notice {publication_number} XML was not readable (HTTP {response.status_code})")
+    return body
+
+
 def _notice_document_urls(publication_number: str) -> list:
-    xml = _get(f"https://ted.europa.eu/en/notice/{publication_number}/xml").text
+    xml = _notice_xml(publication_number)
     blocks = re.findall(r"<cac:CallForTendersDocumentReference>(.*?)</cac:CallForTendersDocumentReference>", xml, re.S)
     return list(dict.fromkeys(u for b in blocks for u in re.findall(r"<cbc:URI>([^<]+)</cbc:URI>", b)))
 
@@ -177,6 +188,104 @@ def _dtvp_documents(url: str) -> list:
     return list({n: (n, h, u) for n, h, u in out}.values())
 
 
+_ETHICS_ID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
+_GATED = "The documents are in a gated portal that needs user login:"
+
+
+def _ethics_tender_id(url: str):
+    parsed = urlparse(url or "")
+    host = parsed.netloc.lower()
+    if "ethics." not in host and "/ethics/" not in (parsed.path or ""):
+        return None
+    match = _ETHICS_ID.search(parsed.fragment or parsed.path or "")
+    return match.group(0) if match else None
+
+
+def _ethics_documents(url: str):
+    """(files, gated). Files are public downloads. gated is true only when the
+    portal itself refused them. A failed request is neither: the next run retries."""
+    tender_id = _ethics_tender_id(url)
+    if not tender_id:
+        return [], False
+    parsed = urlparse(url)
+    base = f"{parsed.scheme}://{parsed.netloc}"
+    response = _get(f"{base}/ethics/publicTenderDocs/{tender_id}")
+    if response.status_code in (401, 403):
+        return [], True
+    if response.status_code != 200:
+        return [], False
+    try:
+        payload = response.json()
+    except ValueError:
+        return [], False
+    docs = []
+    restricted = False
+    skip = tuple(config()["skip_extensions"])
+    for doc in payload.get("tenderDocs") or []:
+        if (doc.get("type") or "").upper() not in ("DOWNLOAD", "RESPONSE"):
+            continue
+        if doc.get("accessRequired"):
+            restricted = True
+            continue
+        filename = (doc.get("filename") or "").strip()
+        if not filename or filename.lower().endswith(skip):
+            continue
+        doc_id = doc.get("_id") or ""
+        if not doc_id:
+            continue
+        label = (doc.get("cat") or "").strip()
+        name = f"{label} — {filename}" if label and label.lower() not in filename.lower() else filename
+        published = ((doc.get("uploadDate") or {}).get("$date") or "")[:10] or None
+        download = f"{base}/ethics/publicTenderDoc/{tender_id}/{doc_id}/download"
+        docs.append((name, classify(f"{label} {filename}"), download, published))
+    if docs:
+        return docs, False
+    return [], restricted
+
+
+def _requires_login(url: str) -> bool:
+    """The portal answered with a login wall. A login box in the header of a
+    page that already lists the files is not one."""
+    try:
+        response = _get(url)
+    except Exception:
+        return False
+    if response.status_code in (401, 403):
+        return True
+    if response.status_code != 200:
+        return False
+    final = (response.url or "").lower()
+    if any(part in final for part in ("/login", "/signin", "/sign-in", "/logon")):
+        return True
+    body = (response.text or "")[:30000].lower()
+    if 'type="password"' not in body and "type='password'" not in body:
+        return False
+    if re.search(r'href="[^"]+\.(pdf|docx|xlsx|zip)"', body):
+        return False
+    title = re.search(r"<title[^>]*>(.*?)</title>", body, re.S)
+    headings = " ".join(re.findall(r"<h1[^>]*>(.*?)</h1>", body, re.S)[:2])
+    label = re.sub(r"<[^>]+>", " ", f"{title.group(1) if title else ''} {headings}")
+    return bool(re.search(r"\b(log ?in|sign ?in|log ind|anmelden|connexion)\b", label))
+
+
+def note_gated_portal(session, opportunity_id: str, url: str):
+    """The summary the page shows, when the dossier cannot be read without a login."""
+    sentence = f"{_GATED} {url}"
+    row = session.execute(text("select summary, tender_summary from opportunities where opportunity_id = :o"),
+                          {"o": opportunity_id}).first()
+    if not row:
+        return
+    for column in ("summary", "tender_summary"):
+        current = (getattr(row, column) or "").strip()
+        if column == "tender_summary" and not current:
+            continue
+        if sentence in current:
+            continue
+        updated = f"{current}\n\n{sentence}".strip() if current else sentence
+        session.execute(text(f"update opportunities set {column} = :s where opportunity_id = :o"),
+                        {"s": updated, "o": opportunity_id})
+
+
 def notice_label(kind: str, index: int) -> str:
     """What a notice is in the procedure's timeline. The first contract notice is
     the publication itself; a later cn- is a change (deadline, corrigendum)."""
@@ -209,40 +318,58 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
                         {"d": notices[0]["publication-date"][:10], "o": opportunity_id})
 
     # Document links live on the original notice. A deadline extension often
-    # repeats them, and sometimes doesn't, so read every notice.
+    # repeats them, and sometimes doesn't, so read every notice. A failed read
+    # is not "this notice has no documents": the next run has to try again.
     portal_urls = []
+    read_failed = False
     for n in notices:
         try:
             portal_urls += _notice_document_urls(n["publication-number"])
         except Exception:
+            read_failed = True
             continue
     portal_urls = list(dict.fromkeys(portal_urls))
+    if read_failed and not portal_urls:
+        raise RuntimeError(f"TED document links for {procedure_id} could not be read")
+    got_files = False
+    gated_url = None
     for url in portal_urls:
         host = urlparse(url).netloc
+        found = []
+        gated = False
         try:
             if "/epps/" in url and "listContractDocuments" in url:
-                found = _epps_documents(url)
-                rows += [(f"{title} — {fname}" if title and title.lower() not in fname.lower() else fname,
-                          classify(f"{title} {fname}"), dl, None, None) for title, fname, dl in found]
-                if found:
-                    continue
-            if "dtvp.de" in host:
-                found = _dtvp_documents(url)
-                rows += [(name, hint or classify(name), dl, None, None) for name, hint, dl in found]
-                if found:
-                    continue
-            if "tender-details/" in url:
+                found = [(f"{title} — {fname}" if title and title.lower() not in fname.lower() else fname,
+                          classify(f"{title} {fname}"), dl, None, None) for title, fname, dl in _epps_documents(url)]
+            elif "dtvp.de" in host:
+                found = [(name, hint or classify(name), dl, None, None) for name, hint, dl in _dtvp_documents(url)]
+            elif "tender-details/" in url:
                 from agents.official_notice import funding_documents
-                found = funding_documents(url.split("#")[0])
-                rows += [(name, hint or classify(name), dl, published, None) for name, hint, dl, published in found]
-                if found:
-                    continue
+                found = [(name, hint or classify(name), dl, published, None)
+                         for name, hint, dl, published in funding_documents(url.split("#")[0])]
+            elif _ethics_tender_id(url):
+                files, gated = _ethics_documents(url)
+                found = [(name, hint, dl, published, None) for name, hint, dl, published in files]
+            elif _requires_login(url):
+                gated = True
         except Exception:
-            pass  # portal unreachable: fall back to the link below
+            found = []
+        if found:
+            rows += found
+            got_files = True
+            continue
+        if gated:
+            gated_url = gated_url or url
+            rows.append((f"Procurement documents (login required) — {host.removeprefix('www.')}",
+                         "TENDER_SPECIFICATIONS", url, None, None))
+            continue
         rows.append((f"Tender documents on {host.removeprefix('www.')}", "TENDER_SPECIFICATIONS", url, None, None))
+    if gated_url and not got_files:
+        note_gated_portal(session, opportunity_id, gated_url)
 
     had_any = session.execute(text("select count(*) from documents where opportunity_id = :o"),
                               {"o": opportunity_id}).scalar() > 0
+    added = []
     new_names = []
     now = datetime.utcnow()
     for name, doc_type, url, published, version in rows:
@@ -258,14 +385,15 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
                                 values (:d, :o, :n, cast(:t as documenttype), :u, :v, :p, :now)"""),
                         {"d": doc_id, "o": opportunity_id, "n": name[:500], "t": doc_type, "u": url[:1000],
                          "v": version, "p": published, "now": now})
+        added.append(name)
         if had_any and doc_type in config()["alert_on_new"]:
             new_names.append(name)
-    if new_names:
-        desc = (f"New document published: {new_names[0]}" if len(new_names) == 1
-                else f"{len(new_names)} new documents published, incl. {new_names[0]}")
+    if added and had_any:
+        lead = new_names[0] if new_names else added[0]
+        desc = f"New document published: {lead}" if len(added) == 1 else f"{len(added)} new documents published, incl. {lead}"
         session.execute(text("""insert into change_events (opportunity_id, event_type, importance, description, detected_at, note_source)
                                 values (:o, 'document_added', 'MATERIAL', :d, :now, :src)"""),
-                        {"o": opportunity_id, "d": desc[:500], "now": now, "src": "New documents: " + "; ".join(new_names)[:1500]})
+                        {"o": opportunity_id, "d": desc[:500], "now": now, "src": "New documents: " + "; ".join(added)[:1500]})
         session.execute(text("update opportunities set last_change = :now where opportunity_id = :o"), {"now": now, "o": opportunity_id})
     session.commit()
     return {"documents": len(rows), "new": new_names}

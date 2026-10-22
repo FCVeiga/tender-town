@@ -8,6 +8,7 @@ const PORTALS = new Set([
   'etenders.gov.ie', 'utbodsvefur.is', 'anticorruzione.it', 'vpt.lt', 'marches.public.lu',
   'iub.gov.lv', 'contracts.gov.mt', 'doffin.no', 'uzp.gov.pl', 'base.gov.pt',
   'e-licitatie.ro', 'upphandlingsmyndigheten.se', 'enarocanje.si', 'uvo.gov.sk',
+  'op.europa.eu', 'ungm.org', 'ethics.dk',
 ]);
 const TED_PUB = /\/(\d{5,7}-\d{4})(?:[/?#]|$)/;
 const CFT = /tender-details\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -22,5 +23,10 @@ export function isProcurementNotice(url: string | null | undefined, reference?: 
   const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
   if (host === 'ted.europa.eu' || host.endsWith('.ted.europa.eu')) return TED_PUB.test(url);
   if (ASSET.test(parsed.pathname)) return false;
-  return PORTALS.has(host) && parsed.pathname !== '/' && /\d/.test(parsed.pathname + parsed.search);
+  if (parsed.pathname.includes('/epps/') && /\d/.test(parsed.pathname + parsed.search)) return true;
+  if (host.endsWith('.europa.eu') && parsed.pathname.toLowerCase().includes('/procurement/')) return true;
+  const portal = host === 'ted.europa.eu' || [...PORTALS].some((name) => host === name || host.endsWith('.' + name));
+  // The notice id is often in the query (etenders resourceId) or the hash (ETHICS).
+  if ((parsed.pathname === '/' || parsed.pathname === '') && !parsed.hash) return false;
+  return portal && /\d/.test(parsed.pathname + parsed.search + parsed.hash);
 }

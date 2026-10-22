@@ -30,6 +30,8 @@ configured for. The summary is public.
   The submission deadline that applies now is the Current facts date. Give any
   earlier submission deadline only as history;
 - how to submit (portal, language of the bid) in one sentence;
+- when a source says the documents are in a gated portal that needs user login,
+  say that in the summary and include the portal URL;
 - changes made by later notices, clarifications or Q&A answers that matter,
   after the description of the tender as first published.
 Report facts; never invent a figure or date the sources don't give.
