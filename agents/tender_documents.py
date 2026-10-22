@@ -137,7 +137,9 @@ def _notice_xml(publication_number: str) -> str:
 def _notice_document_urls(publication_number: str) -> list:
     xml = _notice_xml(publication_number)
     blocks = re.findall(r"<cac:CallForTendersDocumentReference>(.*?)</cac:CallForTendersDocumentReference>", xml, re.S)
-    return list(dict.fromkeys(u for b in blocks for u in re.findall(r"<cbc:URI>([^<]+)</cbc:URI>", b)))
+    return list(dict.fromkeys(
+        html.unescape(u.strip()) for b in blocks for u in re.findall(r"<cbc:URI>([^<]+)</cbc:URI>", b)
+    ))
 
 
 def _epps_documents(url: str) -> list:
