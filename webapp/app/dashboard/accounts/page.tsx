@@ -42,6 +42,9 @@ export default async function AccountsPage({ searchParams }: { searchParams: { p
                 <th>{t('Plan')}</th>
                 <th>{t('Billing')}</th>
                 <th>{t('Signed up')}</th>
+                <th>{t('Came from')}</th>
+                <th>{t('Journey')}</th>
+                <th>{t('Company')}</th>
                 <th>{t('Scopes')}</th>
               </tr>
             </thead>
@@ -55,6 +58,9 @@ export default async function AccountsPage({ searchParams }: { searchParams: { p
                     <td>{t(PLAN_LABEL[row.plan])}</td>
                     <td>{billing ? t(billing) : '—'}</td>
                     <td>{when(row.signedUp)}</td>
+                    <td>{row.origin ? (row.origin.knownSource ? t(row.origin.source) : row.origin.source) : t('Not collected yet')}</td>
+                    <td className="dash-path">{row.origin?.steps.length ? row.origin.steps.map((step) => t(step)).join(' → ') : '—'}</td>
+                    <td>{row.company || '—'}</td>
                     <td>{row.scopes.length ? row.scopes.map((scope) => scope.catalog ? t(scope.name) : scope.name).join(', ') : '—'}</td>
                   </tr>
                 );

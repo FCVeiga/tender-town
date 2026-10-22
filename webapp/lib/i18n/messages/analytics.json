@@ -411,5 +411,33 @@
     "fr": "Aucun compte",
     "de": "Keine Konten",
     "it": "Nessun account"
+  },
+  "Direct or unknown": {
+    "pt": "Direto ou desconhecido",
+    "es": "Directo o desconocido",
+    "fr": "Direct ou inconnu",
+    "de": "Direkt oder unbekannt",
+    "it": "Diretto o sconosciuto"
+  },
+  "Email signup": {
+    "pt": "Registo por e-mail",
+    "es": "Registro por correo",
+    "fr": "Inscription par e-mail",
+    "de": "Anmeldung per E-Mail",
+    "it": "Iscrizione via e-mail"
+  },
+  "Google signup": {
+    "pt": "Registo com o Google",
+    "es": "Registro con Google",
+    "fr": "Inscription avec Google",
+    "de": "Anmeldung mit Google",
+    "it": "Iscrizione con Google"
+  },
+  "Opened a signal": {
+    "pt": "Abriu um sinal",
+    "es": "Abrió una señal",
+    "fr": "A ouvert un signal",
+    "de": "Signal geöffnet",
+    "it": "Ha aperto un segnale"
   }
 }
