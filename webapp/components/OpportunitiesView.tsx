@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { OPP_CATEGORIES, TENDER_CATEGORIES, NEW_WINDOW_DAYS, getActiveOpportunities, isNew, type Opportunity } from '@/lib/data';
+import { OPP_CATEGORIES, TENDER_CATEGORIES, NEW_WINDOW_DAYS, cardFreshness, getActiveOpportunities, isNew, type Opportunity } from '@/lib/data';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { getScopeItems } from '@/lib/scopes';
 import { getLikes } from '@/lib/likes';
@@ -18,6 +18,22 @@ import ScopeView from './ScopeView';
 import ScopeStatus from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
 type View = 'all' | 'new' | (typeof OPP_CATEGORIES)[number]['slug'];
+
+/** New, then updated, then the other open tenders. */
+function compareOpen(a: Opportunity, b: Opportunity, now: Date) {
+  const rank = (o: Opportunity) => {
+    const fresh = cardFreshness(o, now);
+    return fresh === 'new' ? 0 : fresh === 'updated' ? 1 : 2;
+  };
+  const ra = rank(a);
+  const rb = rank(b);
+  if (ra !== rb) return ra - rb;
+  if (ra < 2) {
+    const stamp = (o: Opportunity) => new Date((ra === 1 ? o.last_change : o.first_detected) || o.publication_date || 0).getTime();
+    return stamp(b) - stamp(a);
+  }
+  return (b.opportunity_relevance_score ?? 0) - (a.opportunity_relevance_score ?? 0);
+}
 
 const TITLES: Record<string, string> = {
   all: 'Tenders', new: 'New tenders',
@@ -44,8 +60,8 @@ async function OpportunitiesBody({ view }: { view: View }) {
   const active = all.filter((o) => o.opportunity_type !== 'signal');  // signals: home feed and News
   const now = new Date();
   const newOnes = active.filter((o) => isNew(o, now));
-  const shown =
-    view === 'all' ? active : view === 'new' ? newOnes : active.filter((o) => o.opportunity_type === view);
+  const list = view === 'all' ? active : view === 'new' ? newOnes : active.filter((o) => o.opportunity_type === view);
+  const shown = [...list].sort((a, b) => compareOpen(a, b, now));
   const scopeItems = await getScopeItems('tender', true);
   const liveIds = new Set(all.map((o) => o.opportunity_id));
   const archiveIds = (scopeItems?.ids || []).filter((id) => !liveIds.has(id)).slice(0, 200);

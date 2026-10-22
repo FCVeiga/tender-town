@@ -32,7 +32,7 @@ export default function HomeFeedItems({ entries, now, valueOf, countries, likes,
         const item = entry.item;
         if (item.event === 'signal') {
           const id = likeTarget(item.href)?.[1] ?? item.opportunityId ?? '';
-          const card = { ...item, kind: 'news' as const, kindLabel: 'Planned procurement', category: 'signal', categoryLabel: 'Signal' };
+          const card = { ...item, kind: 'news' as const, kindLabel: 'Planned procurement', category: 'signal', categoryLabel: 'Planned procurement', fresh: null };
           return <FeedCard key={entry.key} item={card} now={now} value={valueOf(item)} social={{ engagement: tenderEng.get(id), signedIn: tenderEng.signedIn }} />;
         }
         if (item.kind === 'news') {

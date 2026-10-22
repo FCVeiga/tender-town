@@ -76,7 +76,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
       return [{
         key: `blog:${post.slug}`, kind: 'news', event: 'liked', href: `/blog/${post.slug}`,
         headline: post.title, body: post.description, category: 'blog', categoryLabel: 'Blog', kindLabel: 'Blog',
-        country: null, at, score: 0, combined: 0, movement: 'same', deadline: null, isNew: false,
+        country: null, at, score: 0, combined: 0, movement: 'same', deadline: null, isNew: false, fresh: null,
         image: post.image,
       }];
     }
@@ -87,9 +87,9 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
       return [{
         key: `tender:${o.opportunity_id}`, kind: o.opportunity_type === 'signal' ? 'news' : 'opportunity', event: 'liked', href: opportunityPath(o),
         headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || '').split(/\n{2,}/)[0] || null,
-        category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'News' : 'Tender',
+        category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'Planned procurement' : 'Tender',
         country: o.country, at, score: o.opportunity_relevance_score ?? 0, combined: o.opportunity_relevance_score ?? 0,
-        movement: 'same', deadline: closed ? null : o.deadline, isNew: false,
+        movement: 'same', deadline: closed ? null : o.deadline, isNew: false, fresh: null,
         statusLabel: closed ? 'Closed' : o.status === 'AWARDED' ? 'Awarded' : null,
       }];
     }
@@ -99,7 +99,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
       key: `news:${n.news_id}`, kind: 'news', event: 'liked', href: `/news/${n.news_id}`,
       headline: titleOf(n), body: publicText(firstInLanguage(n.summary) || ''), category: n.category || 'market',
       categoryLabel: newsCategoryLabel(n.category), kindLabel: 'News', country: n.region && n.region !== 'EU / International' ? n.region : null,
-      at, score: n.relevance_score ?? 0, combined: n.relevance_score ?? 0, movement: 'same', deadline: null, isNew: false,
+      at, score: n.relevance_score ?? 0, combined: n.relevance_score ?? 0, movement: 'same', deadline: null, isNew: false, fresh: null,
       image: n.image_url,
     }];
   });

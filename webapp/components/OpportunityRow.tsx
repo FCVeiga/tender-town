@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import HeartButton from './HeartButton';
-import { Opportunity, buyerOf, daysUntil, isNew, isUpdated, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
+import { Opportunity, buyerOf, cardFreshness, daysUntil, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { publicText, stageOf } from '@/lib/publication';
@@ -62,10 +62,12 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
   const description = publicText(plainText(firstInLanguage(o.summary) || ''));
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
+  const fresh = stage === 'closed' || o.opportunity_type === 'signal' ? null : cardFreshness(o);
   const t = getTSync();
 
   const row = (
-    <Link href={opportunityPath(o)} className="opp-row">
+    <Link href={opportunityPath(o)} className={`opp-row${fresh ? ` fresh fresh-${fresh}` : ''}`}>
+      {fresh && <span className="fresh-tag">{t(fresh === 'new' ? 'New' : 'Updated')}</span>}
       <div className="opp-where">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="flag" src={`https://flagcdn.com/${flagCode(o.country)}.svg`} alt="" width={44} height={33} loading="lazy" />
@@ -74,12 +76,10 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
 
       <div className="opp-main">
         <div className="opp-tags">
-          {isNew(o) && <span className="tag new">{t('New')}</span>}
-          {!isNew(o) && isUpdated(o) && stage !== 'closed' && <span className="tag updated">{t('Updated')}</span>}
           {o.status === 'AWARDED' && <span className="tag">{t('Awarded')}</span>}
           {stage === 'closed' && o.status !== 'AWARDED' && <span className="tag closed">{t('Closed')}</span>}
           {stage === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
-          {o.opportunity_type && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
+          {o.opportunity_type && o.opportunity_type !== 'signal' && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
           {o.duration_months ? <span className="opp-chip">{o.duration_months >= 24 ? t('{n} years', { n: +(o.duration_months / 12).toFixed(1) }) : t('{n} months', { n: o.duration_months })}</span> : null}
         </div>
         <h2 className="opp-title">{title || titleOf(o)}</h2>

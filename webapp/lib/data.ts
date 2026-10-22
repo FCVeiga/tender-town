@@ -100,9 +100,19 @@ export function appearedAt(o: Opportunity): Date | null {
   return d ? new Date(d) : null;
 }
 
+export type CardFreshness = 'new' | 'updated';
+
+/** New means the radar first saw it inside the window. Updated means a later change in that window. */
+export function cardFreshness(o: Opportunity, now = new Date()): CardFreshness | null {
+  const windowMs = NEW_WINDOW_DAYS * 86400_000;
+  const seen = o.first_detected || o.publication_date;
+  if (seen && now.getTime() - new Date(seen).getTime() <= windowMs) return 'new';
+  if (o.last_change && now.getTime() - new Date(o.last_change).getTime() <= windowMs) return 'updated';
+  return null;
+}
+
 export function isNew(o: Opportunity, now = new Date()) {
-  const at = appearedAt(o);
-  return !!at && now.getTime() - at.getTime() <= NEW_WINDOW_DAYS * 86400_000;
+  return cardFreshness(o, now) === 'new';
 }
 
 /** Changed (e.g. deadline extended) within the "new" window. */

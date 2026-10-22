@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { siteOrigin } from '@/lib/auth';
 import { pageMeta } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
-import { FeedItem, getFeed } from '@/lib/feed';
+import { FeedItem, getFeed, homeRank } from '@/lib/feed';
 import { getActivity } from '@/lib/sources';
 import HomeFeedItems, { HomeEntry } from '@/components/HomeFeedItems';
 import LiveActivity from '@/components/LiveActivity';
@@ -78,7 +78,7 @@ async function HomeFeed({ n }: { n?: string }) {
   const posts = focus.hold ? [] : await getCommunityFeed('best', user?.id ?? null, now);
   const postEngAll = await getEngagement('post', posts.map((post) => post.id));
   const visiblePosts = posts.filter((post) => !postEngAll.hidden.has(post.id));
-  const entries = mixHome(items, visiblePosts);
+  const entries = mixHome(items, visiblePosts, now);
   const run = scopeRun(focus.current);
   const kind = collectionKind(run, entries.length > 0, !!focus.hold);
   const shown = Math.max(PAGE, Number(n) || PAGE);
@@ -132,13 +132,13 @@ async function HomeFeed({ n }: { n?: string }) {
   );
 }
 
-/** Signals stay first, industry news last. Community posts sit with the rest, on the same sort. */
-function mixHome(items: FeedItem[], posts: PostCard[]): HomeEntry[] {
-  const bandOf = (item: FeedItem) => item.category === 'signal' || item.event === 'signal' ? 0 : item.category === 'industry' ? 2 : 1;
+/** Open tenders first (new and updated, then the rest). News from the last hour comes next. */
+function mixHome(items: FeedItem[], posts: PostCard[], now: Date): HomeEntry[] {
   const rows = [
-    ...items.map((item) => ({ key: item.key, kind: 'item' as const, item, band: bandOf(item), at: item.at.getTime(), hot: item.combined })),
-    ...posts.map((post) => ({ key: `post:${post.id}`, kind: 'post' as const, post, band: 1, at: new Date(post.createdAt).getTime(), hot: post.score })),
+    ...items.map((item) => ({ key: item.key, kind: 'item' as const, item, at: item.at.getTime(), hot: item.score })),
+    ...posts.map((post) => ({ key: `post:${post.id}`, kind: 'post' as const, post, at: new Date(post.createdAt).getTime(), hot: post.score })),
   ];
-  rows.sort((a, b) => a.band - b.band || b.hot - a.hot);
+  const band = (row: (typeof rows)[number]) => row.kind === 'item' ? homeRank(row.item, now) : 3;
+  rows.sort((a, b) => band(a) - band(b) || b.at - a.at || b.hot - a.hot);
   return rows;
 }

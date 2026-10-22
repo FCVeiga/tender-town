@@ -5,7 +5,7 @@
  * German. Results come back as feed items so they render as post cards.
  */
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { NewsItem, Opportunity, isNew, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
+import { NewsItem, Opportunity, cardFreshness, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { FeedItem, HALF_LIFE_DAYS } from '@/lib/feed';
 import { firstInLanguage } from '@/lib/english';
 import { publicText } from '@/lib/publication';
@@ -76,13 +76,16 @@ export async function search(q: string, now = new Date()) {
   const oppItems: FeedItem[] = oppRows.map((o: Opportunity) => {
     const at = new Date(o.first_detected || o.publication_date || now);
     const score = tenderScope?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? 30;
+    const signal = o.opportunity_type === 'signal';
+    const label = statusLabel(o, now);
+    const fresh = signal || label ? null : cardFreshness(o, now);
     return {
-      key: `opp:${o.opportunity_id}`, kind: 'opportunity', event: 'new_opportunity',
+      key: `opp:${o.opportunity_id}`, kind: 'opportunity', event: signal ? 'signal' : 'new_opportunity',
       href: opportunityPath(o),
       headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || ''),
-      category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'News' : 'Opportunity',
+      category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: signal ? 'Planned procurement' : 'Opportunity',
       country: o.country, at, score, combined: Math.round(score * decay(at)), movement: 'same',
-      deadline: o.deadline, isNew: isNew(o, now), statusLabel: statusLabel(o, now),
+      deadline: o.deadline, isNew: fresh === 'new', fresh, statusLabel: label,
     };
   });
   const newsItems: FeedItem[] = newsRows.map((n: NewsItem) => {
@@ -93,13 +96,13 @@ export async function search(q: string, now = new Date()) {
       headline: titleOf(n), body: publicText(firstInLanguage(n.summary, n.excerpt) || ''),
       category: n.category || 'market', categoryLabel: newsCategoryLabel(n.category), kindLabel: 'News',
       country: n.country, at, score, combined: Math.round(score * decay(at)), movement: 'same',
-      deadline: null, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
+      deadline: null, isNew: false, fresh: null,
     };
   });
 
-  // Open opportunities first, then by the Top score; news by Top score.
+  // Open opportunities first, then by the Top score; news by time.
   oppItems.sort((a, b) => Number(!!a.statusLabel) - Number(!!b.statusLabel) || b.combined - a.combined || b.score - a.score);
-  newsItems.sort((a, b) => b.combined - a.combined || b.score - a.score);
+  newsItems.sort((a, b) => b.at.getTime() - a.at.getTime() || b.score - a.score);
   return { opportunities: oppItems, news: newsItems };
 }
 

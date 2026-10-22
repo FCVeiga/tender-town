@@ -2,9 +2,11 @@
  * Tender Town feed: posts written by the feed-writer agent
  * (agents/feed_writer.py) about opportunities, their updates, and news.
  *
- * "Top" (the default) works like Reddit's hot, with the AI score in place of
- * upvotes:  top = score × 0.5^(age / HALF_LIFE_DAYS). "Relevance" is the AI
- * score alone; "New" is newest first.
+ * "Top" (the default) leads with open tenders: new and updated first, then the
+ * other open notices. A news story only joins that lead when it is under an
+ * hour old, and even then it sits after the tenders. Older news and planned
+ * procurements follow by time. "Relevance" is the AI score alone; "New" is
+ * newest first.
  * Keep HALF_LIFE_DAYS in sync with agents/feed_writer.py.
  *
  * Movement arrows compare the post's rank at the last pipeline run with the
@@ -12,7 +14,7 @@
  * same rate, order only shifts when posts enter or leave the feed.
  */
 import { getSupabaseServerClient } from '@/lib/supabase';
-import { getActiveOpportunities, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf, type Opportunity } from '@/lib/data';
+import { cardFreshness, getActiveOpportunities, NEW_WINDOW_DAYS, newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf, type CardFreshness, type Opportunity } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { publicText } from '@/lib/publication';
@@ -21,8 +23,8 @@ import { getPlatformLanguage } from '@/lib/language';
 
 export const HALF_LIFE_DAYS = 4;
 const UNSCORED = 30;
-// A planned procurement sits in the top importance band (85–100) on the home feed.
-const SIGNAL_RELEVANCE = 85;
+const FRESH_MS = NEW_WINDOW_DAYS * 86400_000;
+const BREAKING_MS = 60 * 60 * 1000;
 
 // Top (default) = AI score × novelty; Relevance = AI score alone; New = newest first.
 export const FEED_VIEWS = [
@@ -58,6 +60,7 @@ export type FeedItem = {
   movement: 'up' | 'down' | 'same';
   deadline: string | null;
   isNew: boolean;
+  fresh: CardFreshness | null;
   opportunityId?: string | null;
   newsId?: string | null;
   statusLabel?: string | null;   // e.g. "Closed" / "Awarded" in search results
@@ -149,24 +152,31 @@ export async function getFeed(view: FeedView, now = new Date()) {
     // Opportunity posts only while the opportunity is still open; awards and news always.
     .filter((p) => inScope(p) && (p.kind === 'news' || p.event === 'awarded' || (p.opportunity_id && active.has(p.opportunity_id))))
     .map((p) => {
-      const at = new Date(p.posted_at || p.created_at || now);
+      const atPosted = new Date(p.posted_at || p.created_at || now);
       const opp = p.opportunity_id ? active.get(p.opportunity_id) : undefined;
       const movement: FeedItem['movement'] =
         p.rank === null ? 'same'
           : p.prev_rank === null || p.rank < p.prev_rank ? 'up'
             : p.rank > p.prev_rank ? 'down' : 'same';
       const signal = opp?.opportunity_type === 'signal' || p.category === 'signal' || p.event === 'signal';
-      const score = Math.max(scopeScore(p) ?? p.score ?? UNSCORED, signal ? SIGNAL_RELEVANCE : 0);
+      const score = scopeScore(p) ?? p.score ?? UNSCORED;
+      const openTender = !!opp && opp.status !== 'CLOSED' && opp.status !== 'AWARDED';
+      const fresh = signal || p.kind === 'news' ? null : openTender ? cardFreshness(opp, now) : eventFresh(p.event, atPosted, now);
+      const stamp = fresh && opp
+        ? (fresh === 'updated' ? opp.last_change : opp.first_detected) || opp.publication_date
+        : null;
+      const at = stamp ? new Date(stamp) : atPosted;
       return {
         key: p.post_id, kind: p.kind, event: signal ? 'signal' : p.event,
         href: p.kind === 'news' ? `/news/${p.news_id}` : opportunityPath({ opportunity_id: p.opportunity_id || '', opportunity_type: signal ? 'signal' : opp?.opportunity_type }),
         headline: p.headline, body: p.body,
         category: signal ? 'signal' : (p.category || (p.kind === 'news' ? 'market' : 'rfp')),
         categoryLabel: p.kind === 'news' && !signal ? newsCategoryLabel(p.category) : oppCategoryLabel(signal ? 'signal' : p.category),
-        kindLabel: p.kind === 'news' || signal ? 'News' : 'Tender',
+        kindLabel: signal ? 'Planned procurement' : p.kind === 'news' ? 'News' : 'Tender',
         country: p.country, at, score, combined: Math.round(score * decay(at, now)),
         movement, deadline: p.event === 'awarded' ? null : opp?.deadline ?? null,
-        isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
+        isNew: fresh === 'new',
+        fresh,
         opportunityId: p.opportunity_id,
         newsId: p.news_id,
         opportunity: opp,
@@ -185,22 +195,40 @@ export async function getFeed(view: FeedView, now = new Date()) {
     } else if (item.kind === 'news') {
       const id = item.newsId || item.key;
       const prev = newsById.get(id);
-      if (!prev || item.score > prev.score) newsById.set(id, item);
+      if (!prev || item.at > prev.at) newsById.set(id, item);
     } else {
       rest.push(item);
     }
   }
-  // A signal with no post yet still features. Its relevance is the top band.
+  // A planned procurement with no post yet still features, and ages from when the radar saw it.
   for (const o of opportunities) {
     if (o.opportunity_type !== 'signal' || keptOpp.has(o.opportunity_id)) continue;
-    const at = new Date(o.publication_date || o.first_detected || now);
-    const score = Math.max(tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED, SIGNAL_RELEVANCE);
+    const at = new Date(o.first_detected || o.publication_date || now);
+    const score = tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED;
     keptOpp.set(o.opportunity_id, {
       key: `signal:${o.opportunity_id}`, kind: 'opportunity', event: 'signal',
       href: opportunityPath(o), headline: titleOf(o), body: plainText(o.summary || '') || null,
-      category: 'signal', categoryLabel: oppCategoryLabel('signal'), kindLabel: 'News',
+      category: 'signal', categoryLabel: oppCategoryLabel('signal'), kindLabel: 'Planned procurement',
       country: o.country, at, score, combined: Math.round(score * decay(at, now)),
-      movement: 'same', deadline: o.deadline, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
+      movement: 'same', deadline: o.deadline, isNew: false,
+      fresh: null,
+      opportunityId: o.opportunity_id,
+      opportunity: o,
+    });
+  }
+  // Every open tender features, even before the feed writer posts it.
+  for (const o of opportunities) {
+    if (o.opportunity_type === 'signal' || keptOpp.has(o.opportunity_id)) continue;
+    if (o.status === 'CLOSED' || o.status === 'AWARDED') continue;
+    const fresh = cardFreshness(o, now);
+    const at = new Date((fresh === 'updated' ? o.last_change : o.first_detected) || o.publication_date || now);
+    const score = tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED;
+    keptOpp.set(o.opportunity_id, {
+      key: `fresh:${o.opportunity_id}`, kind: 'opportunity', event: fresh === 'updated' ? 'notice_update' : 'new_opportunity',
+      href: opportunityPath(o), headline: titleOf(o), body: plainText(o.summary || '') || null,
+      category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: 'Tender',
+      country: o.country, at, score, combined: Math.round(score * decay(at, now)),
+      movement: 'same', deadline: o.deadline, isNew: fresh === 'new', fresh,
       opportunityId: o.opportunity_id,
       opportunity: o,
     });
@@ -210,17 +238,38 @@ export async function getFeed(view: FeedView, now = new Date()) {
   for (const item of newsById.values()) {
     const key = item.headline.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
     const prev = newsByHeadline.get(key);
-    if (!prev || item.score > prev.score) newsByHeadline.set(key, item);
+    if (!prev || item.at > prev.at) newsByHeadline.set(key, item);
   }
   const unique = [...rest, ...keptOpp.values(), ...newsByHeadline.values()];
 
-  const band = (item: FeedItem) => item.category === 'signal' || item.event === 'signal' ? 0 : item.category === 'industry' ? 2 : 1;
-  const hot = (item: FeedItem) => item.score * decay(item.at, now);
+  const byTime = (a: FeedItem, b: FeedItem) => b.at.getTime() - a.at.getTime() || b.score - a.score;
   const sorted =
-    view === 'new' ? unique.sort((a, b) => band(a) - band(b) || b.at.getTime() - a.at.getTime())
-      : view === 'relevance' ? unique.sort((a, b) => band(a) - band(b) || b.score - a.score || b.at.getTime() - a.at.getTime())
-        : unique.sort((a, b) => band(a) - band(b) || hot(b) - hot(a));
+    view === 'new' ? unique.sort(byTime)
+      : view === 'relevance' ? unique.sort((a, b) => b.score - a.score || b.at.getTime() - a.at.getTime())
+        : unique.sort((a, b) => homeRank(a, now) - homeRank(b, now) || byTime(a, b));
   return { items: groupCoverage(sorted), error };
+}
+
+/** Open tenders lead the home feed. News from the last hour follows them; older stories wait. */
+export function homeRank(item: FeedItem, now: Date): number {
+  if (isOpenTender(item) && item.fresh) return 0;
+  if (isOpenTender(item)) return 1;
+  if (item.kind === 'news' && item.event !== 'signal' && now.getTime() - item.at.getTime() <= BREAKING_MS) return 2;
+  return 3;
+}
+
+function isOpenTender(item: FeedItem): boolean {
+  if (item.kind !== 'opportunity' || item.event === 'signal' || item.category === 'signal') return false;
+  const opp = item.opportunity;
+  if (!opp) return item.event !== 'awarded';
+  return opp.opportunity_type !== 'signal' && opp.status !== 'CLOSED' && opp.status !== 'AWARDED';
+}
+
+function eventFresh(event: string, at: Date, now: Date): CardFreshness | null {
+  if (now.getTime() - at.getTime() > FRESH_MS) return null;
+  if (event === 'deadline_change' || event === 'notice_update') return 'updated';
+  if (event === 'new_opportunity') return 'new';
+  return null;
 }
 
 /** The card title and summary are the published record. */

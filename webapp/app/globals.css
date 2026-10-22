@@ -300,6 +300,12 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; }
   .opp-main { min-width: 0; }
   .opp-metrics { grid-column: 1 / -1; padding: 14px 0 0; border-left: none; border-top: 1px solid var(--border); justify-content: space-around; }
 }
+/* The home column is narrower than the tender list, so the scores sit under the title. */
+@media (min-width: 601px) {
+  .feed .opp-row { grid-template-columns: 88px minmax(0, 1fr); }
+  .feed .opp-main { min-width: 0; }
+  .feed .opp-metrics { grid-column: 1 / -1; padding: 14px 0 0; border-left: none; border-top: 1px solid var(--border); justify-content: space-around; }
+}
 @media (max-width: 600px) {
   .opp-row { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; }
   .opp-metrics { gap: 0; }
@@ -885,6 +891,8 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .feed-kind::before { content: ''; width: 7px; height: 7px; border-radius: 2px; background: var(--ink); }
 .feed-kind.news { color: var(--accent); }
 .feed-kind.news::before { background: var(--brand-a); border-radius: 50%; }
+.feed-kind.planned { color: var(--signal); }
+.feed-kind.planned::before { background: var(--signal); border-radius: 50%; }
 .feed-meta-text { white-space: nowrap; }
 .feed-meta-text + .feed-meta-text::before, .tag + .feed-meta-text::before { content: '·'; margin-right: 8px; color: var(--subtle); }
 .feed-time { margin-left: auto; font-family: var(--font-mono-stack); font-size: 11.5px; color: var(--subtle); white-space: nowrap; }
@@ -2530,4 +2538,55 @@ a.st-row { text-decoration: none; }
 @media (max-width: 800px) {
   .diag-charts, .diag-split, .diag-kpis { grid-template-columns: 1fr; }
   .diag-filters label { flex: 1 1 140px; }
+}
+
+/* New and updated tenders: electric border with the same gradient on the corner tag.
+   These rules follow the flat-list reset, which clears borders on feed rows. */
+:root .opp-row.fresh,
+:root .feed-item.fresh,
+:root .opp-card.fresh {
+  --fresh: linear-gradient(115deg, #00F0FF 0%, #2D6BFF 48%, #6E4DFF 100%);
+  position: relative;
+  overflow: visible;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    var(--fresh) border-box;
+  margin: 18px 0 8px;
+  box-shadow: none;
+}
+:root .opp-row.fresh-updated,
+:root .feed-item.fresh-updated,
+:root .opp-card.fresh-updated {
+  --fresh: linear-gradient(115deg, #D6FF3F 0%, #00E6C3 42%, #2F7BFF 100%);
+}
+:root .opp-card.fresh { background: linear-gradient(var(--fill), var(--fill)) padding-box, var(--fresh) border-box; }
+:root .opp-row.fresh:hover,
+:root .feed-item.fresh:hover,
+:root .opp-card.fresh:hover {
+  background:
+    linear-gradient(var(--fill-hover), var(--fill-hover)) padding-box,
+    var(--fresh) border-box;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+:root .fresh-tag {
+  position: absolute;
+  top: 0;
+  left: 18px;
+  z-index: 2;
+  transform: translateY(-50%);
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--fresh);
+  color: #04121f;
+  font-family: var(--font-mono-stack);
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.45;
+  pointer-events: none;
 }

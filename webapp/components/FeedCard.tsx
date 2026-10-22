@@ -22,6 +22,35 @@ function timeAgo(t: T, at: Date, now: Date) {
   return at.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' });
 }
 
+function planned(item: FeedItem) {
+  return item.event === 'signal' || item.category === 'signal';
+}
+
+function freshOf(item: FeedItem) {
+  return item.fresh && item.kind !== 'news' && !planned(item) ? item.fresh : null;
+}
+
+function FreshTag({ item }: { item: FeedItem }) {
+  const fresh = freshOf(item);
+  if (!fresh) return null;
+  return <span className="fresh-tag">{getTSync()(fresh === 'new' ? 'New' : 'Updated')}</span>;
+}
+
+function Meta({ item, now, clock }: { item: FeedItem; now: Date; clock: 'feed' | 'social' }) {
+  const t = getTSync();
+  const isPlanned = planned(item);
+  return (
+    <>
+      <span className={`feed-kind ${isPlanned ? 'planned' : item.kind}`}>{t(item.kindLabel)}</span>
+      {!isPlanned && <span className={`tag ${item.category}`}>{t(item.categoryLabel)}</span>}
+      {item.statusLabel && <span className="tag closed">{t(item.statusLabel)}</span>}
+      {item.country && <span className="feed-meta-text">{item.country}</span>}
+      {clock === 'social' && <span className="cc-dot">·</span>}
+      <span className={clock === 'social' ? 'cc-time' : 'feed-time'} title={item.at.toLocaleString(getLocale())}>{timeAgo(t, item.at, now)}</span>
+    </>
+  );
+}
+
 function Related({ item }: { item: FeedItem }) {
   const t = getTSync();
   if (!item.related?.length) return null;
@@ -51,18 +80,14 @@ export default function FeedCard({ item, now, value, like, social }: {
   social?: { engagement: Engagement; signedIn: boolean };  // News page: … menu and action bar
 }) {
   if (social) return <SocialFeedCard item={item} now={now} value={value} social={social} />;
-  const t = getTSync();
   const target = like ? likeTarget(item.href) : null;
+  const fresh = freshOf(item);
   const card = (
-    <Link href={item.href} className={`feed-item ${item.kind}`}>
+    <Link href={item.href} className={`feed-item ${item.kind}${fresh ? ` fresh fresh-${fresh}` : ''}`}>
+      <FreshTag item={item} />
       <div className="feed-body">
         <div className="feed-meta">
-          <span className={`feed-kind ${item.kind}`}>{t(item.kindLabel)}</span>
-          <span className={`tag ${item.category}`}>{t(item.categoryLabel)}</span>
-          {item.isNew && <span className="tag new">{t('New')}</span>}
-          {item.statusLabel && <span className="tag closed">{t(item.statusLabel)}</span>}
-          {item.country && <span className="feed-meta-text">{item.country}</span>}
-          <span className="feed-time" title={item.at.toLocaleString(getLocale())}>{timeAgo(t, item.at, now)}</span>
+          <Meta item={item} now={now} clock="feed" />
         </div>
         <div className="feed-title">{item.headline}</div>
         {item.image && <NewsImage src={item.image} />}
@@ -87,18 +112,14 @@ function SocialFeedCard({ item, now, value, social }: { item: FeedItem; now: Dat
   const target = likeTarget(item.href);
   if (!target || target[0] === 'post' || target[0] === 'blog') return null;
   const [type, id] = target as ['news' | 'tender', string];
-  const t = getTSync();
   const e = social.engagement;
+  const fresh = freshOf(item);
   return (
-    <article className={`feed-item ${item.kind} social-card`} data-card>
+    <article className={`feed-item ${item.kind} social-card${fresh ? ` fresh fresh-${fresh}` : ''}`} data-card>
+      <FreshTag item={item} />
       <div className="feed-body">
         <div className="feed-meta cc-meta">
-          <span className={`feed-kind ${item.kind}`}>{t(item.kindLabel)}</span>
-          <span className={`tag ${item.category}`}>{t(item.categoryLabel)}</span>
-          {item.isNew && <span className="tag new">{t('New')}</span>}
-          {item.country && <span className="feed-meta-text">{item.country}</span>}
-          <span className="cc-dot">·</span>
-          <span className="cc-time" title={item.at.toLocaleString(getLocale())}>{timeAgo(t, item.at, now)}</span>
+          <Meta item={item} now={now} clock="social" />
         </div>
         <Link href={item.href} className="cc-link">
           <div className="feed-title">{item.headline}</div>

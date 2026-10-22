@@ -58,16 +58,16 @@ async function NewsBody({ view }: { view: View }) {
   const bodyOf = (summary: string | null) => publicText(plainText(summary || '')) || null;
   const signalItems: FeedItem[] = signals.map((o): FeedItem => {
     const p = signalPost.get(o.opportunity_id);
-    const at = new Date(o.publication_date || o.first_detected || now);
-    const score = Math.max(o.opportunity_relevance_score ?? 30, 85);
+    const at = new Date(o.first_detected || o.publication_date || now);
+    const score = o.opportunity_relevance_score ?? 30;
     const copy = { body: bodyOf(firstInLanguage(o.summary)) };
     return {
       key: `signal:${o.opportunity_id}`, kind: 'news', event: 'signal', href: `/news/signals/${o.opportunity_id}`,
       headline: titleOf(o), ...copy,
-      category: 'signal', categoryLabel: 'Signal', kindLabel: 'Planned procurement',
+      category: 'signal', categoryLabel: 'Planned procurement', kindLabel: 'Planned procurement',
       country: o.country, at, score, combined: Math.round(newsScore(score, at, now)),
       movement: !p || p.rank == null ? 'same' : p.prev_rank == null || p.rank < p.prev_rank ? 'up' : p.rank > p.prev_rank ? 'down' : 'same',
-      deadline: o.deadline, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
+      deadline: o.deadline, isNew: false, fresh: null,
     };
   });
 
@@ -86,13 +86,12 @@ async function NewsBody({ view }: { view: View }) {
         category: n.category || 'market', categoryLabel: newsCategoryLabel(n.category), kindLabel: 'News',
         country: n.region && n.region !== 'EU / International' ? n.region : null,
         at, score, combined: Math.round(newsScore(score, at, now)), movement,
-        deadline: null, isNew: now.getTime() - at.getTime() <= 2 * 86400_000,
+        deadline: null, isNew: false, fresh: null,
         image: n.image_url,
       };
     });
-  const band = (item: FeedItem) => item.category === 'signal' || item.event === 'signal' ? 0 : item.category === 'industry' ? 2 : 1;
   const items = groupCoverage((view === 'signals' ? signalItems : view === 'all' ? [...newsItems, ...signalItems] : newsItems)
-    .sort((a, b) => band(a) - band(b) || b.combined - a.combined || b.at.getTime() - a.at.getTime()));
+    .sort((a, b) => b.at.getTime() - a.at.getTime() || b.score - a.score));
 
   // Action bars: news stories and signals (tenders).
   const idsOf = (k: string) => items.map((i) => likeTarget(i.href)).filter((x) => x?.[0] === k).map((x) => x![1]);
