@@ -348,5 +348,68 @@
     "fr": "Tous les forfaits",
     "de": "Alle Tarife",
     "it": "Tutti i piani"
+  },
+  "Accounts": {
+    "pt": "Contas",
+    "es": "Cuentas",
+    "fr": "Comptes",
+    "de": "Konten",
+    "it": "Account"
+  },
+  "Signed up": {
+    "pt": "Registo",
+    "es": "Alta",
+    "fr": "Inscription",
+    "de": "Registriert",
+    "it": "Iscrizione"
+  },
+  "Billing": {
+    "pt": "Faturação",
+    "es": "Facturación",
+    "fr": "Facturation",
+    "de": "Abrechnung",
+    "it": "Fatturazione"
+  },
+  "Paying": {
+    "pt": "Pago",
+    "es": "De pago",
+    "fr": "Payant",
+    "de": "Zahlend",
+    "it": "A pagamento"
+  },
+  "Trial": {
+    "pt": "Avaliação",
+    "es": "Prueba",
+    "fr": "Essai",
+    "de": "Test",
+    "it": "Prova"
+  },
+  "Past due": {
+    "pt": "Em atraso",
+    "es": "Impago",
+    "fr": "Impayé",
+    "de": "Überfällig",
+    "it": "In ritardo"
+  },
+  "Canceled": {
+    "pt": "Cancelado",
+    "es": "Cancelado",
+    "fr": "Résilié",
+    "de": "Gekündigt",
+    "it": "Annullato"
+  },
+  "Comped": {
+    "pt": "Oferecido",
+    "es": "De cortesía",
+    "fr": "Offert",
+    "de": "Kostenlos gestellt",
+    "it": "Omaggio"
+  },
+  "No accounts": {
+    "pt": "Nenhuma conta",
+    "es": "Ninguna cuenta",
+    "fr": "Aucun compte",
+    "de": "Keine Konten",
+    "it": "Nessun account"
   }
 }

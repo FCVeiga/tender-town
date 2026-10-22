@@ -12,6 +12,7 @@ const OVERVIEW = [
 ];
 
 const ENTRIES = [
+  { href: '/dashboard/accounts', label: 'Accounts' },
   { href: '/dashboard/active', label: 'Active users' },
   { href: '/dashboard/visits', label: 'Page visits' },
   { href: '/dashboard/scopes', label: 'Scopes' },

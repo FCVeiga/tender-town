@@ -176,6 +176,7 @@ export default function DiagnosisView({
   return (
     <div className="settings diag">
       <h1 className="opps-h1">{t('Dashboard')}</h1>
+      <p className="dash-back"><Link href="/dashboard/accounts">{t('Accounts')}</Link></p>
       {capped && <p className="diag-note">{t('This range hit the event cap. Narrow the dates before treating the totals as complete.')}</p>}
       <nav className="diag-tabs" aria-label={t('Dashboard')}>
         {TABS.map(([key, label]) => <Link key={key} href={withQuery(query, { tab: key === 'overview' ? null : key })} aria-current={filters.tab === key ? 'page' : undefined}>{t(label)}</Link>)}
@@ -204,7 +205,7 @@ export default function DiagnosisView({
             <Card t={t} format={format} label={t('Engaged sessions')} tip={t('A session with at least 10 seconds visible, or a meaningful action. Time in a background tab does not count.')} value={cards.engaged} previous={report.previous.engaged} />
             <Card t={t} format={format} label={t('Signup CTA clicks')} tip={t('Clicks on a signup action, from the header, sidebar, a gate, an article or the example.')} value={cards.cta} previous={report.previous.cta} extra={ratio(cards.cta, cards.sessions) || undefined} />
             <Card t={t} format={format} label={t('Signup starts')} tip={t('A person started the email form, submitted it, or was sent to Google.')} value={cards.starts} previous={report.previous.starts} extra={ratio(cards.starts, visitors) || undefined} />
-            <Card t={t} format={format} label={t('Accounts created')} tip={t('Rows created in the account database. A click or a redirect is not an account.')} value={cards.accounts} previous={report.previous.accounts} extra={ratio(cards.accounts, visitors) || undefined} />
+            <Card t={t} format={format} label={t('Accounts created')} tip={t('Rows created in the account database. A click or a redirect is not an account.')} value={cards.accounts} previous={report.previous.accounts} extra={ratio(cards.accounts, visitors) || undefined} href="/dashboard/accounts" />
             <Card t={t} format={format} label={t('Activated accounts')} tip={t('Accounts with a company-specific tender evaluation. The public example does not count.')} value={cards.activated} previous={report.previous.activated} extra={cards.activatedBackfill ? t('{n} recovered from saved evaluations', { n: cards.activatedBackfill }) : ratio(cards.activated, cards.accounts) || undefined} />
             <Card t={t} format={format} label={t('Revenue')} tip={t('Paid subscriptions that started in this range, at the monthly price.')} value={revenue.total} previous={revenue.previous} display={money.format(revenue.total)} href={withQuery(query, { tab: null }, '/dashboard/revenue')} />
           </div>
