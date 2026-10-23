@@ -7,6 +7,8 @@ documents a bidder needs, with links that work from the site:
       ePPS (Malta, Cyprus, Ireland, …): every file, with direct download links
       DTVP (Germany): every file by category, with direct download links
       ETHICS (Denmark and other Mercell ETHICS buyers): the public material API
+      any other portal: files linked from the page TED names, when a download
+      returns the file without a login
   - otherwise one link to the portal's documents page
   - when that page needs a user login, the summary says so and gives the URL
 
@@ -172,22 +174,217 @@ def _epps_documents(url: str) -> list:
     return list(docs.values())
 
 
+def _epps_pack(url: str):
+    """The anonymous zip of every file on an ePPS notice, when the portal serves one."""
+    resource = re.search(r"resourceId=(\d+)", url or "")
+    if not resource or "/epps/" not in (url or ""):
+        return None
+    parsed = urlparse(url)
+    pack = (f"{parsed.scheme}://{parsed.netloc}/epps/cft/downloadCftResourceItems.do"
+            f"?resourceId={resource.group(1)}&resourceType=ContractDocument")
+    try:
+        response = requests.get(pack, headers=UA, timeout=40, stream=True)
+        head = response.raw.read(8) or b""
+        response.close()
+    except Exception:
+        return None
+    if _file_kind(head) != "zip":
+        return None
+    return (f"Procurement documents.zip", "TENDER_SPECIFICATIONS", pack)
+
+
 _DTVP_GROUPS = {"address": "TENDER_SPECIFICATIONS", "serviceDescription": "TECHNICAL_SPECIFICATIONS",
                 "filledByCompany": "FORM", "contractCondition": "CONTRACT"}
 
 
+_COSINE_ID = re.compile(r"/(?:notice|project)/([A-Z][A-Z0-9]{5,})")
+
+
+def _cosine_pages(url: str) -> list:
+    """Public project pages for a cosinex satellite (DTVP, NRW, GIZ, and the same software elsewhere)."""
+    parsed = urlparse(url or "")
+    match = _COSINE_ID.search(parsed.path or "")
+    if not match or not parsed.netloc:
+        return [url] if url else []
+    prefix = "/VMPSatellite" if "/VMPSatellite/" in parsed.path else ("/Satellite" if "/Satellite/" in parsed.path else "")
+    root = f"{parsed.scheme}://{parsed.netloc}{prefix}/public/company/project/{match.group(1)}/de"
+    return [f"{root}/documents", f"{root}/overview"]
+
+
 def _dtvp_documents(url: str) -> list:
-    """DTVP documents page: (file name, type hint, direct URL). The notice link
-    redirects to the public project page; file links are relative to it."""
-    r = _get(url)
+    """Cosinex project room: (file name, type hint, direct URL).
+
+    The documents tab is the dossier. When that room has been taken down, the
+    overview still links the notice PDF.
+    """
     out = []
-    for group, path in re.findall(r'href="\./documents/(\w+)/([^";]+)', r.text):
-        if group == "archive":
+    for page in _cosine_pages(url):
+        try:
+            response = _get(page)
+        except Exception:
             continue
-        name = unquote_plus(unquote_plus(path))
-        name = re.sub(r"\s*\(ID \d+\)", "", name)
-        out.append((name, _DTVP_GROUPS.get(group), urljoin(r.url, html.unescape(f"./documents/{group}/{path}"))))
-    return list({n: (n, h, u) for n, h, u in out}.values())
+        if response.status_code != 200:
+            continue
+        body = response.text or ""
+        found = []
+        for group, path in re.findall(r'href="\./documents/(\w+)/([^";]+)', body):
+            if group == "archive":
+                continue
+            name = unquote_plus(unquote_plus(path))
+            name = re.sub(r"\s*\(ID \d+\)", "", name)
+            found.append((name, _DTVP_GROUPS.get(group), urljoin(response.url, html.unescape(f"./documents/{group}/{path}"))))
+        for number, path in re.findall(r'href="\./announcements/(\d+)/([^";]+)', body):
+            name = unquote_plus(unquote_plus(path.rsplit("/", 1)[-1]))
+            found.append((name, classify(name), urljoin(response.url, html.unescape(f"./announcements/{number}/{path}"))))
+        if found:
+            out.extend(found)
+            if "/documents" in (response.url or page):
+                break
+    return list({item[2]: item for item in out}.values())
+
+
+_OCID = re.compile(r"(ocds-\d+-[0-9a-f-]{16,})", re.I)
+
+
+def _seap_documents(url: str) -> list:
+    """Romania's SEAP publishes the dossier as one public zip once the archive is generated."""
+    if "e-licitatie.ro" not in (url or ""):
+        return []
+    match = re.search(r"/view/(\d+)", url or "")
+    if not match:
+        return []
+    notice_id = match.group(1)
+    notice_type = "2"
+    headers = {**UA, "Referer": url, "Accept": "application/json"}
+    try:
+        status = requests.get(
+            "https://www.e-licitatie.ro/api-pub/NoticeCommon/GetArchiveStatus/",
+            params={"initNoticeId": notice_id, "sysNoticeTypeId": notice_type},
+            headers=headers, timeout=30,
+        )
+        item = (status.json() or {}).get("archiveItem") or {} if status.status_code == 200 else {}
+    except Exception:
+        return []
+    if item.get("sysArchiveStatusId") != 3:
+        return []
+    name = f"{item.get('noticeNo')}.zip" if item.get("noticeNo") else "Procurement documents.zip"
+    download = ("https://www.e-licitatie.ro/api-pub/NoticeCommon/DownloadArchive/"
+                f"?initNoticeId={notice_id}&sysNoticeTypeId={notice_type}")
+    return [(name[:180], "TENDER_SPECIFICATIONS", download)]
+
+
+def _eop_signed_url(document_id: int) -> str:
+    response = requests.post(
+        "https://service.eop.bg/NX1Service.svc/GetSignedUrlByDocumentId",
+        json={"documentId": document_id},
+        headers={**UA, "Content-Type": "application/json", "Origin": "https://app.eop.bg"},
+        timeout=30,
+    )
+    response.raise_for_status()
+    data = response.json()
+    base = str(data.get("BaseUri") or "").rstrip("/")
+    token = data.get("Token") or ""
+    url = f"{base}/{data.get('Container')}/{data.get('CloudName')}"
+    return f"{url}?{token}" if token else url
+
+
+def _eop_documents(url: str) -> list:
+    """Bulgaria's EOP serves the dossier as a zip export of the public tender."""
+    if "eop.bg" not in (url or ""):
+        return []
+    match = re.search(r"/today/(\d+)", url)
+    if not match:
+        return []
+    tender_id = match.group(1)
+    page = f"https://app.eop.bg/today/{tender_id}"
+    name = "Procurement documents"
+    try:
+        response = requests.post(
+            "https://service.eop.bg/NX1Service.svc/GetPublishedTenderExportsByTenderId",
+            json={"tenderId": int(tender_id), "ianaTimeZone": "Europe/Sofia"},
+            headers={**UA, "Content-Type": "application/json", "Origin": "https://app.eop.bg"},
+            timeout=30,
+        )
+        exports = response.json() if response.status_code == 200 else []
+        chosen = next((item for item in exports if item.get("IsFullExport")), None) if isinstance(exports, list) else None
+        chosen = chosen or (exports[0] if isinstance(exports, list) and exports else None)
+        if chosen and chosen.get("Name"):
+            name = str(chosen["Name"])[:180]
+        if chosen and chosen.get("DocumentId"):
+            signed = _eop_signed_url(int(chosen["DocumentId"]))
+            probe = requests.get(signed, headers=UA, timeout=40, stream=True)
+            head = probe.raw.read(4) or b""
+            probe.close()
+            if probe.status_code == 200 and head[:2] == b"PK":
+                return [(name, "TENDER_SPECIFICATIONS", page)]
+    except Exception:
+        return []
+    return []
+
+
+def _tenderned_documents(url: str) -> list:
+    """TenderNed publicaties/{id}/documenten lists the dossier and a stable download URL."""
+    if "tenderned.nl" not in (url or ""):
+        return []
+    match = re.search(r"/(\d{5,})(?:[/?#]|$)", urlparse(url).path or "")
+    if not match:
+        return []
+    try:
+        response = _get(f"https://www.tenderned.nl/papi/tenderned-rs-tns/v2/publicaties/{match.group(1)}/documenten")
+        payload = response.json() if response.status_code == 200 else {}
+    except Exception:
+        return []
+    docs = []
+    for doc in payload.get("documenten") or []:
+        if doc.get("virusIndicatie"):
+            continue
+        href = ((doc.get("links") or {}).get("download") or {}).get("href") or ""
+        if not href.startswith("/"):
+            continue
+        code = ((doc.get("typeDocument") or {}).get("code") or "").lower()
+        name = (doc.get("documentNaam") or "document").strip()
+        if code in ("pdf", "doc", "docx", "xls", "xlsx", "zip", "odt") and not re.search(r"\.(pdf|docx?|xlsx?|zip|odt)$", name, re.I):
+            name = f"{name}.{code}"
+        if name.lower().endswith(tuple(config()["skip_extensions"])):
+            continue
+        docs.append((name[:180], _portal_type(name), "https://www.tenderned.nl" + href))
+        if len(docs) >= 40:
+            break
+    return docs
+
+
+def _ezamowienia_documents(url: str) -> list:
+    """Poland's e-Zamówienia publishes the dossier as a public JSON list."""
+    if "ezamowienia.gov.pl" not in (url or ""):
+        return []
+    match = _OCID.search(url)
+    if not match:
+        return []
+    ocid = match.group(1)
+    try:
+        response = _get("https://ezamowienia.gov.pl/mp-readmodels/api/Search/GetTenderDocuments",
+                        params={"tenderId": ocid})
+        payload = response.json() if response.status_code == 200 else []
+    except Exception:
+        return []
+    if not isinstance(payload, list):
+        return []
+    docs = []
+    for doc in payload:
+        if (doc.get("tenderDocumentState") or "") != "Published" or doc.get("deleteDate"):
+            continue
+        object_id = doc.get("objectId") or ""
+        name = (doc.get("fileName") or doc.get("name") or "").strip()
+        if not object_id or not name:
+            continue
+        if name.lower().endswith(tuple(config()["skip_extensions"])):
+            continue
+        download = f"https://ezamowienia.gov.pl/mp-readmodels/api/Tender/DownloadDocument/{ocid}/{object_id}"
+        suffix = object_id.rsplit("_", 1)[-1]
+        order = int(suffix) if suffix.isdigit() else 999
+        docs.append((order, name[:180], _portal_type(name), download))
+    docs.sort(key=lambda item: item[0])
+    return [(name, kind, download) for _order, name, kind, download in docs[:40]]
 
 
 _ETHICS_ID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
@@ -245,6 +442,112 @@ def _ethics_documents(url: str):
     return [], restricted
 
 
+_FILE_EXT = re.compile(r"(?:\.(?:pdf|docx?|xlsx?|odt|rtf|zip|7z)|-(?:pdf|docx?|xlsx?))(?:$|[?#&])", re.I)
+_EZAK_FILE = re.compile(r"(?:^|/)document_\d+/", re.I)
+_DOC_LABEL = re.compile(
+    r"règlement|reglement|dossier de consultation|cahier des charges|pliego|vergabeunterlagen|"
+    r"tender document|bidding document|terms of reference|specification|leistungsbeschreibung|"
+    r"\bdce\b|\brc\b|pièce de la consultation|piece de la consultation",
+    re.I,
+)
+_SIZE = re.compile(r"\d+(?:[.,]\d+)?\s*(?:ko|mo|go|kb|mb|gb)\b", re.I)
+_SKIP_HREF = re.compile(r"login|sign-?in|connexion|reset-password|inscription|panier|javascript:|mailto:", re.I)
+_DOWNLOADISH = re.compile(
+    r"download|t[eé]l[eé]charg|document|pliego|anexo|specification|reglement|règlement|\bdce\b|getfile|fichier|vergabeunterlage",
+    re.I,
+)
+_MAX_PORTAL_LINKS = 24
+_MAX_PORTAL_FILES = 16
+_DIRECT = re.compile(
+    r"GetDocument|downloadContractDocument|downloadCftResourceItems|documentId=|"
+    r"DownloadReglement|DemandeTelechargementDce|/file/get_new/",
+    re.I,
+)
+_MAX_FILE_BYTES = 30_000_000
+
+
+def _file_kind(data: bytes) -> str:
+    if data[:4] == b"%PDF":
+        return "pdf"
+    if data[:2] == b"PK":
+        return "zip"
+    if data[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
+        return "ole"
+    return ""
+
+
+def _same_site(left: str, right: str) -> bool:
+    a = urlparse(left).netloc.lower().removeprefix("www.")
+    b = urlparse(right).netloc.lower().removeprefix("www.")
+    return bool(a) and a == b
+
+
+def _specific_page(page_url: str) -> bool:
+    """A tender page, rather than the portal's front door."""
+    parsed = urlparse(page_url or "")
+    path = (parsed.path or "/").rstrip("/")
+    if path.lower() in ("", "/", "/entreprise"):
+        return False
+    return bool(re.search(r"\d|[0-9a-f]{8}-", f"{path}?{parsed.query or ''}", re.I))
+
+
+def portal_candidates(page_url: str, body: str) -> list:
+    """(label, absolute url) for files a buyer page links, not the site's own menu."""
+    found = []
+    seen = set()
+    specific = _specific_page(page_url)
+    for href, inner in re.findall(r"""<a\b[^>]*href=["']([^"']+)["'][^>]*>(.*?)</a>""", body or "", re.S | re.I):
+        label = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html.unescape(inner))).strip()
+        raw = html.unescape(href).strip()
+        if not raw or raw.startswith("#") or _SKIP_HREF.search(raw):
+            continue
+        absolute = urljoin(page_url, raw)
+        if not _same_site(page_url, absolute) or absolute in seen:
+            continue
+        label_ok = bool(_DOC_LABEL.search(label) or _DOC_LABEL.search(absolute))
+        downloadish = bool(_DOWNLOADISH.search(absolute))
+        file_link = bool(_FILE_EXT.search(absolute.split("#")[0]))
+        direct = bool(_DIRECT.search(absolute))
+        ezak_file = bool(_EZAK_FILE.search(urlparse(absolute).path or ""))
+        if direct or ezak_file or (file_link and (specific or label_ok or downloadish)):
+            keep = True
+        elif label_ok and (downloadish or bool(_SIZE.search(label))):
+            keep = True
+        else:
+            keep = False
+        if not keep:
+            continue
+        seen.add(absolute)
+        found.append((label[:180], absolute))
+        if len(found) >= _MAX_PORTAL_LINKS:
+            break
+    return found
+
+
+def _login_wall(url: str, status: int, final_url: str, body: str) -> bool:
+    """A page that asks for a login before it shows any documents."""
+    if status == 401:
+        return True
+    if status == 403:
+        low = (body or "")[:8000].lower()
+        return any(word in low for word in ("password", "log in", "login", "sign in", "anmelden", "connexion"))
+    if status != 200:
+        return False
+    final = (final_url or "").lower()
+    if any(part in final for part in ("/login", "/signin", "/sign-in", "/logon")):
+        return True
+    sample = (body or "")[:30000]
+    low = sample.lower()
+    if 'type="password"' not in low and "type='password'" not in low:
+        return False
+    if re.search(r'href="[^"]+\.(pdf|docx|xlsx|zip)"', low) or portal_candidates(url, sample):
+        return False
+    title = re.search(r"<title[^>]*>(.*?)</title>", sample, re.S)
+    headings = " ".join(re.findall(r"<h1[^>]*>(.*?)</h1>", sample, re.S)[:2])
+    label = re.sub(r"<[^>]+>", " ", f"{title.group(1) if title else ''} {headings}")
+    return bool(re.search(r"\b(log ?in|sign ?in|log ind|anmelden|connexion)\b", label, re.I))
+
+
 def _requires_login(url: str) -> bool:
     """The portal answered with a login wall. A login box in the header of a
     page that already lists the files is not one."""
@@ -252,22 +555,73 @@ def _requires_login(url: str) -> bool:
         response = _get(url)
     except Exception:
         return False
-    if response.status_code in (401, 403):
-        return True
-    if response.status_code != 200:
-        return False
-    final = (response.url or "").lower()
-    if any(part in final for part in ("/login", "/signin", "/sign-in", "/logon")):
-        return True
-    body = (response.text or "")[:30000].lower()
-    if 'type="password"' not in body and "type='password'" not in body:
-        return False
-    if re.search(r'href="[^"]+\.(pdf|docx|xlsx|zip)"', body):
-        return False
-    title = re.search(r"<title[^>]*>(.*?)</title>", body, re.S)
-    headings = " ".join(re.findall(r"<h1[^>]*>(.*?)</h1>", body, re.S)[:2])
-    label = re.sub(r"<[^>]+>", " ", f"{title.group(1) if title else ''} {headings}")
-    return bool(re.search(r"\b(log ?in|sign ?in|log ind|anmelden|connexion)\b", label))
+    return _login_wall(url, response.status_code, response.url, response.text or "")
+
+
+def _portal_type(name: str) -> str:
+    """A consultation file is a tender specification. An unnamed PDF or zip is too."""
+    if _DOC_LABEL.search(name or ""):
+        return "TENDER_SPECIFICATIONS"
+    kind = classify(name)
+    if kind == "ANNEX" and re.search(r"\.(pdf|zip|docx?|xlsx?|odt)$", name or "", re.I):
+        return "TENDER_SPECIFICATIONS"
+    return kind
+
+
+def harvest_portal(url: str, known: set = None) -> dict:
+    """Files a portal page gives out without a login.
+
+    files is (name, url) for each response that is itself a pdf, office file or zip.
+    gated is true only when the page blocks the documents behind a login and no file
+    could be read. A page that merely links onwards stays ungated, with whatever
+    files it did give up.
+    """
+    url = html.unescape(url or "").strip()
+    known = known or set()
+    out = {"files": [], "gated": False, "listed": 0}
+    if not url.startswith("http"):
+        return out
+    session = requests.Session()
+    session.headers.update(UA)
+    try:
+        response = session.get(url, timeout=25)
+    except Exception:
+        return out
+    data = response.content or b""
+    if response.status_code == 200 and _file_kind(data) and 200 <= len(data) <= _MAX_FILE_BYTES:
+        name = urlparse(response.url).path.rsplit("/", 1)[-1] or "document"
+        out["files"].append((name[:180], url))
+        out["listed"] = 1
+        return out
+    body = response.text or ""
+    if _login_wall(url, response.status_code, response.url, body):
+        out["gated"] = True
+        return out
+    page = response.url or url
+    candidates = portal_candidates(page, body)
+    out["listed"] = len(candidates)
+    seen = set()
+    for label, link in candidates:
+        if link in seen:
+            continue
+        seen.add(link)
+        if link in known:
+            out["files"].append((label[:180], link))
+            continue
+        if len(out["files"]) >= _MAX_PORTAL_FILES:
+            break
+        try:
+            got = session.get(link, timeout=25)
+        except Exception:
+            continue
+        blob = got.content or b""
+        if got.status_code != 200 or not _file_kind(blob) or not (200 <= len(blob) <= _MAX_FILE_BYTES):
+            continue
+        disposition = got.headers.get("content-disposition") or ""
+        named = re.search(r"filename\*?=(?:UTF-8''|\"?)([^\";]+)", disposition, re.I)
+        name = label or (unquote_plus(named.group(1)).strip() if named else "") or link.rsplit("/", 1)[-1]
+        out["files"].append((name[:180], link))
+    return out
 
 
 def note_gated_portal(session, opportunity_id: str, url: str):
@@ -303,6 +657,46 @@ def notice_label(kind: str, index: int) -> str:
     return "Contract notice"
 
 
+def resolve_portal(url: str, known: set = None) -> dict:
+    """Files behind one buyer URL. gated is set only when a login wall is all the page offers."""
+    known = known or set()
+    host = urlparse(url).netloc
+    found = []
+    gated = False
+    partial = False
+    if "/epps/" in url and ("listContractDocuments" in url or "listDPSContractDocuments" in url):
+        found = [(f"{title} — {fname}" if title and title.lower() not in fname.lower() else fname,
+                  classify(f"{title} {fname}"), dl, None, None) for title, fname, dl in _epps_documents(url)]
+        pack = _epps_pack(url)
+        if pack and pack[2] not in known:
+            found.insert(0, (*pack, None, None))
+    elif "e-licitatie.ro" in host:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _seap_documents(url)]
+    elif "eop.bg" in host:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _eop_documents(url)]
+    elif "tenderned.nl" in host:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _tenderned_documents(url)]
+    elif "ezamowienia.gov.pl" in host:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _ezamowienia_documents(url)]
+    elif "dtvp.de" in host or _COSINE_ID.search(urlparse(url).path or ""):
+        found = [(name, hint or classify(name), dl, None, None) for name, hint, dl in _dtvp_documents(url)]
+    elif "tender-details/" in url:
+        from agents.official_notice import funding_documents
+        found = [(name, hint or classify(name), dl, published, None)
+                 for name, hint, dl, published in funding_documents(url.split("#")[0])]
+    elif _ethics_tender_id(url):
+        files, gated = _ethics_documents(url)
+        found = [(name, hint, dl, published, None) for name, hint, dl, published in files]
+    else:
+        harvested = harvest_portal(url, known)
+        if harvested["files"]:
+            found = [(name, _portal_type(name), link, None, None) for name, link in harvested["files"]]
+            partial = harvested["listed"] > len(harvested["files"])
+        elif harvested["gated"]:
+            gated = True
+    return {"files": found, "gated": gated, "partial": partial}
+
+
 def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
     """Refresh one opportunity's document list. Returns {'documents': n, 'new': [names]}."""
     notices = _procedure_notices(procedure_id)
@@ -335,31 +729,26 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
         raise RuntimeError(f"TED document links for {procedure_id} could not be read")
     got_files = False
     gated_url = None
+    partial = False
+    known = {row.url for row in session.execute(text("select url from documents where opportunity_id = :o"),
+                                                {"o": opportunity_id}).fetchall()}
     for url in portal_urls:
+        partial = False
         host = urlparse(url).netloc
         found = []
         gated = False
         try:
-            if "/epps/" in url and "listContractDocuments" in url:
-                found = [(f"{title} — {fname}" if title and title.lower() not in fname.lower() else fname,
-                          classify(f"{title} {fname}"), dl, None, None) for title, fname, dl in _epps_documents(url)]
-            elif "dtvp.de" in host:
-                found = [(name, hint or classify(name), dl, None, None) for name, hint, dl in _dtvp_documents(url)]
-            elif "tender-details/" in url:
-                from agents.official_notice import funding_documents
-                found = [(name, hint or classify(name), dl, published, None)
-                         for name, hint, dl, published in funding_documents(url.split("#")[0])]
-            elif _ethics_tender_id(url):
-                files, gated = _ethics_documents(url)
-                found = [(name, hint, dl, published, None) for name, hint, dl, published in files]
-            elif _requires_login(url):
-                gated = True
+            resolved = resolve_portal(url, known)
+            found = resolved["files"]
+            gated = resolved["gated"]
+            partial = resolved["partial"]
         except Exception:
             found = []
         if found:
             rows += found
             got_files = True
-            continue
+            if not partial:
+                continue
         if gated:
             gated_url = gated_url or url
             rows.append((f"Procurement documents (login required) — {host.removeprefix('www.')}",
@@ -399,6 +788,190 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
         session.execute(text("update opportunities set last_change = :now where opportunity_id = :o"), {"now": now, "o": opportunity_id})
     session.commit()
     return {"documents": len(rows), "new": new_names}
+
+
+def _store_portal_file(session, opportunity_id: str, name: str, url: str, now, doc_type: str = None) -> bool:
+    """Insert one harvested file. Returns whether a new row was written."""
+    doc_id = f"{opportunity_id}-{hashlib.md5(f'{name}|{url}'.encode()).hexdigest()[:10]}"
+    exists = session.execute(text("select document_id from documents where document_id = :d or (opportunity_id = :o and url = :u)"),
+                             {"d": doc_id, "o": opportunity_id, "u": url[:1000]}).first()
+    if exists:
+        return False
+    session.execute(text("""insert into documents (document_id, opportunity_id, name, document_type, url, downloaded_at)
+                            values (:d, :o, :n, cast(:t as documenttype), :u, :now)"""),
+                    {"d": doc_id, "o": opportunity_id, "n": name[:500], "t": doc_type or _portal_type(name),
+                     "u": url[:1000], "now": now})
+    return True
+
+
+def repair_portal_stubs(session) -> dict:
+    """Open the portal links already stored as 'Tender documents on …' and keep the public files.
+
+    A link that needs a login is renamed and the summary says so. Nothing is posted
+    as a change: these files were already on the notice when the link was stored.
+    """
+    rows = session.execute(text("""select document_id, opportunity_id, url, name from documents
+                                   where name like 'Tender documents on %'""")).fetchall()
+    opp_ids = list({r.opportunity_id for r in rows})
+    before = _docs_for(session, opp_ids)
+    stats = {"checked": len(rows), "files": 0, "inserted": 0, "removed": 0, "gated": 0, "unchanged": 0, "errors": 0}
+    for row in rows:
+        try:
+            harvested = harvest_portal(row.url)
+            clean = html.unescape(row.url or "").strip()
+            if clean.startswith("http") and clean != row.url:
+                session.execute(text("update documents set url = :u where document_id = :d"),
+                                {"u": clean[:1000], "d": row.document_id})
+            added = 0
+            for name, link in harvested["files"]:
+                if link in (row.url, clean):
+                    session.execute(text("""update documents set name = :n, document_type = cast(:t as documenttype)
+                                            where document_id = :d"""),
+                                    {"n": name[:500], "t": _portal_type(name), "d": row.document_id})
+                    added += 1
+                    continue
+                if _store_portal_file(session, row.opportunity_id, name, link, datetime.utcnow()):
+                    added += 1
+                    stats["inserted"] += 1
+            complete = bool(harvested["files"]) and harvested["listed"] <= len(harvested["files"])
+            replaced = any(link in (row.url, clean) for _, link in harvested["files"])
+            if complete and not replaced:
+                session.execute(text("delete from documents where document_id = :d"), {"d": row.document_id})
+                stats["removed"] += 1
+            elif harvested["gated"] and not harvested["files"]:
+                host = urlparse(clean).netloc.lower().removeprefix("www.") or "portal"
+                session.execute(text("update documents set name = :n where document_id = :d"),
+                                {"n": f"Procurement documents (login required) — {host}"[:500], "d": row.document_id})
+                note_gated_portal(session, row.opportunity_id, clean or row.url)
+                stats["gated"] += 1
+            elif not added:
+                stats["unchanged"] += 1
+            stats["files"] += added
+            session.commit()
+        except Exception:
+            session.rollback()
+            stats["errors"] += 1
+    after = _docs_for(session, opp_ids)
+    if after != before + stats["inserted"] - stats["removed"]:
+        raise RuntimeError(f"portal repair changed documents by {after - before}, expected {stats['inserted'] - stats['removed']}")
+    return stats
+
+
+def _docs_for(session, opp_ids: list) -> int:
+    if not opp_ids:
+        return 0
+    total = 0
+    for start in range(0, len(opp_ids), 40):
+        chunk = opp_ids[start:start + 40]
+        marks = ", ".join(f":i{n}" for n in range(len(chunk)))
+        total += session.execute(text(f"select count(*) from documents where opportunity_id in ({marks})"),
+                                 {f"i{n}": opp for n, opp in enumerate(chunk)}).scalar()
+    return total
+
+
+def _publication_number(official: str, urls) -> str:
+    if official and "ted.europa.eu" in official:
+        tail = official.rstrip("/").split("/")[-1]
+        if re.fullmatch(r"\d+-\d{4}", tail):
+            return tail
+    for url in urls:
+        match = re.search(r"/notice/(\d+-\d{4})/", url or "")
+        if match:
+            return match.group(1)
+    return ""
+
+
+def gather_buyer_documents(session) -> dict:
+    """Download buyer files for every tender on a scope other than General.
+
+    A portal that needs a login is recorded as gated and left alone. Files that
+    were already published are not announced as new.
+    """
+    opps = session.execute(text("""
+        select o.opportunity_id, o.official_url, o.reference
+        from opportunities o
+        where o.status <> 'REJECTED'
+          and exists (
+            select 1 from scope_items si
+            join scopes s on s.id = si.scope_id
+            where si.item_id = o.opportunity_id and si.item_type = 'tender' and s.is_default = false
+          )
+          and not exists (
+            select 1 from documents d
+            where d.opportunity_id = o.opportunity_id
+              and d.document_type in ('TENDER_SPECIFICATIONS','TECHNICAL_SPECIFICATIONS','FORM','ANNEX','CONTRACT','FINANCIAL_PROPOSAL','AWARD_CRITERIA','Q_AND_A','CLARIFICATION')
+              and d.name not like 'Tender documents on %'
+              and d.name not like 'Procurement documents (login required)%'
+          )
+    """)).fetchall()
+    ids = [o.opportunity_id for o in opps]
+    before = _docs_for(session, ids)
+    stats = {"checked": len(opps), "inserted": 0, "with_files": 0, "gated": 0, "unchanged": 0, "errors": 0}
+    for index, opp in enumerate(opps, start=1):
+        if index == 1 or index % 25 == 0:
+            print(f"progress {index}/{len(opps)}", flush=True)
+        try:
+            stored = session.execute(text("select url from documents where opportunity_id = :o"),
+                                     {"o": opp.opportunity_id}).fetchall()
+            known = {row.url for row in stored if row.url}
+            portals = [html.unescape(row.url) for row in stored if row.url and "ted.europa.eu" not in row.url]
+            if opp.official_url and "ted.europa.eu" not in opp.official_url:
+                portals.append(opp.official_url)
+            pubs = []
+            if (opp.reference or "").startswith("TED:"):
+                try:
+                    pubs = [n["publication-number"] for n in _procedure_notices(opp.reference[4:])]
+                except Exception:
+                    pubs = []
+            if not pubs:
+                one = _publication_number(opp.official_url, known)
+                pubs = [one] if one else []
+            for pub in pubs:
+                try:
+                    portals.extend(_notice_document_urls(pub))
+                except Exception:
+                    pass
+            portals = list(dict.fromkeys(html.unescape(u or "").strip() for u in portals))
+            portals = [u for u in portals if u.startswith("http") and "ted.europa.eu" not in u]
+            added = 0
+            gated_url = None
+            got = False
+            for url in portals:
+                resolved = resolve_portal(url, known)
+                for name, doc_type, link, _published, _version in resolved["files"]:
+                    if link in known:
+                        got = True
+                        continue
+                    if _store_portal_file(session, opp.opportunity_id, name, link, datetime.utcnow(), doc_type):
+                        added += 1
+                        known.add(link)
+                        got = True
+                if resolved["gated"] and not resolved["files"]:
+                    gated_url = gated_url or url
+            if gated_url and not got:
+                host = urlparse(gated_url).netloc.lower().removeprefix("www.") or "portal"
+                session.execute(text("""update documents set name = :n
+                                        where opportunity_id = :o and name like 'Tender documents on %' and url = :u"""),
+                                {"n": f"Procurement documents (login required) — {host}"[:500],
+                                 "o": opp.opportunity_id, "u": gated_url[:1000]})
+                note_gated_portal(session, opp.opportunity_id, gated_url)
+                stats["gated"] += 1
+            elif added:
+                stats["with_files"] += 1
+            else:
+                stats["unchanged"] += 1
+            stats["inserted"] += added
+            session.commit()
+            if added or gated_url:
+                print(f"gather {opp.opportunity_id} files={added} gated={bool(gated_url and not got)}", flush=True)
+        except Exception as exc:
+            session.rollback()
+            stats["errors"] += 1
+            print(f"gather {opp.opportunity_id} error {exc}"[:180], flush=True)
+    after = _docs_for(session, ids)
+    if after != before + stats["inserted"]:
+        raise RuntimeError(f"buyer documents changed by {after - before}, expected {stats['inserted']}")
+    return stats
 
 
 def collect_missing(session, errors: list) -> dict:

@@ -35,6 +35,46 @@ function buyerFile(url: string | null | undefined) {
   return /\.(pdf|docx?|xlsx?|zip|odt)(?:$|[?#&])/i.test(url.split('#')[0]);
 }
 
+/** A download with no file extension is still a file when the bytes say so. */
+function officeFile(buf: Buffer) {
+  return buf.subarray(0, 4).toString() === '%PDF' || buf.subarray(0, 2).toString() === 'PK';
+}
+
+/** Bulgaria's EOP page is public, and the dossier is a zip the portal signs for half an hour. */
+async function eopExport(tenderId: string): Promise<Buffer | null> {
+  const headers = { 'Content-Type': 'application/json; charset=utf-8', 'User-Agent': UA, Origin: 'https://app.eop.bg' };
+  const listed = await fetch('https://service.eop.bg/NX1Service.svc/GetPublishedTenderExportsByTenderId', {
+    method: 'POST', headers, body: JSON.stringify({ tenderId: Number(tenderId), ianaTimeZone: 'Europe/Sofia' }),
+  });
+  if (!listed.ok) return null;
+  const exports = await listed.json() as { IsFullExport?: boolean; DocumentId?: number }[];
+  const chosen = (Array.isArray(exports) ? exports.find((item) => item.IsFullExport) || exports[0] : null);
+  if (!chosen?.DocumentId) return null;
+  const signed = await fetch('https://service.eop.bg/NX1Service.svc/GetSignedUrlByDocumentId', {
+    method: 'POST', headers, body: JSON.stringify({ documentId: chosen.DocumentId }),
+  });
+  if (!signed.ok) return null;
+  const data = await signed.json() as { BaseUri?: string; Container?: string; CloudName?: string; Token?: string };
+  if (!data.BaseUri || !data.Container || !data.CloudName) return null;
+  const fileUrl = `${data.BaseUri.replace(/\/$/, '')}/${data.Container}/${data.CloudName}${data.Token ? `?${data.Token}` : ''}`;
+  const file = await fetch(fileUrl);
+  if (!file.ok) return null;
+  return Buffer.from(await file.arrayBuffer());
+}
+
+async function fetchBuyerFile(url: string): Promise<Buffer | null> {
+  const eop = url.match(/eop\.bg\/today\/(\d+)/);
+  if (eop) {
+    try {
+      const zip = await eopExport(eop[1]);
+      if (zip) return zip;
+    } catch { /* the page itself is not the dossier */ }
+  }
+  const resp = await fetch(url, { headers: { 'User-Agent': UA } });
+  if (!resp.ok) return null;
+  return Buffer.from(await resp.arrayBuffer());
+}
+
 const clean = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
 function parseJson(text: string) {
@@ -97,11 +137,38 @@ function noticeCriteria(xml: string) {
       description: desc ? clean(desc[1]) : null,
     });
   }
+  if (!award.length) award.push(...expressedAward(xml));
   return {
     selection: grab(/<efac:SelectionCriteria>[\s\S]*?<\/efac:SelectionCriteria>/g),
     tenderer: grab(/<cac:SpecificTendererRequirement>[\s\S]*?<\/cac:SpecificTendererRequirement>/g),
     award,
   };
+}
+
+const PRICE = /\b(prix|price|preis|prezzo|precio|cena|hind)\b/i;
+const COST = /\b(co[uû]t|cost|kosten|costo|coste)\b/i;
+
+/** Weights written as a sentence ('prix 50 % ; valeur technique 30 %'), once per lot. */
+function expressedAward(xml: string) {
+  const award: { type: string | null; weight: number | null; name: string | null; description: string | null }[] = [];
+  const lots = xml.match(/<cac:ProcurementProjectLot\b[\s\S]*?<\/cac:ProcurementProjectLot>/g) || [xml];
+  for (const block of lots) {
+    const names = [...block.matchAll(/<cbc:Name\b[^>]*>([\s\S]*?)<\/cbc:Name>/g)].map((m) => clean(m[1]));
+    const lot = names.find((n) => n.includes(' ')) || '';
+    for (const raw of block.match(/<cbc:CalculationExpression\b[^>]*>([\s\S]*?)<\/cbc:CalculationExpression>/g) || []) {
+      const text = clean(raw.replace(/<\/?cbc:CalculationExpression[^>]*>/g, ''));
+      if (text.length < 15) continue;
+      const rows: typeof award = [];
+      for (const match of text.matchAll(/([^:;]{2,80}?)\s+(\d+(?:[.,]\d+)?)\s*%/g)) {
+        const label = match[1].split(/[:;]/).pop()!.trim().replace(/^[-–—;,.\s]+|[-–—;,.\s]+$/g, '');
+        if (label.length < 2 || label.length > 80) continue;
+        const kind = PRICE.test(label) ? 'price' : COST.test(label) ? 'cost' : 'quality';
+        rows.push({ type: kind, weight: Number(match[2].replace(',', '.')), name: lot ? `${lot} — ${label}` : label, description: text });
+      }
+      award.push(...(rows.length ? rows : [{ type: null, weight: null, name: lot || 'Award criteria', description: text }]));
+    }
+  }
+  return award;
 }
 
 function noticeLabel(kind: string, index: number) {
@@ -128,7 +195,9 @@ function changeNote(xml: string) {
 async function fetchXml(publication: string) {
   const r = await fetch(`https://ted.europa.eu/en/notice/${publication}/xml`, { headers: { 'User-Agent': UA } });
   if (!r.ok) throw new Error(`TED notice ${publication} returned ${r.status}`);
-  return r.text();
+  const body = await r.text();
+  if (!body.includes('<cbc:')) throw new Error(`TED notice ${publication} XML was not readable`);
+  return body;
 }
 
 async function loadProcedure(officialUrl: string, reference: string | null) {
@@ -180,7 +249,8 @@ function recency(name: string) {
 async function readFileBody(name: string, data: Buffer) {
   if (data.subarray(0, 2).toString() === 'PK' && !/\.(docx|xlsx|pptx)$/i.test(name)) {
     const zip = await JSZip.loadAsync(data);
-    const inner = Object.keys(zip.files).filter((n) => /\.(pdf|docx|xlsx)$/i.test(n)).slice(0, 8);
+    const prefer = (n: string) => (/swz|specyfik|cahier|pflichten|leistung|leidraad|specification|reglement|terms of reference/i.test(n) ? 0 : 1);
+    const inner = Object.keys(zip.files).filter((n) => /\.(pdf|docx|xlsx)$/i.test(n)).sort((a, b) => prefer(a) - prefer(b)).slice(0, 12);
     const parts: string[] = [];
     for (const n of inner) {
       const buf = Buffer.from(await zip.files[n].async('uint8array'));
@@ -196,7 +266,7 @@ async function documentTexts(opportunityId: string) {
   const { data } = await db.from('documents').select('name, document_type, url').eq('opportunity_id', opportunityId);
   const rank = new Map(READ_ORDER.map((t, i) => [t, i]));
   const rows = (data || [])
-    .filter((r) => rank.has(r.document_type) && buyerFile(r.url))
+    .filter((r) => rank.has(r.document_type) && r.url)
     .sort((a, b) => (rank.get(a.document_type)! - rank.get(b.document_type)!) || (recency(b.name || '') - recency(a.name || '')));
   const picked: { name: string; body: string }[] = [];
   const seen = new Map<string, number>();
@@ -204,11 +274,9 @@ async function documentTexts(opportunityId: string) {
   for (const r of rows) {
     const kind = r.document_type as string;
     if ((kind === 'Q_AND_A' || kind === 'CLARIFICATION') && (seen.get(kind) || 0) >= 4) continue;
-    let resp: Response;
-    try { resp = await fetch(r.url, { headers: { 'User-Agent': UA } }); } catch { continue; }
-    if (!resp.ok) continue;
-    const buf = Buffer.from(await resp.arrayBuffer());
-    if (buf.length > 30_000_000) continue;
+    let buf: Buffer | null;
+    try { buf = await fetchBuyerFile(r.url); } catch { continue; }
+    if (!buf || buf.length > 30_000_000 || (!buyerFile(r.url) && !officeFile(buf))) continue;
     let body = '';
     try { body = (await readFileBody(r.name || 'document', buf)).replace(/[ \t]+/g, ' ').trim(); } catch { continue; }
     body = body.slice(0, READ_ORDER.slice(0, 2).includes(kind) ? MAIN_DOC_CHARS : DOC_CHARS);
@@ -237,7 +305,7 @@ export async function submissionDocumentTexts(opportunityId: string) {
   const { data } = await db.from('documents').select('name, document_type, url').eq('opportunity_id', opportunityId);
   const rank = new Map(SUBMISSION_ORDER.map((t, i) => [t, i]));
   const rows = (data || [])
-    .filter((r) => rank.has(r.document_type) && buyerFile(r.url))
+    .filter((r) => rank.has(r.document_type) && r.url)
     .sort((a, b) => (rank.get(a.document_type)! - rank.get(b.document_type)!) || (recency(b.name || '') - recency(a.name || '')));
   const picked: { name: string; type: string; body: string }[] = [];
   const seen = new Map<string, number>();
@@ -245,11 +313,9 @@ export async function submissionDocumentTexts(opportunityId: string) {
   for (const r of rows) {
     const kind = r.document_type as string;
     if ((seen.get(kind) || 0) >= (SUBMISSION_KIND_CAP[kind] || 1)) continue;
-    let resp: Response;
-    try { resp = await fetch(r.url, { headers: { 'User-Agent': UA } }); } catch { continue; }
-    if (!resp.ok) continue;
-    const buf = Buffer.from(await resp.arrayBuffer());
-    if (buf.length > 30_000_000) continue;
+    let buf: Buffer | null;
+    try { buf = await fetchBuyerFile(r.url); } catch { continue; }
+    if (!buf || buf.length > 30_000_000 || (!buyerFile(r.url) && !officeFile(buf))) continue;
     let body = '';
     try { body = (await readFileBody(r.name || 'document', buf)).replace(/[ \t]+/g, ' ').trim(); } catch { continue; }
     body = body.slice(0, SUBMISSION_CAP[kind] || DOC_CHARS);
