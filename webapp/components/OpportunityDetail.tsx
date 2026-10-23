@@ -5,6 +5,7 @@ import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText, stageOf, statedValue, vatTreatment } from '@/lib/publication';
+import { currentAnalysis, shownSummary } from '@/lib/shownSummary';
 import { DeadlineText, StatusTags } from '@/components/OpportunityCard';
 import { UpdateEvent } from '@/components/UpdateComment';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
@@ -135,7 +136,8 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
     const rows = (r.requirement_matches || []).filter((m: any) => m.scope_id === scopeId);
     return (wsId && rows.find((m: any) => m.workspace_id === wsId)) || rows.find((m: any) => !m.workspace_id);
   };
-  const summaryRaw = alignSubmissionDeadline(publicText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? ''), o.deadline);
+  const analysis = currentAnalysis(o);
+  const summaryRaw = alignSubmissionDeadline(publicText(plainText(shownSummary(o))), o.deadline);
   const summaryPlain = plainText(summaryRaw);
   const stage = stageOf(o);
   const stated = o.estimated_value ? null : statedValue(summaryRaw);
@@ -252,7 +254,7 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
               <section className="detail-block" id="summary">
                 <h2>{t('Summary')}</h2>
                 <PostMarkdown>{summaryRaw}</PostMarkdown>
-                {o.tender_summary
+                {analysis
                   ? <p className="summary-note">{t('Tender Analysis Agent')} · {o.official_url?.includes('ted.europa.eu') ? t('from the notice and the tender documents') : t('from the notice and the tender page')}</p>
                   : summaryRaw ? <p className="summary-note">{t('Preliminary summary.')}</p> : null}
               </section>

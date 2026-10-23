@@ -37,6 +37,7 @@ export type Opportunity = {
   opportunity_type: string | null;
   status: string | null;
   summary: string | null;
+  tender_summary?: string | null;
   status_evidence: string | null;
   verified_at: string | null;
   publication_date: string | null;

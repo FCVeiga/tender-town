@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { titleOf } from '@/lib/data';
-import { firstInLanguage } from '@/lib/english';
+import { shownSummary } from '@/lib/shownSummary';
 import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText } from '@/lib/publication';
 import { getPlatformLanguage } from '@/lib/language';
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   return pageMeta({
     title: `${title} — Tender Town`,
     socialTitle: title,
-    description: clip(alignSubmissionDeadline(publicText(firstInLanguage(data.tender_summary, data.summary) || ''), data.deadline) || title),
+    description: clip(alignSubmissionDeadline(publicText(shownSummary(data)), data.deadline) || title),
     path: `/news/signals/${params.id}`,
     type: 'article',
     published: data.publication_date || data.first_detected,

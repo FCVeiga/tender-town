@@ -697,6 +697,86 @@ def resolve_portal(url: str, known: set = None) -> dict:
     return {"files": found, "gated": gated, "partial": partial}
 
 
+def _portal_urls_on_record(session, opportunity_id: str) -> list:
+    """Portal links already stored for this tender, when a fresh TED read fails."""
+    official = session.execute(text("select official_url from opportunities where opportunity_id = :o"),
+                               {"o": opportunity_id}).scalar() or ""
+    stored = session.execute(text("select url from documents where opportunity_id = :o"),
+                             {"o": opportunity_id}).fetchall()
+    urls = []
+    if str(official).startswith("http") and "ted.europa.eu" not in official:
+        urls.append(html.unescape(official.strip()))
+    for row in stored:
+        url = html.unescape((row.url or "").strip())
+        if url.startswith("http") and "ted.europa.eu" not in url:
+            urls.append(url)
+    return list(dict.fromkeys(urls))
+
+
+# An analysis that says the notice or the dossier was missing. The page shows the notice summary.
+_UNREAD_SQL = """(
+    tender_summary ilike '%almost no information%'
+    or tender_summary ilike '%does not include the content%'
+    or tender_summary ilike '%not supplied%'
+    or tender_summary ilike '%not among the files%'
+    or tender_summary ilike '%no substantive%'
+    or tender_summary ilike '%does not say what is being procured%'
+    or tender_summary ilike '%are all empty%'
+    or tender_summary ilike '%material supplied for this%'
+    or tender_summary ilike '%material provided for this%'
+    or tender_summary ilike '%material available for this%'
+    or tender_summary ilike '%source material%'
+)"""
+
+_ACTIVE_PUBLISHED = """
+    status in ('OPEN', 'SIGNAL')
+    and (deadline is null or deadline >= now())
+    and exists (
+        select 1 from scope_items si
+        where si.item_id = opportunities.opportunity_id and si.item_type = 'tender')
+    and (status <> 'SIGNAL' or deadline is not null or publication_date is null
+         or publication_date >= now() - interval '183 days')
+"""
+
+
+def retire_stale_analysis(session, opportunity_id: str) -> None:
+    """Drop an analysis the current documents have overtaken, or one that says they were missing."""
+    session.execute(text(f"""
+        update opportunities set tender_summary = null, tender_analysed_at = null
+        where opportunity_id = :o
+          and tender_summary is not null
+          and (
+            {_UNREAD_SQL}
+            or (
+              tender_analysed_at is not null
+              and tender_analysed_at < (
+                select max(d.downloaded_at) from documents d
+                where d.opportunity_id = :o
+                  and coalesce(d.url, '') not like '%ted.europa.eu%'
+                  and d.name not like 'Tender documents on %'
+                  and d.name not like 'Procurement documents (login required)%'
+              )
+            )
+          )
+    """), {"o": opportunity_id})
+
+
+def clear_stale_analyses(session) -> int:
+    """Active tenders on a scope return to the notice summary when the analysis never read the dossier."""
+    before = session.execute(text(
+        f"select count(*) from opportunities where {_ACTIVE_PUBLISHED} and {_UNREAD_SQL}")).scalar()
+    result = session.execute(text(f"""
+        update opportunities set tender_summary = null, tender_analysed_at = null
+        where {_ACTIVE_PUBLISHED} and {_UNREAD_SQL}
+    """))
+    session.commit()
+    left = session.execute(text(
+        f"select count(*) from opportunities where {_ACTIVE_PUBLISHED} and {_UNREAD_SQL}")).scalar()
+    if left != 0 or result.rowcount != before:
+        raise RuntimeError(f"stale summaries: expected to clear {before}, cleared {result.rowcount}, still matching {left}")
+    return result.rowcount
+
+
 def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
     """Refresh one opportunity's document list. Returns {'documents': n, 'new': [names]}."""
     notices = _procedure_notices(procedure_id)
@@ -717,16 +797,16 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
     # repeats them, and sometimes doesn't, so read every notice. A failed read
     # is not "this notice has no documents": the next run has to try again.
     portal_urls = []
-    read_failed = False
     for n in notices:
         try:
             portal_urls += _notice_document_urls(n["publication-number"])
         except Exception:
-            read_failed = True
             continue
     portal_urls = list(dict.fromkeys(portal_urls))
-    if read_failed and not portal_urls:
-        raise RuntimeError(f"TED document links for {procedure_id} could not be read")
+    # A TED rate limit is not "this tender has no dossier". Open the portal we already stored.
+    for url in _portal_urls_on_record(session, opportunity_id):
+        if url not in portal_urls:
+            portal_urls.append(url)
     got_files = False
     gated_url = None
     partial = False
@@ -779,6 +859,7 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
         added.append(name)
         if had_any and doc_type in config()["alert_on_new"]:
             new_names.append(name)
+    retire_stale_analysis(session, opportunity_id)
     if added and had_any:
         lead = new_names[0] if new_names else added[0]
         desc = f"New document published: {lead}" if len(added) == 1 else f"{len(added)} new documents published, incl. {lead}"
@@ -881,29 +962,54 @@ def _publication_number(official: str, urls) -> str:
     return ""
 
 
-def gather_buyer_documents(session) -> dict:
-    """Download buyer files for every tender on a scope other than General.
+def gather_buyer_documents(session, published_active: bool = False) -> dict:
+    """Download buyer files for tenders that still have none.
 
+    published_active is the tenders page: open TED notices on any scope.
+    The default remains every non-rejected tender outside General.
     A portal that needs a login is recorded as gated and left alone. Files that
     were already published are not announced as new.
     """
-    opps = session.execute(text("""
-        select o.opportunity_id, o.official_url, o.reference
-        from opportunities o
-        where o.status <> 'REJECTED'
-          and exists (
-            select 1 from scope_items si
-            join scopes s on s.id = si.scope_id
-            where si.item_id = o.opportunity_id and si.item_type = 'tender' and s.is_default = false
-          )
-          and not exists (
-            select 1 from documents d
-            where d.opportunity_id = o.opportunity_id
-              and d.document_type in ('TENDER_SPECIFICATIONS','TECHNICAL_SPECIFICATIONS','FORM','ANNEX','CONTRACT','FINANCIAL_PROPOSAL','AWARD_CRITERIA','Q_AND_A','CLARIFICATION')
-              and d.name not like 'Tender documents on %'
-              and d.name not like 'Procurement documents (login required)%'
-          )
-    """)).fetchall()
+    if published_active:
+        opps = session.execute(text("""
+            select o.opportunity_id, o.official_url, o.reference
+            from opportunities o
+            where o.status = 'OPEN'
+              and (o.deadline is null or o.deadline >= now())
+              and o.reference like 'TED:%'
+              and exists (
+                select 1 from scope_items si
+                where si.item_id = o.opportunity_id and si.item_type = 'tender')
+              and not exists (
+                select 1 from documents d
+                where d.opportunity_id = o.opportunity_id
+                  and d.name like 'Procurement documents (login required)%')
+              and not exists (
+                select 1 from documents d
+                where d.opportunity_id = o.opportunity_id
+                  and d.document_type in ('TENDER_SPECIFICATIONS','TECHNICAL_SPECIFICATIONS','FORM','ANNEX','CONTRACT','FINANCIAL_PROPOSAL','AWARD_CRITERIA','Q_AND_A','CLARIFICATION')
+                  and d.name not like 'Tender documents on %'
+                  and d.name not like 'Procurement documents (login required)%'
+              )
+        """)).fetchall()
+    else:
+        opps = session.execute(text("""
+            select o.opportunity_id, o.official_url, o.reference
+            from opportunities o
+            where o.status <> 'REJECTED'
+              and exists (
+                select 1 from scope_items si
+                join scopes s on s.id = si.scope_id
+                where si.item_id = o.opportunity_id and si.item_type = 'tender' and s.is_default = false
+              )
+              and not exists (
+                select 1 from documents d
+                where d.opportunity_id = o.opportunity_id
+                  and d.document_type in ('TENDER_SPECIFICATIONS','TECHNICAL_SPECIFICATIONS','FORM','ANNEX','CONTRACT','FINANCIAL_PROPOSAL','AWARD_CRITERIA','Q_AND_A','CLARIFICATION')
+                  and d.name not like 'Tender documents on %'
+                  and d.name not like 'Procurement documents (login required)%'
+              )
+        """)).fetchall()
     ids = [o.opportunity_id for o in opps]
     before = _docs_for(session, ids)
     stats = {"checked": len(opps), "inserted": 0, "with_files": 0, "gated": 0, "unchanged": 0, "errors": 0}
@@ -961,6 +1067,8 @@ def gather_buyer_documents(session) -> dict:
             else:
                 stats["unchanged"] += 1
             stats["inserted"] += added
+            if added:
+                retire_stale_analysis(session, opp.opportunity_id)
             session.commit()
             if added or gated_url:
                 print(f"gather {opp.opportunity_id} files={added} gated={bool(gated_url and not got)}", flush=True)

@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import HeartButton from './HeartButton';
 import { Opportunity, buyerOf, cardFreshness, daysUntil, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
-import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
+import { shownSummary } from '@/lib/shownSummary';
 import { publicText, stageOf } from '@/lib/publication';
 import UpdateComment, { UpdateEvent } from './UpdateComment';
 import { getLocale, getTSync } from '@/lib/i18n/server';
@@ -59,7 +59,7 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
   const days = daysUntil(o.deadline);
   const stage = stageOf(o);
   const value = money(o.estimated_value, o.currency);
-  const description = publicText(plainText(firstInLanguage(o.summary) || ''));
+  const description = publicText(plainText(shownSummary(o)));
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
   const fresh = stage === 'closed' || o.opportunity_type === 'signal' ? null : cardFreshness(o);

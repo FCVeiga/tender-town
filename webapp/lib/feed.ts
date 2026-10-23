@@ -18,6 +18,7 @@ import { cardFreshness, getActiveOpportunities, NEW_WINDOW_DAYS, newsCategoryLab
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { publicText } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 import { getScopeItems } from '@/lib/scopes';
 import { getPlatformLanguage } from '@/lib/language';
 
@@ -207,7 +208,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
     const score = tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED;
     keptOpp.set(o.opportunity_id, {
       key: `signal:${o.opportunity_id}`, kind: 'opportunity', event: 'signal',
-      href: opportunityPath(o), headline: titleOf(o), body: plainText(o.summary || '') || null,
+      href: opportunityPath(o), headline: titleOf(o), body: plainText(shownSummary(o)) || null,
       category: 'signal', categoryLabel: oppCategoryLabel('signal'), kindLabel: 'Planned procurement',
       country: o.country, at, score, combined: Math.round(score * decay(at, now)),
       movement: 'same', deadline: o.deadline, isNew: false,
@@ -225,7 +226,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
     const score = tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED;
     keptOpp.set(o.opportunity_id, {
       key: `fresh:${o.opportunity_id}`, kind: 'opportunity', event: fresh === 'updated' ? 'notice_update' : 'new_opportunity',
-      href: opportunityPath(o), headline: titleOf(o), body: plainText(o.summary || '') || null,
+      href: opportunityPath(o), headline: titleOf(o), body: plainText(shownSummary(o)) || null,
       category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: 'Tender',
       country: o.country, at, score, combined: Math.round(score * decay(at, now)),
       movement: 'same', deadline: o.deadline, isNew: fresh === 'new', fresh,
@@ -279,7 +280,7 @@ async function publishedCopy(items: FeedItem[]) {
   const oppIds = items.map((item) => item.opportunityId).filter((id): id is string => !!id);
   const [newsRows, oppRows] = await Promise.all([
     newsIds.length ? db.from('news_items').select('news_id, title, title_en, language, summary, excerpt, category, image_url').in('news_id', newsIds) : Promise.resolve({ data: [] as any[] }),
-    oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
+    oppIds.length ? db.from('opportunities').select('opportunity_id, title, title_en, language, summary, tender_summary').in('opportunity_id', oppIds) : Promise.resolve({ data: [] as any[] }),
   ]);
   const news = new Map((newsRows.data || []).map((row: any) => [row.news_id, row]));
   const opps = new Map((oppRows.data || []).map((row: any) => [row.opportunity_id, row]));
@@ -290,7 +291,7 @@ async function publishedCopy(items: FeedItem[]) {
     if (!row) continue;
     const official = item.kind === 'opportunity' && item.event !== 'signal' ? String(item.opportunity?.title || opp?.title || '').trim() : '';
     item.headline = official || titleOf(row);
-    item.body = publicText(plainText(firstInLanguage(row.summary, row.excerpt) || '')) || null;
+    item.body = publicText(plainText(story ? firstInLanguage(row.summary, row.excerpt) || '' : shownSummary(row))) || null;
     if (story?.image_url) item.image = story.image_url;
     if (story?.category === 'industry') item.categoryLabel = 'Industry news';
   }

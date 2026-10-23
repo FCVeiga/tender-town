@@ -9,6 +9,7 @@ import { buyerOf, opportunityPath, titleOf, type Opportunity, type NewsItem } fr
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { publicText } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 import { getPlatformLanguage } from '@/lib/language';
 import { getCatalogScopes } from '@/lib/scopes';
 import { scopeSlug } from '@/lib/guestScope';
@@ -63,7 +64,7 @@ function oppHit(row: Opportunity): DiscoverHit {
     buyer: buyerOf(row),
     country: row.country,
     deadline: row.deadline,
-    summary: clip(publicText(plainText(firstInLanguage(row.summary) || '')), 220),
+    summary: clip(publicText(plainText(shownSummary(row))), 220),
   };
 }
 
@@ -90,14 +91,14 @@ export async function publicSearch(q: string, kind?: string | null, limit?: numb
   const wantNews = parsed.kind === 'news' || parsed.kind === 'all';
 
   let opps = db.from('opportunities')
-    .select('opportunity_id, title, title_en, language, country, authority, authority_en, opportunity_type, status, summary, deadline, publication_date')
+    .select('opportunity_id, title, title_en, language, country, authority, authority_en, opportunity_type, status, summary, tender_summary, deadline, publication_date')
     .in('status', ['OPEN', 'SIGNAL'])
     .or(`deadline.is.null,deadline.gte.${now}`)
     .order('deadline', { ascending: true, nullsFirst: false })
     .limit(40);
   if (parsed.kind === 'grant') opps = opps.eq('opportunity_type', 'grant');
   if (parsed.kind === 'tender') opps = opps.in('opportunity_type', ['rfp', 'rfi', 'signal']);
-  for (const word of parsed.words) opps = opps.or(ilikeAny(['title', 'title_en', 'summary', 'authority', 'authority_en', 'country'], word));
+  for (const word of parsed.words) opps = opps.or(ilikeAny(['title', 'title_en', 'summary', 'tender_summary', 'authority', 'authority_en', 'country'], word));
 
   let news = db.from('news_items')
     .select('news_id, title, title_en, language, category, country, published_date, source_name, excerpt, summary, created_at')
@@ -147,7 +148,7 @@ export async function marketBySlug(slug: string) {
   const [oppRows, newsRows] = await Promise.all([
     tenderIds.length
       ? db.from('opportunities')
-        .select('opportunity_id, title, title_en, language, country, authority, authority_en, opportunity_type, status, summary, deadline, publication_date')
+        .select('opportunity_id, title, title_en, language, country, authority, authority_en, opportunity_type, status, summary, tender_summary, deadline, publication_date')
         .in('opportunity_id', tenderIds)
       : Promise.resolve({ data: [] as Opportunity[] }),
     newsIds.length

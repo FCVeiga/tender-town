@@ -21,7 +21,7 @@ import { getSupabaseServerClient } from '@/lib/supabase';
 const MODEL = 'claude-opus-5-5';
 const GROUPS = new Set(['ELIGIBILITY', 'REFERENCES', 'HUMAN_RESOURCES', 'TECHNICAL']);
 const CATEGORIES = new Set(['LEGAL', 'FINANCIAL', 'TURNOVER', 'INSURANCE', 'CERTIFICATION', 'COMPANY_EXPERIENCE', 'REFERENCE', 'TEAM', 'CV', 'EDUCATION', 'PERSONAL_CERTIFICATION', 'SECURITY_CLEARANCE', 'LANGUAGE', 'FTE', 'LOCAL_PRESENCE', 'TECHNICAL', 'SECURITY', 'PRIVACY', 'EIDAS', 'EUDI', 'INTEROPERABILITY', 'HOSTING', 'SLA', 'IMPLEMENTATION', 'CONSORTIUM', 'SUBCONTRACTING', 'EVIDENCE']);
-const READ_ORDER = ['TENDER_SPECIFICATIONS', 'TECHNICAL_SPECIFICATIONS', 'AWARD_CRITERIA', 'FORM', 'Q_AND_A', 'CLARIFICATION', 'ANNEX'];
+const READ_ORDER = ['TENDER_SPECIFICATIONS', 'TECHNICAL_SPECIFICATIONS', 'AWARD_CRITERIA', 'FORM', 'Q_AND_A', 'CLARIFICATION', 'ANNEX', 'CONTRACT_NOTICE'];
 const NEW_DOC_TYPES = ['CONTRACT_NOTICE', 'CLARIFICATION', 'Q_AND_A', 'CORRIGENDUM', 'TENDER_SPECIFICATIONS', 'TECHNICAL_SPECIFICATIONS'];
 const DOC_CHARS = 60_000;
 const MAIN_DOC_CHARS = 100_000;
@@ -274,6 +274,7 @@ async function documentTexts(opportunityId: string) {
   for (const r of rows) {
     const kind = r.document_type as string;
     if ((kind === 'Q_AND_A' || kind === 'CLARIFICATION') && (seen.get(kind) || 0) >= 4) continue;
+    if (kind === 'CONTRACT_NOTICE' && (seen.get(kind) || 0) >= 1) continue;
     let buf: Buffer | null;
     try { buf = await fetchBuyerFile(r.url); } catch { continue; }
     if (!buf || buf.length > 30_000_000 || (!buyerFile(r.url) && !officeFile(buf))) continue;

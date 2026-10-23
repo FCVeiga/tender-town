@@ -3,6 +3,7 @@ import { posts as blogPosts } from '@/lib/blog';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
+import { shownSummary } from '@/lib/shownSummary';
 import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText } from '@/lib/publication';
 
@@ -27,7 +28,7 @@ export async function GET() {
       title: titleOf(r),
       link: `${origin}${opportunityPath(r)}`,
       date: r.publication_date || r.first_detected || new Date().toISOString(),
-      description: alignSubmissionDeadline(publicText(firstInLanguage(r.tender_summary, r.summary) || ''), r.deadline),
+      description: alignSubmissionDeadline(publicText(shownSummary(r)), r.deadline),
     })),
     ...(news.data || []).map((r: any) => ({
       title: titleOf(r),

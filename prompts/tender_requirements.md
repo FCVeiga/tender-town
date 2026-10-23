@@ -32,6 +32,9 @@ configured for. The summary is public.
 - how to submit (portal, language of the bid) in one sentence;
 - when a source says the documents are in a gated portal that needs user login,
   say that in the summary and include the portal URL;
+- when no document text is attached, write from the notice and name the portal
+  listed under published documents. Do not say the notice or the documents
+  were not supplied;
 - changes made by later notices, clarifications or Q&A answers that matter,
   after the description of the tender as first published.
 Report facts; never invent a figure or date the sources don't give.

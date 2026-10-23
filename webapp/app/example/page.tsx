@@ -5,6 +5,7 @@ import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText, stageOf, statedValue, vatTreatment } from '@/lib/publication';
+import { currentAnalysis, shownSummary } from '@/lib/shownSummary';
 import { EXAMPLE_TENDER_ID } from '@/lib/exampleRun';
 import { StatusTags } from '@/components/OpportunityCard';
 import TenderDocuments, { Doc } from '@/components/TenderDocuments';
@@ -45,7 +46,8 @@ export default async function ExamplePage() {
     o.country ? supabase.from('countries').select('name').eq('code', o.country).maybeSingle() : Promise.resolve({ data: null as { name: string } | null }),
   ]);
 
-  const summaryRaw = alignSubmissionDeadline(publicText(plainText(firstInLanguage(o.tender_summary) ?? firstInLanguage(o.summary) ?? '')), o.deadline);
+  const analysis = currentAnalysis(o);
+  const summaryRaw = alignSubmissionDeadline(publicText(plainText(shownSummary(o))), o.deadline);
   const stage = stageOf(o);
   const stated = o.estimated_value ? null : statedValue(summaryRaw);
   const amount = o.estimated_value ?? stated?.amount ?? null;
@@ -107,7 +109,7 @@ export default async function ExamplePage() {
           <section className="detail-block" id="summary">
             <h2>{t('Summary')}</h2>
             <PostMarkdown>{summaryRaw}</PostMarkdown>
-            <p className="summary-note">{o.tender_summary ? `${t('Tender Analysis Agent')} · ${t('from the notice and the tender documents')}` : t('Preliminary summary.')}</p>
+            <p className="summary-note">{analysis ? `${t('Tender Analysis Agent')} · ${t('from the notice and the tender documents')}` : t('Preliminary summary.')}</p>
           </section>
         ) : null}
         documents={<TenderDocuments docs={(documents || []) as Doc[]} />}

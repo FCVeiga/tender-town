@@ -869,6 +869,10 @@ def main():
         missing = collect_missing(session, errors)
         if missing["opportunities"]:
             print(f"Documents: {missing['documents']} for {missing['opportunities']} tenders that had none yet")
+    from agents.tender_documents import clear_stale_analyses
+    cleared = clear_stale_analyses(session)
+    if cleared:
+        print(f"Summaries: {cleared} active tenders returned to the notice summary")
     if S.enabled("tender_analysis"):
         analysed = analyse_tenders(session, errors)
         print(f"Award criteria: {analysed['award']} from TED notices")

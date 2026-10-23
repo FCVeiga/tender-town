@@ -3,6 +3,7 @@ import { FeedItem, groupCoverage, newsScore } from '@/lib/feed';
 import { firstInLanguage } from '@/lib/english';
 import { plainText } from '@/lib/plain';
 import { publicText } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import FeedCard from './FeedCard';
 import SectionTabs from './SectionTabs';
@@ -60,7 +61,7 @@ async function NewsBody({ view }: { view: View }) {
     const p = signalPost.get(o.opportunity_id);
     const at = new Date(o.first_detected || o.publication_date || now);
     const score = o.opportunity_relevance_score ?? 30;
-    const copy = { body: bodyOf(firstInLanguage(o.summary)) };
+    const copy = { body: bodyOf(shownSummary(o)) };
     return {
       key: `signal:${o.opportunity_id}`, kind: 'news', event: 'signal', href: `/news/signals/${o.opportunity_id}`,
       headline: titleOf(o), ...copy,

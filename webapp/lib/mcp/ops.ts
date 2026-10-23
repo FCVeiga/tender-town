@@ -16,6 +16,7 @@ import { startProposalBrief, startTenderEvaluation } from '@/app/actions';
 import { ensureNewsReport } from '@/lib/newsReport';
 import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 import { briefToMarkdown, parseProposalBrief } from '@/lib/proposalBrief';
 
 function readableBrief(raw: string | null | undefined) {
@@ -372,7 +373,7 @@ export async function getTender(id: string) {
   const comments = await getCommentTree('tender', id, user.id);
   return {
     id: o.opportunity_id, title: titleOf(o), buyer: buyerOf(o), country: o.country, type: o.opportunity_type, status: o.status,
-    summary: alignSubmissionDeadline(publicText(o.tender_summary || o.summary || ''), o.deadline), deadline: o.deadline, value: o.estimated_value, currency: o.currency, published: o.publication_date, url: o.official_url,
+    summary: alignSubmissionDeadline(publicText(shownSummary(o)), o.deadline), deadline: o.deadline, value: o.estimated_value, currency: o.currency, published: o.publication_date, url: o.official_url,
     requirements: evaluation ? requirements : [], evaluation, proposal, comments: comments.tree, commentCount: comments.total,
   };
 }

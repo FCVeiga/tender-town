@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { getLocale, getTSync } from '@/lib/i18n/server';
 import { Opportunity, buyerOf, cardFreshness, daysUntil, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
-import { stageOf } from '@/lib/publication';
+import { plainText } from '@/lib/plain';
+import { publicText, stageOf } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 
 export function DeadlineText({ deadline, closed = false }: { deadline: string | null; closed?: boolean }) {
   const t = getTSync();
@@ -45,6 +47,7 @@ export function ScoreBar({ label, value, kind }: { label: string; value: number 
 
 export default function OpportunityCard({ o }: { o: Opportunity }) {
   const t = getTSync();
+  const summary = publicText(plainText(shownSummary(o)));
   const fresh = stageOf(o) === 'closed' || o.opportunity_type === 'signal' ? null : cardFreshness(o);
   return (
     <Link href={opportunityPath(o)} className={`opp-card${fresh ? ` fresh fresh-${fresh}` : ''}`}>
@@ -55,7 +58,7 @@ export default function OpportunityCard({ o }: { o: Opportunity }) {
       </div>
       <div className="opp-card-title">{titleOf(o)}</div>
       {buyerOf(o) && <div className="opp-card-authority">{buyerOf(o)}</div>}
-      {o.summary && <div className="opp-card-summary">{o.summary}</div>}
+      {summary && <div className="opp-card-summary">{summary}</div>}
       <div className="opp-card-scores">
         <ScoreBar label={t('Relevance')} value={o.opportunity_relevance_score} kind="rel" />
         <ScoreBar label={t('Fit')} value={o.bid_readiness_score} kind="fit" />

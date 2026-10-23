@@ -9,6 +9,7 @@ import { NewsItem, Opportunity, cardFreshness, newsCategoryLabel, oppCategoryLab
 import { FeedItem, HALF_LIFE_DAYS } from '@/lib/feed';
 import { firstInLanguage } from '@/lib/english';
 import { publicText } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 import { getPlatformLanguage } from '@/lib/language';
 import { getScopeItems } from '@/lib/scopes';
 
@@ -82,7 +83,7 @@ export async function search(q: string, now = new Date()) {
     return {
       key: `opp:${o.opportunity_id}`, kind: 'opportunity', event: signal ? 'signal' : 'new_opportunity',
       href: opportunityPath(o),
-      headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || ''),
+      headline: titleOf(o), body: publicText(shownSummary(o)),
       category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: signal ? 'Planned procurement' : 'Opportunity',
       country: o.country, at, score, combined: Math.round(score * decay(at)), movement: 'same',
       deadline: o.deadline, isNew: fresh === 'new', fresh, statusLabel: label,

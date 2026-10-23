@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { titleOf } from '@/lib/data';
-import { firstInLanguage } from '@/lib/english';
+import { shownSummary } from '@/lib/shownSummary';
 import { alignSubmissionDeadline } from '@/lib/deadlineCopy';
 import { publicText } from '@/lib/publication';
 import { getPlatformLanguage } from '@/lib/language';
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     .eq('opportunity_id', params.id).maybeSingle();
   if (!data) return { title: 'Not found — Tender Town', robots: { index: false, follow: false } };
   const title = titleOf(data);
-  const description = clip(alignSubmissionDeadline(publicText(firstInLanguage(data.tender_summary, data.summary) || ''), data.deadline) || [title, data.authority_en || data.authority, data.country].filter(Boolean).join(' · '));
+  const description = clip(alignSubmissionDeadline(publicText(shownSummary(data)), data.deadline) || [title, data.authority_en || data.authority, data.country].filter(Boolean).join(' · '));
   return pageMeta({
     title: `${title} — Tender Town`,
     socialTitle: title,

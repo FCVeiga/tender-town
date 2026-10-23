@@ -4,6 +4,7 @@ import { postBySlug } from '@/lib/blog';
 import { newsCategoryLabel, oppCategoryLabel, opportunityPath, titleOf } from '@/lib/data';
 import { firstInLanguage } from '@/lib/english';
 import { publicText } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 import type { FeedItem } from '@/lib/feed';
 
 export type Profile = {
@@ -86,7 +87,7 @@ export async function getFollowing(userId: string): Promise<FeedItem[]> {
       const closed = o.deadline && new Date(o.deadline).getTime() < now;
       return [{
         key: `tender:${o.opportunity_id}`, kind: o.opportunity_type === 'signal' ? 'news' : 'opportunity', event: 'liked', href: opportunityPath(o),
-        headline: titleOf(o), body: publicText(firstInLanguage(o.summary) || '').split(/\n{2,}/)[0] || null,
+        headline: titleOf(o), body: publicText(shownSummary(o)).split(/\n{2,}/)[0] || null,
         category: o.opportunity_type || 'rfp', categoryLabel: oppCategoryLabel(o.opportunity_type), kindLabel: o.opportunity_type === 'signal' ? 'Planned procurement' : 'Tender',
         country: o.country, at, score: o.opportunity_relevance_score ?? 0, combined: o.opportunity_relevance_score ?? 0,
         movement: 'same', deadline: closed ? null : o.deadline, isNew: false, fresh: null,
