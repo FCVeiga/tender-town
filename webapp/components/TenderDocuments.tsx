@@ -19,11 +19,12 @@ const ORDER = Array.from(new Set(GROUPS.map(([, g]) => g)));
 const groupOf = (t: string | null) => GROUPS.find(([k]) => k === t)?.[1] ?? 'Other documents';
 
 const DIRECT = /downloadContractDocument|dtvp\.de\/Satellite\/public\/company\/project\/[^/]+\/\w+\/documents\//;
+const HOSTED = /\/files\/[a-f0-9]{16,64}-[a-f0-9]{8,16}$/i;
 
 function linkKind(url: string | null) {
   if (!url) return null;
   if (/ted\.europa\.eu\/.*\/pdf$/.test(url)) return { label: 'PDF', title: 'Official TED notice (PDF)' };
-  if (DIRECT.test(url)) return { label: 'Download', title: 'Direct download from the buyer portal' };
+  if (HOSTED.test(url) || DIRECT.test(url)) return { label: 'Download', title: 'Direct download from the buyer portal' };
   return { label: 'Open on portal', title: 'Opens the buyer portal page where this document is downloaded' };
 }
 
@@ -97,7 +98,7 @@ export default function TenderDocuments({ docs, signedIn = true, signupHref = '/
               })}
             </details>
           ))}
-          {docs.some((d) => !DIRECT.test(d.url ?? '') && !/ted\.europa/.test(d.url ?? '')) && (
+          {docs.some((d) => !DIRECT.test(d.url ?? '') && !HOSTED.test(d.url ?? '') && !/ted\.europa/.test(d.url ?? '')) && (
             <p className="sidebar-note">{t('“Portal ↗” documents download from the buyer\'s portal, which may ask you to register.')}</p>
           )}
         </>

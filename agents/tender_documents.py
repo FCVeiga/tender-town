@@ -624,6 +624,22 @@ def harvest_portal(url: str, known: set = None) -> dict:
     return out
 
 
+def _clear_gated_note(session, opportunity_id: str, url: str) -> None:
+    """Drop the login sentence once the dossier itself can be read."""
+    sentence = f"{_GATED} {url}"
+    row = session.execute(text("select summary, tender_summary from opportunities where opportunity_id = :o"),
+                          {"o": opportunity_id}).first()
+    if not row:
+        return
+    for column in ("summary", "tender_summary"):
+        current = getattr(row, column) or ""
+        if sentence not in current:
+            continue
+        updated = re.sub(r"\n{3,}", "\n\n", current.replace(sentence, "")).strip()
+        session.execute(text(f"update opportunities set {column} = :s where opportunity_id = :o"),
+                        {"s": updated or None, "o": opportunity_id})
+
+
 def note_gated_portal(session, opportunity_id: str, url: str):
     """The summary the page shows, when the dossier cannot be read without a login."""
     sentence = f"{_GATED} {url}"
@@ -712,6 +728,44 @@ def _xvergabe_pack(url: str) -> list:
         return []
     # One procedure page can sign several packages. The stored link stays the page; reading it fetches every package.
     name = names[0] if len(names) == 1 else "Procurement documents.zip"
+    return [(name[:180], "TENDER_SPECIFICATIONS", page)]
+
+
+def _mercell_documents(url: str) -> list:
+    """Mercell publishes the dossier as an export zip. The stored link is the notice page."""
+    match = re.search(r"s2c\.mercell\.com/(?:today|tender)/(\d+)", url or "")
+    if not match:
+        return []
+    tender_id = match.group(1)
+    page = f"https://s2c.mercell.com/today/{tender_id}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Origin": "https://s2c.mercell.com",
+        "Referer": page,
+    }
+    try:
+        listed = requests.get("https://api.s2c.mercell.com/api/v1/PublishedTender/GetPublishedTenderExports",
+                              params={"tenderId": tender_id}, headers=headers, timeout=30)
+        groups = listed.json() if listed.status_code == 200 else []
+        exports = [item for group in (groups if isinstance(groups, list) else [])
+                   for item in (group.get("PublishedTenderExports") or []) if item.get("DocumentId")]
+        if not exports:
+            return []
+        latest = max(exports, key=lambda item: item.get("CreatedDate") or "")
+        signed = requests.get("https://api.s2c.mercell.com/api/v1/DefaultDocument/GetSignedUrlByDocumentId",
+                              params={"documentId": latest["DocumentId"]}, headers=headers, timeout=30)
+        file_url = (signed.json() or {}).get("Url") if signed.status_code == 200 else ""
+        if not file_url:
+            return []
+        probe = requests.get(file_url, headers={"User-Agent": headers["User-Agent"]}, timeout=60, stream=True)
+        head = probe.raw.read(2) or b""
+        probe.close()
+    except Exception:
+        return []
+    if head != b"PK":
+        return []
+    name = str(latest.get("Name") or "Procurement documents.zip")
     return [(name[:180], "TENDER_SPECIFICATIONS", page)]
 
 
@@ -848,6 +902,8 @@ def resolve_portal(url: str, known: set = None) -> dict:
         found = [(name, hint, dl, None, None) for name, hint, dl in _riigihanked_pack(url)]
     elif "vergabeportal.at" in host and "/Detail/" in url:
         found = [(name, hint, dl, None, None) for name, hint, dl in _ankoe_documents(url)]
+    elif "s2c.mercell.com" in host:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _mercell_documents(url)]
     else:
         harvested = harvest_portal(url, known)
         if harvested["files"]:
@@ -990,6 +1046,10 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
             got_files = True
             if not partial:
                 continue
+        # The cadastre index lists every competition. The site blocks the HTML
+        # from the pipeline, and the matching PDFs are stored as their own files.
+        if "ktimatologio.gr" in (host or "") and "/diagonismoi/prokirikseis" in url:
+            continue
         if gated:
             gated_url = gated_url or url
             rows.append((f"Procurement documents (login required) — {host.removeprefix('www.')}",
@@ -1008,6 +1068,18 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
         doc_id = f"{opportunity_id}-{hashlib.md5(f'{name}|{url}'.encode()).hexdigest()[:10]}"
         exists = session.execute(text("select document_id, url from documents where document_id = :d or (opportunity_id = :o and name = :n)"),
                                  {"d": doc_id, "o": opportunity_id, "n": name[:500]}).first()
+        stub = None
+        if not name.startswith("Procurement documents (login required)"):
+            stub = session.execute(text("""select document_id from documents
+                                           where opportunity_id = :o and url = :u
+                                             and name like 'Procurement documents (login required)%'"""),
+                                   {"o": opportunity_id, "u": url[:1000]}).first()
+        if stub:
+            session.execute(text("""update documents set name = :n, document_type = cast(:t as documenttype), downloaded_at = :now
+                                    where document_id = :d"""),
+                            {"n": name[:500], "t": doc_type, "now": now, "d": stub.document_id})
+            _clear_gated_note(session, opportunity_id, url[:1000])
+            continue
         if exists:
             if exists.url != url[:1000]:  # same file, better link (e.g. a direct download)
                 session.execute(text("update documents set url = :u where document_id = :d"), {"u": url[:1000], "d": exists.document_id})
@@ -1209,12 +1281,17 @@ def gather_buyer_documents(session, published_active: bool = False) -> dict:
                 for name, doc_type, link, _published, _version in resolved["files"]:
                     if link in known:
                         # A portal page stored as a stub is the dossier once a reader can open it.
-                        promoted += session.execute(text("""
+                        renamed = session.execute(text("""
                             update documents
                             set name = :n, document_type = cast(:t as documenttype), downloaded_at = :now
-                            where opportunity_id = :o and url = :u and name like 'Tender documents on %'
+                            where opportunity_id = :o and url = :u
+                              and (name like 'Tender documents on %'
+                                   or name like 'Procurement documents (login required)%')
                         """), {"n": name[:500], "t": doc_type, "now": datetime.utcnow(),
                                "o": opp.opportunity_id, "u": link[:1000]}).rowcount
+                        if renamed:
+                            promoted += renamed
+                            _clear_gated_note(session, opp.opportunity_id, link)
                         got = True
                         continue
                     if _store_portal_file(session, opp.opportunity_id, name, link, datetime.utcnow(), doc_type):

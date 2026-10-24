@@ -62,6 +62,31 @@ async function eopExport(tenderId: string): Promise<Buffer | null> {
   return Buffer.from(await file.arrayBuffer());
 }
 
+/** Mercell signs the export zip for a few minutes. The stored link is the notice page. */
+async function mercellExport(tenderId: string): Promise<Buffer | null> {
+  const page = `https://s2c.mercell.com/today/${tenderId}`;
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    Accept: 'application/json, text/plain, */*',
+    Origin: 'https://s2c.mercell.com',
+    Referer: page,
+  };
+  const listed = await fetch(`https://api.s2c.mercell.com/api/v1/PublishedTender/GetPublishedTenderExports?tenderId=${tenderId}`, { headers });
+  if (!listed.ok) return null;
+  const groups = await listed.json() as { PublishedTenderExports?: { DocumentId?: number; Name?: string; CreatedDate?: string }[] }[];
+  const exports = (Array.isArray(groups) ? groups : []).flatMap((group) => group.PublishedTenderExports || []).filter((item) => item.DocumentId);
+  const latest = exports.sort((a, b) => String(a.CreatedDate || '').localeCompare(String(b.CreatedDate || ''))).at(-1);
+  if (!latest?.DocumentId) return null;
+  const signed = await fetch(`https://api.s2c.mercell.com/api/v1/DefaultDocument/GetSignedUrlByDocumentId?documentId=${latest.DocumentId}`, { headers });
+  if (!signed.ok) return null;
+  const fileUrl = (await signed.json() as { Url?: string }).Url;
+  if (!fileUrl) return null;
+  const file = await fetch(fileUrl);
+  if (!file.ok) return null;
+  const buf = Buffer.from(await file.arrayBuffer());
+  return buf.subarray(0, 2).toString() === 'PK' ? buf : null;
+}
+
 /** ANKÖ publishes the dossier as one zip. The stored link is the notice page. */
 async function ankoeExport(noticeId: string): Promise<Buffer | null> {
   const headers = { 'User-Agent': UA, Accept: 'application/json' };
@@ -155,7 +180,26 @@ async function xvergabeExport(procedureId: string): Promise<Buffer | null> {
   return Buffer.from(await merged.generateAsync({ type: 'nodebuffer' }));
 }
 
+/** A dossier we stored ourselves, served at /files/{document_id}. */
+async function storedBuyerFile(documentId: string): Promise<Buffer | null> {
+  const db = getSupabaseServerClient();
+  const { data } = await db.from('documents').select('storage_path').eq('document_id', documentId).maybeSingle();
+  if (!data?.storage_path) return null;
+  const { data: blob, error } = await db.storage.from('company-files').download(data.storage_path);
+  if (error || !blob) return null;
+  return Buffer.from(await blob.arrayBuffer());
+}
+
 async function fetchBuyerFile(url: string): Promise<Buffer | null> {
+  const stored = url.match(/\/files\/([a-f0-9]{16,64}-[a-f0-9]{8,16})$/i);
+  if (stored) return storedBuyerFile(stored[1]);
+  const mercell = url.match(/s2c\.mercell\.com\/(?:today|tender)\/(\d+)/);
+  if (mercell) {
+    try {
+      const zip = await mercellExport(mercell[1]);
+      if (zip) return zip;
+    } catch { /* the page itself is not the dossier */ }
+  }
   const eop = url.match(/eop\.bg\/today\/(\d+)/);
   if (eop) {
     try {
