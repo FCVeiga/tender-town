@@ -715,6 +715,34 @@ def _xvergabe_pack(url: str) -> list:
     return [(name[:180], "TENDER_SPECIFICATIONS", page)]
 
 
+def _ankoe_documents(url: str) -> list:
+    """ANKÖ publishes the dossier as a zip. The stored link is the notice page."""
+    match = re.search(r"/Detail/(\d+)", url or "")
+    if not match or "vergabeportal.at" not in (url or ""):
+        return []
+    try:
+        listed = requests.get(f"https://bbg.vergabeportal.at/api/Procurement/Notice/Get/{match.group(1)}",
+                              headers={**UA, "Accept": "application/json"}, timeout=30)
+        result = listed.json().get("result") or {} if listed.status_code == 200 else {}
+        files = [item for item in (result.get("files") or []) if item.get("active") and item.get("name")]
+        pack = next((item for item in files if str(item.get("name")).lower().startswith("gesamtpaket")
+                     and str(item.get("extension") or "").lower() == ".zip"), None)
+        pack = pack or next((item for item in files if str(item.get("extension") or "").lower() == ".zip"), None)
+        if not pack:
+            return []
+        body = {key: value for key, value in pack.items() if key != "content"}
+        posted = requests.post("https://bbg.vergabeportal.at/api/Procurement/Notice/GetFile/",
+                               data={"noticeFile": json.dumps(body), "captcha": ""},
+                               headers=UA, timeout=90, stream=True)
+        head = posted.raw.read(2) or b""
+        posted.close()
+    except Exception:
+        return []
+    if head != b"PK":
+        return []
+    return [(str(pack["name"])[:180], "TENDER_SPECIFICATIONS", url)]
+
+
 def _riigihanked_pack(url: str) -> list:
     """Estonia's register signs the public dossier zip for a few minutes. The stored link is the procedure page."""
     if "riigihanked.riik.ee" not in (url or ""):
@@ -818,6 +846,8 @@ def resolve_portal(url: str, known: set = None) -> dict:
         found = [(name, hint, dl, None, None) for name, hint, dl in _netserver_documents(url)]
     elif "riigihanked.riik.ee" in host:
         found = [(name, hint, dl, None, None) for name, hint, dl in _riigihanked_pack(url)]
+    elif "vergabeportal.at" in host and "/Detail/" in url:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _ankoe_documents(url)]
     else:
         harvested = harvest_portal(url, known)
         if harvested["files"]:

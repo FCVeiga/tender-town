@@ -62,6 +62,29 @@ async function eopExport(tenderId: string): Promise<Buffer | null> {
   return Buffer.from(await file.arrayBuffer());
 }
 
+/** ANKÖ publishes the dossier as one zip. The stored link is the notice page. */
+async function ankoeExport(noticeId: string): Promise<Buffer | null> {
+  const headers = { 'User-Agent': UA, Accept: 'application/json' };
+  const listed = await fetch(`https://bbg.vergabeportal.at/api/Procurement/Notice/Get/${noticeId}`, { headers });
+  if (!listed.ok) return null;
+  const result = (await listed.json() as { result?: { files?: Record<string, unknown>[] } }).result;
+  const files = (result?.files || []).filter((file) => file.active && file.name);
+  const pack = files.find((file) => String(file.name).toLowerCase().startsWith('gesamtpaket') && String(file.extension || '').toLowerCase() === '.zip')
+    || files.find((file) => String(file.extension || '').toLowerCase() === '.zip');
+  if (!pack) return null;
+  const body = new URLSearchParams();
+  const noticeFile = { ...pack };
+  delete noticeFile.content;
+  body.set('noticeFile', JSON.stringify(noticeFile));
+  body.set('captcha', '');
+  const posted = await fetch('https://bbg.vergabeportal.at/api/Procurement/Notice/GetFile/', {
+    method: 'POST', headers: { 'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded' }, body,
+  });
+  if (!posted.ok) return null;
+  const buf = Buffer.from(await posted.arrayBuffer());
+  return buf.subarray(0, 2).toString() === 'PK' ? buf : null;
+}
+
 /** Estonia signs the dossier zip for a few minutes. The stored link is the procedure page. */
 async function riigihankedExport(procurementId: string): Promise<Buffer | null> {
   const headers = { 'User-Agent': UA, Accept: 'application/json' };
@@ -144,6 +167,13 @@ async function fetchBuyerFile(url: string): Promise<Buffer | null> {
   if (xvergabe) {
     try {
       const zip = await xvergabeExport(xvergabe[1]);
+      if (zip) return zip;
+    } catch { /* the page itself is not the dossier */ }
+  }
+  const ankoe = url.match(/vergabeportal\.at\/Detail\/(\d+)/);
+  if (ankoe) {
+    try {
+      const zip = await ankoeExport(ankoe[1]);
       if (zip) return zip;
     } catch { /* the page itself is not the dossier */ }
   }
