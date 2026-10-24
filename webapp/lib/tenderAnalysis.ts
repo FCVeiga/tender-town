@@ -62,11 +62,95 @@ async function eopExport(tenderId: string): Promise<Buffer | null> {
   return Buffer.from(await file.arrayBuffer());
 }
 
+/** Estonia signs the dossier zip for a few minutes. The stored link is the procedure page. */
+async function riigihankedExport(procurementId: string): Promise<Buffer | null> {
+  const headers = { 'User-Agent': UA, Accept: 'application/json' };
+  const meta = await fetch(`https://riigihanked.riik.ee/rhr/api/public/v1/procurement/${procurementId}/documents-temp-url`, { headers });
+  if (!meta.ok) return null;
+  const path = String((await meta.json() as { value?: string })?.value || '');
+  if (!path.startsWith('/filetransfer/')) return null;
+  const file = await fetch(`https://riigihanked.riik.ee${path}`, { headers: { 'User-Agent': UA } });
+  if (!file.ok) return null;
+  return Buffer.from(await file.arrayBuffer());
+}
+
+function cookieJar(existing: string, header: string | null): string {
+  const extra = (header || '').split(/,(?=[^;]+?=)/).map((part) => part.split(';')[0].trim()).filter(Boolean);
+  const jar = new Map<string, string>();
+  for (const pair of [...(existing ? existing.split(';') : []), ...extra]) {
+    const trimmed = pair.trim();
+    const name = trimmed.split('=')[0];
+    if (name) jar.set(name, trimmed);
+  }
+  return [...jar.values()].join('; ');
+}
+
+/** xvergabe signs each dossier package for a few minutes. The stored link is the procedure page. */
+async function xvergabeExport(procedureId: string): Promise<Buffer | null> {
+  const headers = { 'User-Agent': UA };
+  const page = await fetch(`https://xvergabe.de/awardProcedure/${procedureId}`, { headers });
+  let jar = cookieJar('', page.headers.get('set-cookie'));
+  const fragment = await fetch(`https://xvergabe.de/award-procedure-fragment?procedureId=${procedureId}`, { headers: { ...headers, Cookie: jar } });
+  jar = cookieJar(jar, fragment.headers.get('set-cookie'));
+  const html = await fragment.text();
+  const forms = [...html.matchAll(/<form[^>]*action="((?:legacy-document|document)\/[0-9a-f-]{36}\/download-uri)"[^>]*>([\s\S]*?)<\/form>/g)];
+  const zips: Buffer[] = [];
+  for (const form of forms) {
+    const token = form[2].match(/name="_csrf" value="([^"]+)"/)?.[1];
+    const documents = [...form[2].matchAll(/name="documentIds" value="([^"]+)"/g)].map((match) => match[1]);
+    if (!token || !documents.length) continue;
+    const body = new URLSearchParams();
+    body.set('_csrf', token);
+    body.set('procedureId', procedureId);
+    for (const id of documents) body.append('documentIds', id);
+    const posted = await fetch(`https://xvergabe.de/awardProcedure/${form[1]}`, {
+      method: 'POST', headers: { ...headers, Cookie: jar, 'X-CSRF-TOKEN': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body,
+    });
+    const path = (await posted.text()).trim().split('\n')[0].trim();
+    if (!posted.ok || !(path.startsWith('/NetServer/') || path.startsWith('/files/download-collection'))) continue;
+    const file = await fetch(`https://xvergabe.de${path}`, { headers: { ...headers, Cookie: jar } });
+    if (!file.ok) continue;
+    const buf = Buffer.from(await file.arrayBuffer());
+    if (buf.subarray(0, 2).toString() === 'PK') zips.push(buf);
+  }
+  if (!zips.length) return null;
+  if (zips.length === 1) return zips[0];
+  const merged = new JSZip();
+  for (const buf of zips) {
+    const inner = await JSZip.loadAsync(buf);
+    for (const [name, entry] of Object.entries(inner.files)) {
+      if (entry.dir) continue;
+      let key = name;
+      let n = 2;
+      while (merged.file(key)) {
+        key = `${n}-${name}`;
+        n += 1;
+      }
+      merged.file(key, await entry.async('nodebuffer'));
+    }
+  }
+  return Buffer.from(await merged.generateAsync({ type: 'nodebuffer' }));
+}
+
 async function fetchBuyerFile(url: string): Promise<Buffer | null> {
   const eop = url.match(/eop\.bg\/today\/(\d+)/);
   if (eop) {
     try {
       const zip = await eopExport(eop[1]);
+      if (zip) return zip;
+    } catch { /* the page itself is not the dossier */ }
+  }
+  const xvergabe = url.match(/xvergabe\.de\/awardProcedure\/([0-9a-f-]{36})/);
+  if (xvergabe) {
+    try {
+      const zip = await xvergabeExport(xvergabe[1]);
+      if (zip) return zip;
+    } catch { /* the page itself is not the dossier */ }
+  }
+  const riik = url.match(/riigihanked\.riik\.ee\/[\s\S]*?procurement\/(\d+)/);
+  if (riik) {
+    try {
+      const zip = await riigihankedExport(riik[1]);
       if (zip) return zip;
     } catch { /* the page itself is not the dossier */ }
   }

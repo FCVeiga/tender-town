@@ -657,6 +657,133 @@ def notice_label(kind: str, index: int) -> str:
     return "Contract notice"
 
 
+def _walk_netserver(node, found: list) -> None:
+    if not isinstance(node, dict):
+        return
+    if node.get("fileName") and node.get("encodedName"):
+        found.append(node)
+        return
+    for value in node.values():
+        _walk_netserver(value, found)
+
+
+def _xvergabe_pack(url: str) -> list:
+    """xvergabe lists the dossier on the procedure page and signs a zip for a few minutes."""
+    match = re.search(r"/awardProcedure/([0-9a-f-]{36})", url or "")
+    if not match:
+        return []
+    procedure = match.group(1)
+    page = f"https://xvergabe.de/awardProcedure/{procedure}"
+    try:
+        browser = requests.Session()
+        browser.get(page, headers=UA, timeout=30)
+        fragment = browser.get(f"https://xvergabe.de/award-procedure-fragment?procedureId={procedure}",
+                                headers=UA, timeout=30)
+        html_body = fragment.text or ""
+        forms = re.findall(
+            r'<form[^>]*action="((?:legacy-document|document)/[0-9a-f-]{36}/download-uri)"[^>]*>(.*?)</form>',
+            html_body, re.S)
+        if fragment.status_code != 200 or not forms:
+            return []
+        names = []
+        for action, body in forms:
+            token = re.search(r'name="_csrf" value="([^"]+)"', body)
+            documents = re.findall(r'name="documentIds" value="([^"]+)"', body)
+            if not token or not documents:
+                continue
+            posted = browser.post(
+                "https://xvergabe.de/awardProcedure/" + action,
+                data=[("_csrf", token.group(1)), ("procedureId", procedure)] + [("documentIds", item) for item in documents],
+                headers={**UA, "X-CSRF-TOKEN": token.group(1)}, timeout=40)
+            path = ((posted.text or "").strip().splitlines() or [""])[0].strip()
+            if posted.status_code != 200 or not (path.startswith("/NetServer/") or path.startswith("/files/download-collection")):
+                continue
+            probe = browser.get("https://xvergabe.de" + path, headers=UA, timeout=60, stream=True)
+            head = probe.raw.read(2) or b""
+            disposition = probe.headers.get("content-disposition") or ""
+            probe.close()
+            if head != b"PK":
+                continue
+            named = re.search(r'filename="([^"]+)"', disposition)
+            names.append(named.group(1) if named else "Procurement documents.zip")
+    except Exception:
+        return []
+    if not names:
+        return []
+    # One procedure page can sign several packages. The stored link stays the page; reading it fetches every package.
+    name = names[0] if len(names) == 1 else "Procurement documents.zip"
+    return [(name[:180], "TENDER_SPECIFICATIONS", page)]
+
+
+def _riigihanked_pack(url: str) -> list:
+    """Estonia's register signs the public dossier zip for a few minutes. The stored link is the procedure page."""
+    if "riigihanked.riik.ee" not in (url or ""):
+        return []
+    match = re.search(r"/procurement/(\d+)", url)
+    if not match:
+        return []
+    try:
+        meta = requests.get(
+            f"https://riigihanked.riik.ee/rhr/api/public/v1/procurement/{match.group(1)}/documents-temp-url",
+            headers={**UA, "Accept": "application/json"}, timeout=30)
+        path = str((meta.json() or {}).get("value") or "") if meta.status_code == 200 else ""
+        if not path.startswith("/filetransfer/"):
+            return []
+        probe = requests.get("https://riigihanked.riik.ee" + path, headers=UA, timeout=60, stream=True)
+        head = probe.raw.read(2) or b""
+        probe.close()
+    except Exception:
+        return []
+    if head != b"PK":
+        return []
+    return [("Procurement documents.zip", "TENDER_SPECIFICATIONS", url)]
+
+
+def _netserver_documents(url: str) -> list:
+    """Administration Intelligence NetServer publishes each file at a stable download address."""
+    if "TenderingProcedureDetails" not in (url or "") and "TenderOID=" not in (url or "") and "/awardProcedure/" not in (url or ""):
+        return []
+    if "/awardProcedure/" in (url or ""):
+        return _xvergabe_pack(url)
+    browser = requests.Session()
+    try:
+        response = browser.get(url, headers=UA, timeout=30, allow_redirects=True)
+    except Exception:
+        return []
+    final = response.url or url
+    if "/awardProcedure/" in final:
+        return _xvergabe_pack(final)
+    body = response.text or ""
+    oid = re.search(r'data-oid="([^"]+)" data-token="([^"]+)"', body)
+    if not oid or "zipFileContents" not in body:
+        return []
+    try:
+        tree = browser.post(f"{urlparse(final).scheme}://{urlparse(final).netloc}/NetServer/DataProvider",
+                            data={"param": "FileTree", "oid": oid.group(1), "VALIDATION_TOKEN": oid.group(2)},
+                            headers={**UA, "Referer": final}, timeout=30)
+        listing = tree.json()
+    except Exception:
+        return []
+    rows = []
+    _walk_netserver(listing, rows)
+    skip = tuple(config()["skip_extensions"])
+    origin = f"{urlparse(final).scheme}://{urlparse(final).netloc}"
+    files = []
+    seen = set()
+    for row in rows:
+        name = str(row.get("fileName") or "").strip()
+        encoded = str(row.get("encodedName") or "").strip()
+        if not name or not encoded or name.lower().endswith(skip) or encoded in seen:
+            continue
+        seen.add(encoded)
+        link = (f"{origin}/NetServer/TenderingProcedureDetails?function=_DownloadTenderDocument"
+                f"&documentOID={oid.group(1)}&Document={encoded}")
+        files.append((name[:180], _portal_type(name), link))
+        if len(files) >= 40:
+            break
+    return files
+
+
 def resolve_portal(url: str, known: set = None) -> dict:
     """Files behind one buyer URL. gated is set only when a login wall is all the page offers."""
     known = known or set()
@@ -687,6 +814,10 @@ def resolve_portal(url: str, known: set = None) -> dict:
     elif _ethics_tender_id(url):
         files, gated = _ethics_documents(url)
         found = [(name, hint, dl, published, None) for name, hint, dl, published in files]
+    elif "TenderingProcedureDetails" in url or "TenderOID=" in url or "/awardProcedure/" in url:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _netserver_documents(url)]
+    elif "riigihanked.riik.ee" in host:
+        found = [(name, hint, dl, None, None) for name, hint, dl in _riigihanked_pack(url)]
     else:
         harvested = harvest_portal(url, known)
         if harvested["files"]:
@@ -976,7 +1107,7 @@ def gather_buyer_documents(session, published_active: bool = False) -> dict:
             from opportunities o
             where o.status = 'OPEN'
               and (o.deadline is null or o.deadline >= now())
-              and o.reference like 'TED:%'
+              and (o.reference like 'TED:%' or o.official_url like '%ted.europa.eu%')
               and exists (
                 select 1 from scope_items si
                 where si.item_id = o.opportunity_id and si.item_type = 'tender')
@@ -1040,12 +1171,20 @@ def gather_buyer_documents(session, published_active: bool = False) -> dict:
             portals = list(dict.fromkeys(html.unescape(u or "").strip() for u in portals))
             portals = [u for u in portals if u.startswith("http") and "ted.europa.eu" not in u]
             added = 0
+            promoted = 0
             gated_url = None
             got = False
             for url in portals:
                 resolved = resolve_portal(url, known)
                 for name, doc_type, link, _published, _version in resolved["files"]:
                     if link in known:
+                        # A portal page stored as a stub is the dossier once a reader can open it.
+                        promoted += session.execute(text("""
+                            update documents
+                            set name = :n, document_type = cast(:t as documenttype), downloaded_at = :now
+                            where opportunity_id = :o and url = :u and name like 'Tender documents on %'
+                        """), {"n": name[:500], "t": doc_type, "now": datetime.utcnow(),
+                               "o": opp.opportunity_id, "u": link[:1000]}).rowcount
                         got = True
                         continue
                     if _store_portal_file(session, opp.opportunity_id, name, link, datetime.utcnow(), doc_type):
@@ -1056,22 +1195,24 @@ def gather_buyer_documents(session, published_active: bool = False) -> dict:
                     gated_url = gated_url or url
             if gated_url and not got:
                 host = urlparse(gated_url).netloc.lower().removeprefix("www.") or "portal"
-                session.execute(text("""update documents set name = :n
+                label = f"Procurement documents (login required) — {host}"[:500]
+                renamed = session.execute(text("""update documents set name = :n
                                         where opportunity_id = :o and name like 'Tender documents on %' and url = :u"""),
-                                {"n": f"Procurement documents (login required) — {host}"[:500],
-                                 "o": opp.opportunity_id, "u": gated_url[:1000]})
+                                          {"n": label, "o": opp.opportunity_id, "u": gated_url[:1000]}).rowcount
+                if not renamed and _store_portal_file(session, opp.opportunity_id, label, gated_url, datetime.utcnow()):
+                    stats["inserted"] += 1
                 note_gated_portal(session, opp.opportunity_id, gated_url)
                 stats["gated"] += 1
-            elif added:
+            elif added or promoted:
                 stats["with_files"] += 1
             else:
                 stats["unchanged"] += 1
             stats["inserted"] += added
-            if added:
+            if added or promoted:
                 retire_stale_analysis(session, opp.opportunity_id)
             session.commit()
-            if added or gated_url:
-                print(f"gather {opp.opportunity_id} files={added} gated={bool(gated_url and not got)}", flush=True)
+            if added or promoted or gated_url:
+                print(f"gather {opp.opportunity_id} files={added + promoted} gated={bool(gated_url and not got)}", flush=True)
         except Exception as exc:
             session.rollback()
             stats["errors"] += 1
