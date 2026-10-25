@@ -136,12 +136,79 @@ def _notice_xml(publication_number: str) -> str:
     return body
 
 
-def _notice_document_urls(publication_number: str) -> list:
+def _buyer_url(url: str) -> str:
+    """A notice sometimes prints the portal host without a scheme."""
+    url = html.unescape((url or "").strip())
+    if re.match(r"www\.", url, re.I):
+        url = "https://" + url
+    return url
+
+
+def _front_door(url: str) -> bool:
+    """The portal's home page. It is not the dossier."""
+    parsed = urlparse(url or "")
+    path = (parsed.path or "/").rstrip("/")
+    return path.lower() in ("", "/", "/entreprise") and not (parsed.query or parsed.fragment)
+
+
+_NOT_A_PORTAL = (
+    "ted.europa.eu", "data.europa.eu", "publications.europa.eu", "op.europa.eu", "w3.org",
+    "tribunal", "domstol", "oikeus.fi", "markkinaoikeus", "uohs.gov", "bvger.ch",
+    "giustizia-amministrativa", "cnsc.ro", "dkom.hr", "lovdata.no", "ecertis",
+)
+
+
+def _useful_buyer_url(url: str) -> str:
+    """A specific buyer page worth opening. A namespace, a news story or a front door is not."""
+    try:
+        url = _buyer_url(html.unescape(url or "").strip().rstrip(").,;"))
+        if not url.startswith("http") or _news_source(url) or _front_door(url) or not _specific_page(url):
+            return ""
+        parsed = urlparse(url)
+        host = parsed.netloc.lower()
+        path = (parsed.path or "").lower()
+    except ValueError:
+        return ""
+    if any(part in host or part in path for part in _NOT_A_PORTAL):
+        return ""
+    return url
+
+
+def _split_notice_urls(publication_number: str) -> tuple:
+    """Official dossier links, then every other specific page the notice names.
+
+    The dossier link is what we show when the portal publishes no file. The other
+    pages are opened too: a notice often names the procedure there, not in the
+    dossier field. A page with no file is not stored.
+    """
     xml = _notice_xml(publication_number)
     blocks = re.findall(r"<cac:CallForTendersDocumentReference>(.*?)</cac:CallForTendersDocumentReference>", xml, re.S)
-    return list(dict.fromkeys(
-        html.unescape(u.strip()) for b in blocks for u in re.findall(r"<cbc:URI>([^<]+)</cbc:URI>", b)
-    ))
+    official = []
+    for block in blocks:
+        for raw in re.findall(r"<cbc:URI>([^<]+)</cbc:URI>", block):
+            url = _buyer_url(raw)
+            if url.startswith("http") and url not in official:
+                official.append(url)
+    related = []
+    for raw in re.findall(r"https?://[^<\"'\s]+", xml):
+        url = _useful_buyer_url(raw)
+        if url and url not in official and url not in related:
+            related.append(url)
+    for raw in re.findall(r"(?<![:/])www\.[^<\"'\s]+", xml):
+        url = _useful_buyer_url(raw)
+        if url and url not in official and url not in related:
+            related.append(url)
+    return official, related
+
+
+def _notice_document_urls(publication_number: str) -> list:
+    official, _related = _split_notice_urls(publication_number)
+    return official
+
+
+def _notice_related_urls(publication_number: str) -> list:
+    _official, related = _split_notice_urls(publication_number)
+    return related
 
 
 def _epps_documents(url: str) -> list:
@@ -390,6 +457,18 @@ def _ezamowienia_documents(url: str) -> list:
 _ETHICS_ID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
 _GATED = "The documents are in a gated portal that needs user login:"
 
+# A news article is not a buyer portal. It keeps its source link and is never described as a login wall.
+_NEWS_HOSTS = (
+    "economictimes.", "indiatimes.com", "developmentaid.org", "pv-tech.org", "pv-magazine.com",
+    "biometricupdate.com", "washingtontechnology.com", "tendernews.", "belgiumtenders.",
+    "business-review.eu", "wbif.eu", "instagram.com", "bidstats.", "starbridge.", "infraday.",
+)
+
+
+def _news_source(url: str) -> bool:
+    host = urlparse(url or "").netloc.lower()
+    return any(part in host for part in _NEWS_HOSTS)
+
 
 def _ethics_tender_id(url: str):
     parsed = urlparse(url or "")
@@ -460,7 +539,8 @@ _MAX_PORTAL_LINKS = 24
 _MAX_PORTAL_FILES = 16
 _DIRECT = re.compile(
     r"GetDocument|downloadContractDocument|downloadCftResourceItems|documentId=|"
-    r"DownloadReglement|DemandeTelechargementDce|/file/get_new/",
+    r"DownloadReglement|DemandeTelechargementDce|/file/get_new/|"
+    r"allegati/open\.php|summary/download/\d+|tender-eo-documents/\d+",
     re.I,
 )
 _MAX_FILE_BYTES = 30_000_000
@@ -474,6 +554,24 @@ def _file_kind(data: bytes) -> str:
     if data[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
         return "ole"
     return ""
+
+
+def _file_name(name: str, data: bytes) -> str:
+    """A public file keeps its label, with an extension the page can offer as a download."""
+    name = re.sub(r"\s+", " ", (name or "").strip())[:170] or "document"
+    if re.search(r"\.(pdf|docx?|xlsx?|odt|rtf|zip|7z)$", name, re.I):
+        return name
+    name = re.sub(r"\.(php|aspx|jsp|html?)$", "", name, flags=re.I).strip() or "document"
+    kind = _file_kind(data)
+    if kind == "zip" and re.search(r"[-_]docx$", name, re.I):
+        ext = ".docx"
+    elif kind == "zip" and re.search(r"[-_]xlsx$", name, re.I):
+        ext = ".xlsx"
+    elif kind == "zip" and re.search(r"[-_]pptx$", name, re.I):
+        ext = ".pptx"
+    else:
+        ext = {"pdf": ".pdf", "zip": ".zip", "ole": ".doc"}.get(kind or "")
+    return f"{name}{ext}" if ext else name
 
 
 def _same_site(left: str, right: str) -> bool:
@@ -505,13 +603,15 @@ def portal_candidates(page_url: str, body: str) -> list:
         if not _same_site(page_url, absolute) or absolute in seen:
             continue
         label_ok = bool(_DOC_LABEL.search(label) or _DOC_LABEL.search(absolute))
-        downloadish = bool(_DOWNLOADISH.search(absolute))
+        downloadish = bool(_DOWNLOADISH.search(absolute) or _DOWNLOADISH.search(label))
         file_link = bool(_FILE_EXT.search(absolute.split("#")[0]))
         direct = bool(_DIRECT.search(absolute))
         ezak_file = bool(_EZAK_FILE.search(urlparse(absolute).path or ""))
-        if direct or ezak_file or (file_link and (specific or label_ok or downloadish)):
-            keep = True
-        elif label_ok and (downloadish or bool(_SIZE.search(label))):
+        # A portal home page links its own manuals. Only a tender page, or a direct
+        # download endpoint, is allowed to contribute a file.
+        if not specific and not direct and not ezak_file:
+            keep = False
+        elif direct or ezak_file or file_link or (label_ok and (downloadish or bool(_SIZE.search(label)))):
             keep = True
         else:
             keep = False
@@ -579,7 +679,7 @@ def harvest_portal(url: str, known: set = None) -> dict:
     url = html.unescape(url or "").strip()
     known = known or set()
     out = {"files": [], "gated": False, "listed": 0}
-    if not url.startswith("http"):
+    if not url.startswith("http") or _news_source(url):
         return out
     session = requests.Session()
     session.headers.update(UA)
@@ -590,7 +690,7 @@ def harvest_portal(url: str, known: set = None) -> dict:
     data = response.content or b""
     if response.status_code == 200 and _file_kind(data) and 200 <= len(data) <= _MAX_FILE_BYTES:
         name = urlparse(response.url).path.rsplit("/", 1)[-1] or "document"
-        out["files"].append((name[:180], url))
+        out["files"].append((_file_name(name, data), url))
         out["listed"] = 1
         return out
     body = response.text or ""
@@ -619,8 +719,13 @@ def harvest_portal(url: str, known: set = None) -> dict:
             continue
         disposition = got.headers.get("content-disposition") or ""
         named = re.search(r"filename\*?=(?:UTF-8''|\"?)([^\";]+)", disposition, re.I)
-        name = label or (unquote_plus(named.group(1)).strip() if named else "") or link.rsplit("/", 1)[-1]
-        out["files"].append((name[:180], link))
+        header = unquote_plus(named.group(1)).strip().strip('"') if named else ""
+        # The link text is often an icon. The file's own name is in the response.
+        if header and not re.search(r"\.(pdf|docx?|xlsx?|odt|rtf|zip|7z)$", label or "", re.I):
+            name = header
+        else:
+            name = label or header or link.rsplit("/", 1)[-1]
+        out["files"].append((_file_name(name, blob), link))
     return out
 
 
@@ -642,10 +747,20 @@ def _clear_gated_note(session, opportunity_id: str, url: str) -> None:
 
 def note_gated_portal(session, opportunity_id: str, url: str):
     """The summary the page shows, when the dossier cannot be read without a login."""
+    if _news_source(url):
+        return
     sentence = f"{_GATED} {url}"
-    row = session.execute(text("select summary, tender_summary from opportunities where opportunity_id = :o"),
+    row = session.execute(text("""select summary, tender_summary, status, official_url, reference
+                                  from opportunities where opportunity_id = :o"""),
                           {"o": opportunity_id}).first()
     if not row:
+        return
+    # The story itself is the source. A login box on the article is not the dossier.
+    official = ((row.official_url or "").split("?")[0]).rstrip("/")
+    given = ((url or "").split("?")[0]).rstrip("/")
+    if row.status == "SIGNAL" and not (row.reference or "").startswith("TED:") and official and official == given:
+        return
+    if _news_source(row.official_url or "") and official == given:
         return
     for column in ("summary", "tender_summary"):
         current = (getattr(row, column) or "").strip()
@@ -866,6 +981,39 @@ def _netserver_documents(url: str) -> list:
     return files
 
 
+def _elite_dossier(url: str):
+    """Kommers-style notices. The overview is public. The file list asks for a supplier login.
+
+    Returns files, or gated when the document tab redirects to the login page.
+    None means this is not that kind of notice.
+    """
+    host = urlparse(url or "").netloc.lower()
+    if not any(name in host for name in ("kommersannons.se", "e-avrop.com", "trafikverket.se")):
+        return None
+    if "Notice" not in (url or "") and "ProcurementId=" not in (url or ""):
+        return None
+    try:
+        opened = requests.get(url, headers=UA, timeout=30, allow_redirects=True)
+    except Exception:
+        return None
+    final = opened.url or url
+    match = re.search(r"ProcurementId=(\d+)", final) or re.search(r"ProcurementId=(\d+)", opened.text or "")
+    if not match:
+        return None
+    parsed = urlparse(final)
+    prefix = "/eLite/Notice" if "/eLite/" in (parsed.path or "") else "/Notice"
+    documents = f"{parsed.scheme}://{parsed.netloc}{prefix}/Request/Documents.aspx?ProcurementId={match.group(1)}"
+    try:
+        page = requests.get(documents, headers=UA, timeout=30, allow_redirects=True)
+    except Exception:
+        return {"files": [], "gated": True, "url": documents}
+    landed = page.url or ""
+    if "login.aspx" in landed.lower() or _login_wall(documents, page.status_code, landed, page.text or ""):
+        return {"files": [], "gated": True, "url": documents}
+    harvested = harvest_portal(landed or documents)
+    return {"files": harvested["files"], "gated": bool(harvested["gated"] and not harvested["files"]), "url": documents}
+
+
 def resolve_portal(url: str, known: set = None) -> dict:
     """Files behind one buyer URL. gated is set only when a login wall is all the page offers."""
     known = known or set()
@@ -873,6 +1021,9 @@ def resolve_portal(url: str, known: set = None) -> dict:
     found = []
     gated = False
     partial = False
+    source = None
+    if _news_source(url):
+        return {"files": [], "gated": False, "partial": False, "source": None}
     if "/epps/" in url and ("listContractDocuments" in url or "listDPSContractDocuments" in url):
         found = [(f"{title} — {fname}" if title and title.lower() not in fname.lower() else fname,
                   classify(f"{title} {fname}"), dl, None, None) for title, fname, dl in _epps_documents(url)]
@@ -904,6 +1055,12 @@ def resolve_portal(url: str, known: set = None) -> dict:
         found = [(name, hint, dl, None, None) for name, hint, dl in _ankoe_documents(url)]
     elif "s2c.mercell.com" in host:
         found = [(name, hint, dl, None, None) for name, hint, dl in _mercell_documents(url)]
+    elif (elite := _elite_dossier(url)):
+        if elite["files"]:
+            found = [(name, _portal_type(name), link, None, None) for name, link in elite["files"]]
+        elif elite["gated"]:
+            gated = True
+            source = elite["url"]
     else:
         harvested = harvest_portal(url, known)
         if harvested["files"]:
@@ -911,7 +1068,7 @@ def resolve_portal(url: str, known: set = None) -> dict:
             partial = harvested["listed"] > len(harvested["files"])
         elif harvested["gated"]:
             gated = True
-    return {"files": found, "gated": gated, "partial": partial}
+    return {"files": found, "gated": gated, "partial": partial, "source": source}
 
 
 def _portal_urls_on_record(session, opportunity_id: str) -> list:
@@ -943,6 +1100,7 @@ _UNREAD_SQL = """(
     or tender_summary ilike '%material provided for this%'
     or tender_summary ilike '%material available for this%'
     or tender_summary ilike '%source material%'
+    or tender_summary ilike '%no tender documents%'
 )"""
 
 _ACTIVE_PUBLISHED = """
@@ -1014,12 +1172,16 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
     # repeats them, and sometimes doesn't, so read every notice. A failed read
     # is not "this notice has no documents": the next run has to try again.
     portal_urls = []
+    extra_urls = []
     for n in notices:
         try:
-            portal_urls += _notice_document_urls(n["publication-number"])
+            official, related = _split_notice_urls(n["publication-number"])
         except Exception:
             continue
+        portal_urls += official
+        extra_urls += related
     portal_urls = list(dict.fromkeys(portal_urls))
+    extra_urls = [url for url in dict.fromkeys(extra_urls) if url not in portal_urls]
     # A TED rate limit is not "this tender has no dossier". Open the portal we already stored.
     for url in _portal_urls_on_record(session, opportunity_id):
         if url not in portal_urls:
@@ -1029,31 +1191,49 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
     partial = False
     known = {row.url for row in session.execute(text("select url from documents where opportunity_id = :o"),
                                                 {"o": opportunity_id}).fetchall()}
-    for url in portal_urls:
+    for url in portal_urls + extra_urls:
         partial = False
         host = urlparse(url).netloc
         found = []
         gated = False
+        # A page the notice mentions beside the dossier link can contribute files.
+        # It is not itself the dossier, so an empty or login page there is ignored.
+        side_page = url in extra_urls
         try:
             resolved = resolve_portal(url, known)
             found = resolved["files"]
             gated = resolved["gated"]
             partial = resolved["partial"]
+            record = resolved.get("source") or url
         except Exception:
             found = []
+            record = url
         if found:
             rows += found
             got_files = True
             if not partial:
                 continue
+        if side_page:
+            continue
         # The cadastre index lists every competition. The site blocks the HTML
         # from the pipeline, and the matching PDFs are stored as their own files.
         if "ktimatologio.gr" in (host or "") and "/diagonismoi/prokirikseis" in url:
             continue
+        if _news_source(url) or _front_door(url):
+            continue
         if gated:
-            gated_url = gated_url or url
-            rows.append((f"Procurement documents (login required) — {host.removeprefix('www.')}",
-                         "TENDER_SPECIFICATIONS", url, None, None))
+            gated_url = gated_url or record
+            gate_host = urlparse(record).netloc or host
+            label = f"Procurement documents (login required) — {gate_host.removeprefix('www.')}"
+            # The notice page was stored earlier. Point that row at the page that asks for the login.
+            taken = session.execute(text("""select 1 from documents where opportunity_id = :o and url = :record
+                                            and url <> :original limit 1"""),
+                                    {"o": opportunity_id, "record": record[:1000], "original": url[:1000]}).first()
+            if not taken:
+                session.execute(text("""update documents set url = :record, name = :label
+                                        where opportunity_id = :o and name like 'Tender documents on %' and url = :original"""),
+                                {"record": record[:1000], "label": label[:500], "o": opportunity_id, "original": url[:1000]})
+            rows.append((label, "TENDER_SPECIFICATIONS", record, None, None))
             continue
         rows.append((f"Tender documents on {host.removeprefix('www.')}", "TENDER_SPECIFICATIONS", url, None, None))
     if gated_url and not got_files:
@@ -1079,6 +1259,19 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
                                     where document_id = :d"""),
                             {"n": name[:500], "t": doc_type, "now": now, "d": stub.document_id})
             _clear_gated_note(session, opportunity_id, url[:1000])
+            continue
+        # The same public file was stored under a label with no extension, or as a portal stub.
+        by_url = session.execute(text("""select document_id, name from documents
+                                         where opportunity_id = :o and url = :u limit 1"""),
+                                 {"o": opportunity_id, "u": url[:1000]}).first()
+        if by_url:
+            old = by_url.name or ""
+            has_ext = re.search(r"\.(pdf|docx?|xlsx?|odt|rtf|zip|7z)$", old, re.I)
+            new_ext = re.search(r"\.(pdf|docx?|xlsx?|odt|rtf|zip|7z)$", name or "", re.I)
+            if name != old and (old.startswith("Tender documents on ") or (not has_ext and new_ext)):
+                session.execute(text("""update documents set name = :n, document_type = cast(:t as documenttype), downloaded_at = :now
+                                        where document_id = :d"""),
+                                {"n": name[:500], "t": doc_type, "now": now, "d": by_url.document_id})
             continue
         if exists:
             if exists.url != url[:1000]:  # same file, better link (e.g. a direct download)
@@ -1265,12 +1458,18 @@ def gather_buyer_documents(session, published_active: bool = False) -> dict:
             if not pubs:
                 one = _publication_number(opp.official_url, known)
                 pubs = [one] if one else []
+            side_pages = []
             for pub in pubs:
                 try:
-                    portals.extend(_notice_document_urls(pub))
+                    official, related = _split_notice_urls(pub)
+                    portals.extend(official)
+                    side_pages.extend(related)
                 except Exception:
                     pass
             portals = list(dict.fromkeys(html.unescape(u or "").strip() for u in portals))
+            side_pages = [u for u in dict.fromkeys(side_pages) if u not in portals]
+            portals.extend(side_pages)
+            side_pages = set(side_pages)
             portals = [u for u in portals if u.startswith("http") and "ted.europa.eu" not in u]
             added = 0
             promoted = 0
@@ -1278,6 +1477,7 @@ def gather_buyer_documents(session, published_active: bool = False) -> dict:
             got = False
             for url in portals:
                 resolved = resolve_portal(url, known)
+                record = resolved.get("source") or url
                 for name, doc_type, link, _published, _version in resolved["files"]:
                     if link in known:
                         # A portal page stored as a stub is the dossier once a reader can open it.
@@ -1298,8 +1498,8 @@ def gather_buyer_documents(session, published_active: bool = False) -> dict:
                         added += 1
                         known.add(link)
                         got = True
-                if resolved["gated"] and not resolved["files"]:
-                    gated_url = gated_url or url
+                if resolved["gated"] and not resolved["files"] and url not in side_pages:
+                    gated_url = gated_url or record
             if gated_url and not got:
                 host = urlparse(gated_url).netloc.lower().removeprefix("www.") or "portal"
                 label = f"Procurement documents (login required) — {host}"[:500]

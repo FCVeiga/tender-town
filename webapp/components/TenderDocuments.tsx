@@ -20,11 +20,17 @@ const groupOf = (t: string | null) => GROUPS.find(([k]) => k === t)?.[1] ?? 'Oth
 
 const DIRECT = /downloadContractDocument|dtvp\.de\/Satellite\/public\/company\/project\/[^/]+\/\w+\/documents\//;
 const HOSTED = /\/files\/[a-f0-9]{16,64}-[a-f0-9]{8,16}$/i;
+const NAMED_FILE = /\.(pdf|docx?|xlsx?|zip|odt|ods|pptx?|xml|csv)(?:$|[?#&\s])/i;
 
-function linkKind(url: string | null) {
+function linkKind(url: string | null, name?: string | null) {
   if (!url) return null;
   if (/ted\.europa\.eu\/.*\/pdf$/.test(url)) return { label: 'PDF', title: 'Official TED notice (PDF)' };
-  if (HOSTED.test(url) || DIRECT.test(url)) return { label: 'Download', title: 'Direct download from the buyer portal' };
+  const path = url.split('#')[0];
+  // The portal sometimes returns the file from a URL that has no extension.
+  const fileAt = NAMED_FILE.test(name || '') && /(?:index\.php|open\.php|donwloadProcedurePiece|getdocument|download)/i.test(path);
+  if (HOSTED.test(url) || DIRECT.test(url) || NAMED_FILE.test(path) || fileAt) {
+    return { label: 'Download', title: 'Direct download from the buyer portal' };
+  }
   return { label: 'Open on portal', title: 'Opens the buyer portal page where this document is downloaded' };
 }
 
@@ -82,7 +88,7 @@ export default function TenderDocuments({ docs, signedIn = true, signupHref = '/
             <details key={g} className="doc-fold" {...(items.length <= 8 ? { open: true } : {})}>
               <summary>{t(g)} <span className="uc-count">{items.length}</span></summary>
               {items.map((d) => {
-                const kind = linkKind(d.url);
+                const kind = linkKind(d.url, d.name);
                 const type = fileType(`${d.name_en || ''} ${d.name}`);
                 const showType = type && kind?.label !== 'PDF';
                 return (
@@ -98,7 +104,7 @@ export default function TenderDocuments({ docs, signedIn = true, signupHref = '/
               })}
             </details>
           ))}
-          {docs.some((d) => !DIRECT.test(d.url ?? '') && !HOSTED.test(d.url ?? '') && !/ted\.europa/.test(d.url ?? '')) && (
+          {docs.some((d) => linkKind(d.url, d.name)?.label === 'Open on portal') && (
             <p className="sidebar-note">{t('“Portal ↗” documents download from the buyer\'s portal, which may ask you to register.')}</p>
           )}
         </>
