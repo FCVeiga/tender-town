@@ -1,16 +1,20 @@
 /**
- * The onboarding search. A visitor describes the company; after they have an
- * account, this picks one open tender and runs the evaluation and the brief.
- * The conversation before the account is scripted and does not call a model.
+ * The onboarding search. A visitor describes the company and this picks one
+ * open tender. After they have an account, deliverFind also runs the
+ * evaluation and the brief.
  */
 import 'server-only';
 import { getSupabaseServerClient } from '@/lib/supabase';
 import { getContext } from '@/lib/accounts';
-import { getGeneralScope } from '@/lib/scopes';
+import { getGeneralScope, getScopeItems } from '@/lib/scopes';
 import { wordsOf } from '@/lib/guestScope';
 import { ensureEvaluation } from '@/lib/tenderEvaluation';
 import { ensureProposal } from '@/lib/proposalManager';
-import { getT } from '@/lib/i18n/server';
+import { getLocale, getT } from '@/lib/i18n/server';
+import { buyerOf, cardFreshness, daysUntil, oppCategoryLabel, opportunityPath, titleOf, type Opportunity } from '@/lib/data';
+import { plainText } from '@/lib/plain';
+import { publicText, stageOf } from '@/lib/publication';
+import { shownSummary } from '@/lib/shownSummary';
 
 const EXTRA_STOP = new Set('company companies business services service software public tender tenders work works your with from that this have will into about over more than also only their there what when which while them they make makes made using used'.split(' '));
 
@@ -92,6 +96,70 @@ export async function pickOpenTender(brief: FindBrief) {
   const ranked = rows.map((row) => ({ id: row.opportunity_id as string, score: scoreRow(row, words, country) }))
     .sort((a, b) => b.score - a.score);
   return ranked[0]?.id || null;
+}
+
+export type FindMatch = {
+  href: string;
+  title: string;
+  summary: string;
+  buyer: string | null;
+  countryName: string | null;
+  countryCode: string | null;
+  typeLabel: string | null;
+  typeSlug: string | null;
+  durationMonths: number | null;
+  fresh: 'new' | 'updated' | null;
+  relevance: number | null;
+  fit: number | null;
+  value: string | null;
+  days: number | null;
+  deadlineLabel: string | null;
+};
+
+function money(value: number | null, currency: string | null) {
+  if (!value) return null;
+  const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'USD' ? '$' : `${currency ?? ''} `;
+  if (value >= 1e9) return `${sym}${(value / 1e9).toFixed(1).replace(/\.0$/, '')}B`;
+  if (value >= 1e6) return `${sym}${(value / 1e6).toFixed(1).replace(/\.0$/, '')}M`;
+  if (value >= 1e3) return `${sym}${Math.round(value / 1e3)}K`;
+  return `${sym}${value}`;
+}
+
+/** The same tender row the tenders page shows, for the company the visitor just described. */
+export async function matchOpenTender(brief: FindBrief): Promise<FindMatch | null> {
+  const id = await pickOpenTender(brief);
+  if (!id) return null;
+  const db = getSupabaseServerClient();
+  const { data } = await db.from('opportunities').select('opportunity_id, title, title_en, language, country, authority, authority_en, opportunity_type, status, summary, tender_summary, deadline, publication_date, first_detected, last_change, estimated_value, currency, duration_months, opportunity_relevance_score').eq('opportunity_id', id).maybeSingle();
+  if (!data) return null;
+  const o = data as Opportunity;
+  const [items, country] = await Promise.all([
+    getScopeItems('tender', true),
+    o.country
+      ? db.from('countries').select('name').eq('code', o.country).maybeSingle()
+      : Promise.resolve({ data: null as { name: string } | null }),
+  ]);
+  const scoped = items?.relevance.has(id) ? items.relevance.get(id) ?? null : null;
+  const stage = stageOf(o);
+  const days = daysUntil(o.deadline);
+  const countryName = country.data?.name ?? null;
+  return {
+    href: opportunityPath(o),
+    title: titleOf(o),
+    summary: publicText(plainText(shownSummary(o))),
+    buyer: buyerOf(o),
+    countryName,
+    countryCode: o.country,
+    typeLabel: o.opportunity_type && o.opportunity_type !== 'signal' ? oppCategoryLabel(o.opportunity_type) : null,
+    typeSlug: o.opportunity_type,
+    durationMonths: o.duration_months,
+    fresh: stage === 'closed' || o.opportunity_type === 'signal' ? null : cardFreshness(o),
+    relevance: scoped ?? o.opportunity_relevance_score ?? null,
+    fit: null,
+    value: money(o.estimated_value, o.currency),
+    days: days != null && days >= 0 ? days : null,
+    deadlineLabel: o.deadline ? new Date(o.deadline).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : null,
+  };
 }
 
 /** Save what they said as this workspace's company note on General, then run both agents once. */

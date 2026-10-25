@@ -2604,6 +2604,20 @@
     "de": "Suche aktive Ausschreibungen für {name}.",
     "it": "Cerco gare attive per {name}."
   },
+  "Our agents are finding the best tender for you.": {
+    "pt": "Os nossos agentes estão a encontrar o melhor concurso para si.",
+    "es": "Nuestros agentes están buscando la mejor licitación para ti.",
+    "fr": "Nos agents cherchent le meilleur appel d’offres pour vous.",
+    "de": "Unsere Agenten suchen die beste Ausschreibung für dich.",
+    "it": "I nostri agenti stanno cercando la migliore gara per te."
+  },
+  "The search did not finish.": {
+    "pt": "A pesquisa não terminou.",
+    "es": "La búsqueda no ha terminado.",
+    "fr": "La recherche ne s’est pas terminée.",
+    "de": "Die Suche wurde nicht fertig.",
+    "it": "La ricerca non è finita."
+  },
   "I may have found an active tender for {name}.": {
     "pt": "Posso ter encontrado um concurso ativo para {name}.",
     "es": "Puede que haya encontrado una licitación activa para {name}.",

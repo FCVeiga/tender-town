@@ -571,6 +571,7 @@ a.text-link { text-decoration: underline; text-underline-offset: 2px; }
   z-index: 80; display: block; height: fit-content; max-height: min(92dvh, 760px);
   overflow: auto; -webkit-overflow-scrolling: touch;
 }
+.modal.find-modal:not([open]) { display: none; }
 .modal.find-modal .modal-body { display: flex; flex-direction: column; gap: 16px; height: auto; min-height: auto; overflow: visible; }
 .modal.find-modal .modal-head { position: sticky; top: 0; z-index: 1; background: var(--surface); }
 .find-panel { flex: none; min-height: auto; overflow: visible; }
@@ -582,6 +583,14 @@ a.text-link { text-decoration: underline; text-underline-offset: 2px; }
   background: var(--brand-a); border-color: var(--brand-a); color: #fff; box-shadow: none;
 }
 .modal.find-modal .btn.primary.find-go:hover { background: #1554E0; border-color: #1554E0; }
+.find-match .opp-row { grid-template-columns: 88px minmax(0, 1fr); }
+.find-match .opp-metrics {
+  grid-column: 1 / -1; padding: 14px 0 0; border-left: none; border-top: 1px solid var(--border);
+  justify-content: space-around;
+}
+@media (max-width: 600px) {
+  .find-match .opp-row { grid-template-columns: minmax(0, 1fr); }
+}
 .find-result { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 4px 0 2px; padding: 4px 0 4px 14px; border-left: 3px solid var(--accent); }
 .find-result h3 { margin: 0; font-size: 22px; line-height: 1.25; letter-spacing: -0.02em; }
 .find-result p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--text); }

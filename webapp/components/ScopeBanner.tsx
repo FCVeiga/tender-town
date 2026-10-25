@@ -81,7 +81,7 @@ export default function ScopeBanner({ model, compact: compactSaved }: {
       </div>
       </div>
       {agents && <AgentModal onClose={() => setAgents(false)} />}
-      {find && <FindChat signedIn={model.signedIn} onClose={() => setFind(false)} />}
+      {find && <FindChat onClose={() => setFind(false)} />}
     </section>
   );
 }
