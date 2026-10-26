@@ -31,6 +31,8 @@ import { PLANS, planIncludes } from '@/lib/plans';
 import { clip } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import ItemSources from '@/components/ItemSources';
+import FitScopeSwitch from '@/components/FitScopeSwitch';
+import { resolveFocus } from '@/lib/scopeFocus';
 
 // The Tender Analysis Agent's four groups; older rows without a group fall back on their category.
 const REQ_GROUPS: { key: string; label: string; categories: string[] }[] = [
@@ -188,6 +190,12 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
   const runnableScopes = viewScopes.filter((scope) => scopeCanRun(scope) || !!evalOf(scope.id)?.evaluation);
   const evaluationScopes = runnableScopes.length ? runnableScopes : viewScopes.slice(0, 1);
   const storedEvaluations = planBlocksEvaluation ? viewScopes.filter((scope) => !!evalOf(scope.id)?.evaluation) : [];
+  const pickerScopes = !planBlocksEvaluation && evaluationScopes.length ? evaluationScopes : storedEvaluations;
+  const focus = await resolveFocus();
+  const initialFitScope = (focus.current && pickerScopes.some((scope) => scope.id === focus.current?.id) ? focus.current.id : null)
+    || pickerScopes.find((scope) => evalOf(scope.id)?.evaluation)?.id
+    || pickerScopes[0]?.id
+    || '';
 
   const origin = siteOrigin();
   const headline = titleOf(o);
@@ -294,6 +302,7 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
           </section>
         ) : (
           <section className="detail-block" id="requirements">
+            <FitScopeSwitch scopes={pickerScopes.map((scope) => ({ id: scope.id, name: scope.name }))} initialId={initialFitScope}>
             {readyScopes.length > 0 && (
               <>
                 <h2>{fitScopes.length ? t('Requirements & Match Status') : t('Requirements')} {reqs.length > 0 && <span className="uc-count">{reqs.length}</span>}</h2>
@@ -304,7 +313,7 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
                     <h3 className="req-category-title">{t(g.label)} <span className="uc-count">{g.rows.length}</span></h3>
                     <div className="req-table-wrap">
                       <table className="req-table">
-                        <thead><tr><th>{t('Requirement')}</th><th>{t('Threshold')}</th><th>{t('Mandatory')}</th>{fitScopes.map((sc) => <th key={sc.id}>{fitScopes.length > 1 ? `${t('Match')} · ${sc.name}` : t('Match')}</th>)}</tr></thead>
+                        <thead><tr><th>{t('Requirement')}</th><th>{t('Threshold')}</th><th>{t('Mandatory')}</th>{fitScopes.map((sc) => <th key={sc.id} data-fit-scope={pickerScopes.length > 1 ? sc.id : undefined}>{t('Match')}</th>)}</tr></thead>
                         <tbody>
                           {g.rows.map((r) => (
                             <tr key={r.requirement_id}>
@@ -319,7 +328,7 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
                               {fitScopes.map((sc) => {
                                 const m = matchOf(r, sc.id);
                                 return (
-                                  <td key={sc.id}>
+                                  <td key={sc.id} data-fit-scope={pickerScopes.length > 1 ? sc.id : undefined}>
                                     <span className={`badge-match ${matchClass(m?.match_status)}`}>{t(matchLabel(m?.match_status))}</span>
                                     {m?.notes && <div className="req-match-note">{m.notes}</div>}
                                   </td>
@@ -349,40 +358,34 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
                 )}
               </>
             )}
-            <div className="analysis-block" id="evaluation">
-              {!planBlocksEvaluation && evaluationScopes.length > 0 ? evaluationScopes.map((scope, index) => (
-                <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
-                  row={user ? evalOf(scope.id) : null} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked} chrome={index === 0} named={evaluationScopes.length > 1}
-                  evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
-                  analysedAt={o.tender_analysed_at ?? null}
-                  lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed' && o.status !== 'AWARDED'} awarded={index === 0 && o.status === 'AWARDED'}
-                  contextHref={scopeCanRun(scope) ? contextHrefOf(scope) : null}
-                  runsLeft={index === 0 ? runsLeft : null}
-                  runsLimit={index === 0 && evalAllowance?.limit != null && !evalAllowance.block ? evalAllowance.limit : null}
-                  quotaLimit={index === 0 && evalAllowance?.block === 'quota' ? evalAllowance.limit : null} />
-              )) : storedEvaluations.length > 0 ? (
-                <>
-                  {storedEvaluations.map((scope, index) => (
-                    <TenderScopeEvaluation key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
-                      row={evalOf(scope.id)} canRun={false} signedIn={!!user} locked={null} chrome={index === 0} named={storedEvaluations.length > 1}
-                      evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={false}
+              <div className="analysis-block" id="evaluation">
+                {pickerScopes.length > 0 ? pickerScopes.map((scope) => (
+                  <div key={scope.id} data-fit-scope={pickerScopes.length > 1 ? scope.id : undefined}>
+                    <TenderScopeEvaluation opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
+                      row={user ? evalOf(scope.id) : null} canRun={!planBlocksEvaluation && scopeCanRun(scope)} signedIn={!!user} locked={planBlocksEvaluation ? null : locked} chrome named={false}
+                      evaluatorOn={flags.get(scope.id)?.evaluator ?? true} proposerOn={!planBlocksEvaluation && (flags.get(scope.id)?.proposer ?? true) && proposalsAllowed}
                       analysedAt={o.tender_analysed_at ?? null}
-                      lead={index === 0 ? compare : null} archived={index === 0 && stage === 'closed' && o.status !== 'AWARDED'} awarded={index === 0 && o.status === 'AWARDED'} />
-                  ))}
-                  <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=${path}`} />
-                </>
-              ) : (
-                <>
-                  <div className="agent-head">
-                    <AgentAvatar agent="tender_evaluation" />
-                    <div className="agent-id"><h2>{t('Tender Evaluation')}</h2></div>
+                      lead={compare} archived={stage === 'closed' && o.status !== 'AWARDED'} awarded={o.status === 'AWARDED'}
+                      contextHref={!planBlocksEvaluation && scopeCanRun(scope) ? contextHrefOf(scope) : null}
+                      runsLeft={!planBlocksEvaluation ? runsLeft : null}
+                      runsLimit={!planBlocksEvaluation && evalAllowance?.limit != null && !evalAllowance.block ? evalAllowance.limit : null}
+                      quotaLimit={!planBlocksEvaluation && evalAllowance?.block === 'quota' ? evalAllowance.limit : null} />
                   </div>
-                  <p className="agent-intro">{compare}</p>
-                  {o.status === 'AWARDED' ? <p className="summary-note">{t('This contract has been awarded.')}</p> : stage === 'closed' ? <p className="summary-note">{t('This tender is archived.')}</p> : null}
+                )) : (
+                  <>
+                    <div className="agent-head">
+                      <AgentAvatar agent="tender_evaluation" />
+                      <div className="agent-id"><h2>{t('Tender Evaluation')}</h2></div>
+                    </div>
+                    <p className="agent-intro">{compare}</p>
+                    {o.status === 'AWARDED' ? <p className="summary-note">{t('This contract has been awarded.')}</p> : stage === 'closed' ? <p className="summary-note">{t('This tender is archived.')}</p> : null}
+                  </>
+                )}
+                {(pickerScopes.length === 0 || planBlocksEvaluation) && (
                   <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=${path}`} />
-                </>
-              )}
-            </div>
+                )}
+              </div>
+            </FitScopeSwitch>
           </section>
         )}
         brief={!agentTasks ? (

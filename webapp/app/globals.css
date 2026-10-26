@@ -1063,6 +1063,16 @@ tr.data-row:hover td { background: #FAFBFD; }
 .original-notice summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
 .original-notice p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
 .eval-scope + .eval-scope, .proposal-block + .proposal-block { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px; }
+.fit-scope-root { display: flex; flex-direction: column; }
+.fit-scope-root > .fit-scope-pick { order: 1; }
+.fit-scope-root > .analysis-block { order: 2; }
+.fit-scope-pick { display: block; margin: 0 0 16px; max-width: 360px; }
+.fit-scope-root > h2 ~ .fit-scope-pick { margin-top: 16px; }
+.fit-scope-pick select {
+  width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 10px;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: var(--surface); cursor: pointer;
+}
+.fit-scope-pick select:focus { outline: 2px solid var(--brand-a); outline-offset: -1px; border-color: transparent; }
 .eval-scope + .eval-scope.no-chrome { border-top: 0; margin-top: 0; padding-top: 0; }
 .req-table-wrap { max-width: 100%; overflow-x: auto; }
 .req-category-title { font-size: 13px; font-weight: 600; color: var(--ink); margin: 0 0 8px; }
@@ -1381,8 +1391,8 @@ th.num .sort-head { justify-content: flex-end; }
   .feed-time { margin-left: 0; width: 100%; order: -1; }
 
   /* Forms: 16px text (no iOS zoom), 44px controls. */
-  .field input, .field select, .field textarea, .filter-select select, .config-edit { font-size: 16px; }
-  .field input, .field select { height: 44px; }
+  .field input, .field select, .field textarea, .filter-select select, .fit-scope-pick select, .config-edit { font-size: 16px; }
+  .field input, .field select, .fit-scope-pick select { height: 44px; }
   .btn { min-height: 40px; }
   .btn-agent { min-height: 44px; }
   .filter-inline { gap: 8px; }
