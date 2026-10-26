@@ -1595,12 +1595,12 @@
     "de": "Anforderungen und Passung",
     "it": "Requisiti e idoneità"
   },
-  "Requirements & fit first": {
-    "pt": "Requisitos e adequação primeiro",
-    "es": "Requisitos y encaje primero",
-    "fr": "Exigences et adéquation d’abord",
-    "de": "Zuerst Anforderungen und Passung",
-    "it": "Prima requisiti e idoneità"
+  "Run the evaluation agent in the Requirements & fit section to unlock this agent pipeline.": {
+    "pt": "Execute o agente de avaliação na secção Requisitos e adequação para desbloquear este fluxo de agentes.",
+    "es": "Ejecuta el agente de evaluación en la sección Requisitos y encaje para desbloquear este flujo de agentes.",
+    "fr": "Lancez l'agent d'évaluation dans la section Exigences et adéquation pour débloquer ce parcours d'agents.",
+    "de": "Führe den Bewertungsagenten im Abschnitt Anforderungen und Passung aus, um diesen Agentenablauf freizuschalten.",
+    "it": "Esegui l'agente di valutazione nella sezione Requisiti e idoneità per sbloccare questo flusso di agenti."
   },
   "Log in to run agent": {
     "pt": "Inicie sessão para executar o agente",

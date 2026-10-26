@@ -746,6 +746,7 @@ button.scope-banner-create:focus-visible, .scope-banner-select:focus-visible, .s
 .btn.primary { background: var(--brand-a); border-color: var(--brand-a); color: #fff; }
 .btn.primary:hover { background: #1554E0; }
 .btn:disabled { opacity: 0.6; cursor: wait; }
+.btn:disabled.btn-locked { cursor: not-allowed; }
 .btn.add-account { width: 100%; border-style: dashed; color: var(--accent); }
 .btn.add-account span { font-size: 16px; line-height: 1; }
 
@@ -1198,6 +1199,7 @@ tr.data-row:hover td { background: #FAFBFD; }
 .btn-agent:hover:not(:disabled) { background: #1554E0; border-color: #1554E0; }
 .btn-agent:disabled { background: var(--surface-2); color: var(--subtle); border-color: var(--border); cursor: not-allowed; }
 .eval-note { font-size: 12px; color: var(--subtle); }
+.brief-lock { margin: 10px 0 0; max-width: 42em; font-size: 13px; line-height: 1.45; color: var(--muted); }
 .eval-report { margin-bottom: 16px; }
 .eval-report h3 { font-size: 12.5px; font-weight: 600; color: var(--ink); margin: 12px 0 6px; }
 .eval-report ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: var(--text); }
@@ -1499,6 +1501,7 @@ th.num .sort-head { justify-content: flex-end; }
   }
   .tender-jump :is(a, button) { min-height: 44px; padding: 6px 4px; font-size: 12px; line-height: 1.2; border-radius: 12px; }
   .tender-page .eval-run { justify-content: center; }
+  .tender-page .brief-lock { text-align: center; margin-left: auto; margin-right: auto; }
 
   /* Tender page. */
   .opp-sidebar { max-height: none; }

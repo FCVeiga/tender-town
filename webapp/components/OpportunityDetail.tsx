@@ -408,15 +408,17 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
               <UpgradeReport signedIn={!!user} buttonOnly actionLabel={user ? undefined : 'Log in to run agent'} loginHref={user ? undefined : `/login?next=${path}`} />
             ) : (
               <>
-                {!evaluatedScopes.length && <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>}
+                {!evaluatedScopes.length && (
+                  <>
+                    <p className="eval-run"><button type="button" className="btn primary btn-locked" disabled aria-describedby="brief-lock">{t('Run agent')}</button></p>
+                    <p className="brief-lock" id="brief-lock">{t('Run the evaluation agent in the Requirements & fit section to unlock this agent pipeline.')}</p>
+                  </>
+                )}
                 {viewScopes.filter((scope) => evalOf(scope.id)?.evaluation).map((scope) => (
                   <ProposalSlot key={scope.id} opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}
                     row={evalOf(scope.id)} showName={viewScopes.length > 1 || !own} canRun={scopeCanRun(scope)} signedIn={!!user} locked={locked}
                     proposerOn={(flags.get(scope.id)?.proposer ?? true) && proposalsAllowed} contextHref={scopeCanRun(scope) ? contextHrefOf(scope) : null} />
                 ))}
-                {evaluatedScopes.length > 0 && viewScopes.some((scope) => !evalOf(scope.id)?.evaluation) && (
-                  <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>
-                )}
               </>
             )}
           </section>

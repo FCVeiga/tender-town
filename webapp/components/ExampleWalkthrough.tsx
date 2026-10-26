@@ -204,7 +204,10 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
           </div>
           <p className="agent-intro">{t('Prepare the submission pack from the tender’s templates, fill each document from your company file, and list the next steps.')}</p>
           {!evaluated ? (
-            <p className="eval-run"><a className="btn primary" href="#evaluation">{t('Requirements & fit first')}</a></p>
+            <>
+              <p className="eval-run"><button type="button" className="btn primary btn-locked" disabled aria-describedby="brief-lock">{t('Run agent')}</button></p>
+              <p className="brief-lock" id="brief-lock">{t('Run the evaluation agent in the Requirements & fit section to unlock this agent pipeline.')}</p>
+            </>
           ) : phase === 'briefed' ? (
             <>
               <div className="eval-run">
