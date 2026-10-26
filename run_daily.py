@@ -877,11 +877,17 @@ def main():
         analysed = analyse_tenders(session, errors)
         print(f"Award criteria: {analysed['award']} from TED notices")
 
-    from agents.official_notice import release_unofficial
-    released = release_unofficial(session)
-    if released:
+    from agents.official_notice import demote_unopened, fold_duplicates, promote_documented, release_unofficial
+    folded = fold_duplicates(session)
+    if folded:
         session.commit()
-        print(f"Classification: {len(released)} items without an official notice or requirement documents kept as signals")
+        print(f"Duplicates: {len(folded)} cards folded into the purchase they repeat")
+    released = release_unofficial(session)
+    demoted = demote_unopened(session)
+    promoted = promote_documented(session)
+    if released or demoted or promoted:
+        session.commit()
+        print(f"Classification: {len(released)} without a notice kept as signals, {len(demoted)} not-yet-open calls kept as signals, {len(promoted)} documented calls kept as tenders")
 
     # English titles for anything that predates triage's title_en, and for activity;
     # English notes for tender updates (shown as comments).

@@ -128,3 +128,118 @@ def same_story(title_a: str, title_b: str) -> bool:
 
 def _roundup(title: str) -> bool:
     return len(tokens(title) & _COUNTRIES) >= 2
+
+
+# Words that show up in every notice. Sharing them does not make two purchases
+# the same. A scheme name that is rare in that country does.
+_BOILER = _STOP | {
+    "software", "services", "service", "development", "framework", "agreement",
+    "information", "systems", "system", "package", "packages", "custom", "support",
+    "maintenance", "application", "applications", "national", "digital", "public",
+    "infrastructure", "platform", "solutions", "solution", "implementation",
+    "water", "waste", "energy", "solar", "plant", "plants", "electric", "buses",
+    "million", "billion", "contract", "project", "projects", "planned", "consult",
+    "consultation", "funding", "grant", "programme", "program", "market",
+    "building", "renovation", "upgrade", "cloud", "government", "federal",
+    "imaging", "research", "health", "healthcare", "medical", "clinical",
+}
+
+
+# Country and place names. Two notices in one city are not one purchase.
+_PLACES = _COUNTRIES | {
+    "bangladesh", "swiss", "switzerland", "california", "arizona", "sofia",
+    "philippines", "samoa", "cape", "town", "india", "paris", "london", "berlin",
+    "spain", "portugal", "united", "states", "africa", "brazil",
+}
+
+
+def content_tokens(title: str) -> set:
+    return {word for word in tokens(title) if word not in _BOILER and word not in _PLACES and len(word) >= 5}
+
+
+def capitalised_tokens(title: str) -> set:
+    """Names written with a capital, so a scheme name matches and a common noun does not."""
+    return {word.lower() for word in re.findall(r"\b[A-Z][A-Za-z0-9]{3,}", title or "")
+            if word.lower() not in _BOILER and word.lower() not in _PLACES
+            and word.lower() not in _STOP and len(word) >= 4}
+
+
+def capitalised_bigrams(title: str) -> set:
+    """Adjacent capitalised words, so 'Government Cloud' matches and 'water plant' does not."""
+    words = [word.lower() for word in re.findall(r"\b[A-Z][A-Za-z0-9]{3,}", title or "")]
+    return {(left, right) for left, right in zip(words, words[1:])
+            if left not in _PLACES and right not in _PLACES}
+
+
+def content_stems(title: str) -> set:
+    """Word stems, so 'charging' and 'charger' meet. Places and boilerplate are left out."""
+    text = (title or "").lower().replace("-", " ")
+    stems = set()
+    for word in re.findall(r"[a-z0-9]{4,}", text):
+        if word in _BOILER or word in _PLACES or word in _STOP:
+            continue
+        for suffix in ("ing", "ers", "er", "ed", "es"):
+            if word.endswith(suffix) and len(word) - len(suffix) >= 4:
+                word = word[: -len(suffix)]
+                break
+        if len(word) >= 4:
+            stems.add(word)
+    return stems
+
+
+def _authority_key(authority: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", (authority or "").lower())[:6])
+
+
+def _national_id(title: str) -> bool:
+    text = (title or "").lower()
+    return "national" in text and "digital" in text and bool(re.search(r"\bid\b|identity", text))
+
+
+def conflicting_references(ref_a: str, ref_b: str) -> bool:
+    """Two different TED procedures are two purchases, whatever the titles do."""
+    left, right = (ref_a or ""), (ref_b or "")
+    if left.startswith("TED:") and right.startswith("TED:"):
+        return _normalise(left) != _normalise(right)
+    return False
+
+
+def same_notice(title_a: str, title_b: str, country_a: str, country_b: str,
+                ref_a: str = None, ref_b: str = None,
+                authority_a: str = "", authority_b: str = "",
+                rare_tokens: set = None, rare_bigrams: set = None,
+                rare_stems: set = None) -> bool:
+    """True when two active cards are one purchase described twice.
+
+    Different TED procedure ids never match. A TED notice and a write-up only
+    match through the title or the story checks above, not a shared programme
+    name: one programme can have several contracts. A shared scheme name, a
+    shared two-word name, or the same buyer's national digital ID do match.
+    """
+    if conflicting_references(ref_a, ref_b):
+        return False
+    if same_procurement(title_a, title_b, ref_a, ref_b) or same_story(title_a, title_b):
+        return True
+    if (country_a or "") != (country_b or ""):
+        return False
+    one_ted = (ref_a or "").startswith("TED:") ^ (ref_b or "").startswith("TED:")
+    if not one_ted:
+        shared = capitalised_tokens(title_a) & capitalised_tokens(title_b)
+        if rare_tokens is not None:
+            shared &= rare_tokens
+        if shared:
+            return True
+        phrases = capitalised_bigrams(title_a) & capitalised_bigrams(title_b)
+        if rare_bigrams is not None:
+            phrases &= rare_bigrams
+        if phrases:
+            return True
+        shared_stems = content_stems(title_a) & content_stems(title_b)
+        if rare_stems is not None:
+            shared_stems &= rare_stems
+        if len(shared_stems) >= 2:
+            return True
+    left_auth, right_auth = _authority_key(authority_a), _authority_key(authority_b)
+    if _national_id(title_a) and _national_id(title_b) and left_auth and left_auth == right_auth:
+        return True
+    return False

@@ -62,7 +62,7 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
   const description = publicText(plainText(shownSummary(o)));
   const buyer = buyerOf(o);
   const urgent = days != null && days <= 14;
-  const fresh = stage === 'closed' || o.opportunity_type === 'signal' ? null : cardFreshness(o);
+  const fresh = stage === 'closed' || stage === 'signal' ? null : cardFreshness(o);
   const t = getTSync();
 
   const row = (
@@ -79,7 +79,7 @@ export default function OpportunityRow({ o, countryName, updates = [], like, arc
           {o.status === 'AWARDED' && <span className="tag">{t('Awarded')}</span>}
           {stage === 'closed' && o.status !== 'AWARDED' && <span className="tag closed">{t('Closed')}</span>}
           {stage === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
-          {o.opportunity_type && o.opportunity_type !== 'signal' && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
+          {stage !== 'signal' && o.opportunity_type && o.opportunity_type !== 'signal' && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
           {o.duration_months ? <span className="opp-chip">{o.duration_months >= 24 ? t('{n} years', { n: +(o.duration_months / 12).toFixed(1) }) : t('{n} months', { n: o.duration_months })}</span> : null}
         </div>
         <h2 className="opp-title">{title || titleOf(o)}</h2>

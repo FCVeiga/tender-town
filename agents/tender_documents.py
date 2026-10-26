@@ -725,6 +725,8 @@ def harvest_portal(url: str, known: set = None) -> dict:
             name = header
         else:
             name = label or header or link.rsplit("/", 1)[-1]
+        if re.search(r"media[- ]kit", name or "", re.I):
+            continue
         out["files"].append((_file_name(name, blob), link))
     return out
 
@@ -1014,6 +1016,116 @@ def _elite_dossier(url: str):
     return {"files": harvested["files"], "gated": bool(harvested["gated"] and not harvested["files"]), "url": documents}
 
 
+_PLACE_REF = re.compile(r"r[eé]f[eé]rence suivante\s*:?\s*([A-Z0-9][A-Z0-9-]{4,})", re.I)
+_PLACE_CODE = re.compile(
+    r"\b(\d{2}_[A-Z]{2,}_[A-Z0-9]+|20\d{2}[A-Z]{4,}[0-9]{2,}|[A-Z]{2,}(?:[-_][A-Z0-9]+){2,})\b"
+)
+
+
+def place_consultation(reference: str) -> str:
+    """The one PLACE consultation a buyer reference finds, or nothing when the search is ambiguous."""
+    ref = (reference or "").strip()
+    if len(ref) < 5:
+        return ""
+    try:
+        response = requests.post(
+            "https://www.marches-publics.gouv.fr/espace-entreprise/search",
+            data={"fromHomeSimpleSearch": "1", "keyWord": ref, "categorie": "", "lang": ""},
+            headers=UA, timeout=40,
+        )
+    except Exception:
+        return ""
+    found = sorted(set(re.findall(r"entreprise/consultation/(\d+)\?orgAcronyme=([a-z0-9]+)", response.text or "")))
+    if len(found) != 1:
+        return ""
+    number, org = found[0]
+    return f"https://www.marches-publics.gouv.fr/app.php/entreprise/consultation/{number}?orgAcronyme={org}"
+
+
+def _header_filename(raw: str) -> str:
+    """A download name. PLACE sends UTF-8 bytes in a latin-1 header."""
+    name = unquote_plus(raw or "").strip().strip('"')
+    try:
+        name = name.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        pass
+    return name
+
+
+def _download_name(url: str, fallback: str) -> str:
+    try:
+        response = requests.get(url, headers=UA, timeout=40, stream=True)
+        disposition = response.headers.get("content-disposition") or ""
+        response.close()
+    except Exception:
+        return fallback
+    match = re.search(r"filename=\"?([^\";]+)", disposition)
+    name = _header_filename(match.group(1)) if match else ""
+    return name or fallback
+
+
+def _place_public_files(url: str) -> list:
+    """Public files on a PLACE consultation: the rules, the complement, the DUME.
+
+    The DCE link is a download request, not a file, so it is not stored as one.
+    """
+    if "marches-publics.gouv.fr" not in (urlparse(url).netloc or ""):
+        return []
+    if "consultation/" not in (url or "") and "orgAcronyme=" not in (url or ""):
+        return []
+    try:
+        body = _get(url).text or ""
+    except Exception:
+        return []
+    files = []
+    seen = set()
+    for raw in re.findall(r'href="([^"]+)"', body):
+        link = urljoin(url, html.unescape(raw))
+        if link in seen:
+            continue
+        if "EntrepriseDownloadReglement" in link:
+            fallback = "Règlement de consultation.pdf"
+        elif "EntrepriseDownloadComplement" in link:
+            fallback = "Complément de consultation.pdf"
+        elif "/dume/telechargement/" in link:
+            fallback = "DUME Acheteur.zip"
+        else:
+            continue
+        seen.add(link)
+        files.append((_download_name(link, fallback), link))
+    return files
+
+
+def _expand_place(urls: list, notices: list) -> list:
+    """When a notice only names the PLACE homepage, open the consultation its reference finds."""
+    texts = []
+    mentions = any("marches-publics.gouv.fr" in (url or "") for url in urls)
+    for notice in notices or []:
+        try:
+            xml = _notice_xml(notice["publication-number"])
+        except Exception:
+            continue
+        if "marches-publics" not in xml:
+            continue
+        mentions = True
+        texts.append(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", xml)))
+    if not mentions:
+        return urls
+    plain = " ".join(texts)
+    refs = []
+    for ref in _PLACE_REF.findall(plain) + _PLACE_CODE.findall(plain):
+        if ref.upper() not in {item.upper() for item in refs}:
+            refs.append(ref)
+    found = []
+    for ref in refs[:4]:
+        consultation = place_consultation(ref)
+        if consultation and consultation not in urls and consultation not in found:
+            found.append(consultation)
+    if not found:
+        return urls
+    return found + [url for url in urls if not (_front_door(url) and "marches-publics.gouv.fr" in (url or ""))]
+
+
 def resolve_portal(url: str, known: set = None) -> dict:
     """Files behind one buyer URL. gated is set only when a login wall is all the page offers."""
     known = known or set()
@@ -1055,6 +1167,8 @@ def resolve_portal(url: str, known: set = None) -> dict:
         found = [(name, hint, dl, None, None) for name, hint, dl in _ankoe_documents(url)]
     elif "s2c.mercell.com" in host:
         found = [(name, hint, dl, None, None) for name, hint, dl in _mercell_documents(url)]
+    elif "marches-publics.gouv.fr" in host and ("consultation/" in url or "orgAcronyme=" in url):
+        found = [(name, _portal_type(name), link, None, None) for name, link in _place_public_files(url)]
     elif (elite := _elite_dossier(url)):
         if elite["files"]:
             found = [(name, _portal_type(name), link, None, None) for name, link in elite["files"]]
@@ -1180,7 +1294,7 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
             continue
         portal_urls += official
         extra_urls += related
-    portal_urls = list(dict.fromkeys(portal_urls))
+    portal_urls = _expand_place(list(dict.fromkeys(portal_urls)), notices)
     extra_urls = [url for url in dict.fromkeys(extra_urls) if url not in portal_urls]
     # A TED rate limit is not "this tender has no dossier". Open the portal we already stored.
     for url in _portal_urls_on_record(session, opportunity_id):
@@ -1285,6 +1399,25 @@ def collect_documents(session, opportunity_id: str, procedure_id: str) -> dict:
         added.append(name)
         if had_any and doc_type in config()["alert_on_new"]:
             new_names.append(name)
+    if got_files:
+        # The homepage stub is not a dossier once the consultation files are stored.
+        session.execute(text("""
+            delete from documents
+            where opportunity_id = :o
+              and name like 'Tender documents on %'
+              and (
+                url ~ '^https?://[^/?#]+/?$'
+                or url ~ '^https?://[^/?#]+/entreprise/?$'
+                or (
+                  url ilike '%marches-publics.gouv.fr%'
+                  and exists (
+                    select 1 from documents f
+                    where f.opportunity_id = :o
+                      and (f.url ilike '%EntrepriseDownload%' or f.url ilike '%/dume/telechargement/%')
+                  )
+                )
+              )
+        """), {"o": opportunity_id})
     retire_stale_analysis(session, opportunity_id)
     if added and had_any:
         lead = new_names[0] if new_names else added[0]

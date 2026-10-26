@@ -159,7 +159,8 @@ export async function getFeed(view: FeedView, now = new Date()) {
         p.rank === null ? 'same'
           : p.prev_rank === null || p.rank < p.prev_rank ? 'up'
             : p.rank > p.prev_rank ? 'down' : 'same';
-      const signal = opp?.opportunity_type === 'signal' || p.category === 'signal' || p.event === 'signal';
+      const recordSignal = !!opp && (opp.opportunity_type === 'signal' || opp.status === 'SIGNAL');
+      const signal = opp ? recordSignal : p.category === 'signal' || p.event === 'signal';
       const score = scopeScore(p) ?? p.score ?? UNSCORED;
       const openTender = !!opp && opp.status !== 'CLOSED' && opp.status !== 'AWARDED';
       const fresh = signal || p.kind === 'news' ? null : openTender ? cardFreshness(opp, now) : eventFresh(p.event, atPosted, now);
@@ -203,7 +204,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
   }
   // A planned procurement with no post yet still features, and ages from when the radar saw it.
   for (const o of opportunities) {
-    if (o.opportunity_type !== 'signal' || keptOpp.has(o.opportunity_id)) continue;
+    if ((o.opportunity_type !== 'signal' && o.status !== 'SIGNAL') || keptOpp.has(o.opportunity_id)) continue;
     const at = new Date(o.first_detected || o.publication_date || now);
     const score = tenderItems?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? UNSCORED;
     keptOpp.set(o.opportunity_id, {
@@ -219,7 +220,7 @@ export async function getFeed(view: FeedView, now = new Date()) {
   }
   // Every open tender features, even before the feed writer posts it.
   for (const o of opportunities) {
-    if (o.opportunity_type === 'signal' || keptOpp.has(o.opportunity_id)) continue;
+    if (o.opportunity_type === 'signal' || o.status === 'SIGNAL' || keptOpp.has(o.opportunity_id)) continue;
     if (o.status === 'CLOSED' || o.status === 'AWARDED') continue;
     const fresh = cardFreshness(o, now);
     const at = new Date((fresh === 'updated' ? o.last_change : o.first_detected) || o.publication_date || now);
@@ -263,7 +264,7 @@ function isOpenTender(item: FeedItem): boolean {
   if (item.kind !== 'opportunity' || item.event === 'signal' || item.category === 'signal') return false;
   const opp = item.opportunity;
   if (!opp) return item.event !== 'awarded';
-  return opp.opportunity_type !== 'signal' && opp.status !== 'CLOSED' && opp.status !== 'AWARDED';
+  return opp.opportunity_type !== 'signal' && opp.status !== 'SIGNAL' && opp.status !== 'CLOSED' && opp.status !== 'AWARDED';
 }
 
 function eventFresh(event: string, at: Date, now: Date): CardFreshness | null {

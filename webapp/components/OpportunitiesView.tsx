@@ -17,6 +17,7 @@ import ScopePicker from '@/components/ScopePicker';
 import ScopeView from './ScopeView';
 import ScopeStatus from './ScopeStatus';
 import { collectionKind, scopeRun } from '@/lib/scopeStatus';
+import { stageOf } from '@/lib/publication';
 type View = 'all' | 'new' | (typeof OPP_CATEGORIES)[number]['slug'];
 
 /** New, then updated, then the other open tenders. */
@@ -57,7 +58,7 @@ async function OpportunitiesBody({ view }: { view: View }) {
   const scope = (href: string) => withPublicScope(href, focus.publicSlug);
   // One query for the whole active set: the tab counts and the list come from it.
   const { opportunities: all, error } = await getActiveOpportunities();
-  const active = all.filter((o) => o.opportunity_type !== 'signal');  // signals: home feed and News
+  const active = all.filter((o) => stageOf(o) === 'open');
   const now = new Date();
   const newOnes = active.filter((o) => isNew(o, now));
   const list = view === 'all' ? active : view === 'new' ? newOnes : active.filter((o) => o.opportunity_type === view);
@@ -70,7 +71,7 @@ async function OpportunitiesBody({ view }: { view: View }) {
     ? await db.from('opportunities').select('*').in('opportunity_id', archiveIds)
     : { data: [] as Opportunity[] };
   const archivedAll = ((archiveRows || []) as Opportunity[])
-    .filter((o) => o.opportunity_type !== 'signal')
+    .filter((o) => stageOf(o) !== 'signal')
     .sort((a, b) => String(b.publication_date || b.first_detected || '').localeCompare(String(a.publication_date || a.first_detected || '')))
     .slice(0, 20);
   const archived = view === 'new' ? [] : view === 'all' ? archivedAll : archivedAll.filter((o) => o.opportunity_type === view);

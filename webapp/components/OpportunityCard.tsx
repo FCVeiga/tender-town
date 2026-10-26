@@ -26,7 +26,7 @@ export function StatusTags({ o, archived = false }: { o: Opportunity; archived?:
   const awarded = (o.status || '').toUpperCase() === 'AWARDED';
   return (
     <>
-      {o.opportunity_type && o.opportunity_type !== 'signal' && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
+      {stage !== 'signal' && o.opportunity_type && o.opportunity_type !== 'signal' && <span className={`tag ${o.opportunity_type}`}>{t(oppCategoryLabel(o.opportunity_type))}</span>}
       {awarded && <span className="tag">{t('Awarded')}</span>}
       {stage === 'closed' && !awarded && <span className="tag closed">{archived ? t('Archived') : t('Closed')}</span>}
       {stage === 'uncertain' && <span className="tag unverified">{t('Unverified')}</span>}
@@ -48,7 +48,8 @@ export function ScoreBar({ label, value, kind }: { label: string; value: number 
 export default function OpportunityCard({ o }: { o: Opportunity }) {
   const t = getTSync();
   const summary = publicText(plainText(shownSummary(o)));
-  const fresh = stageOf(o) === 'closed' || o.opportunity_type === 'signal' ? null : cardFreshness(o);
+  const stage = stageOf(o);
+  const fresh = stage === 'closed' || stage === 'signal' ? null : cardFreshness(o);
   return (
     <Link href={opportunityPath(o)} className={`opp-card${fresh ? ` fresh fresh-${fresh}` : ''}`}>
       {fresh && <span className="fresh-tag">{t(fresh === 'new' ? 'New' : 'Updated')}</span>}

@@ -77,7 +77,7 @@ export async function search(q: string, now = new Date()) {
   const oppItems: FeedItem[] = oppRows.map((o: Opportunity) => {
     const at = new Date(o.first_detected || o.publication_date || now);
     const score = tenderScope?.relevance.get(o.opportunity_id) ?? o.opportunity_relevance_score ?? 30;
-    const signal = o.opportunity_type === 'signal';
+    const signal = o.opportunity_type === 'signal' || o.status === 'SIGNAL';
     const label = statusLabel(o, now);
     const fresh = signal || label ? null : cardFreshness(o, now);
     return {

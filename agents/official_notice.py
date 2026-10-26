@@ -150,6 +150,256 @@ def release_unofficial(session) -> list:
     return changed
 
 
+def demote_unopened(session) -> list:
+    """An RFP whose own text says the call is not open yet is a signal.
+
+    A TED contract notice is left alone. Returns the ids changed. The caller commits.
+    """
+    from database.models import Opportunity
+    changed = []
+    rows = session.query(Opportunity).filter(
+        Opportunity.opportunity_type.in_(_TENDER_CATEGORIES),
+        Opportunity.status.in_(["OPEN", "SIGNAL", "UNVERIFIED"]),
+    ).all()
+    for opp in rows:
+        if (opp.reference or "").startswith("TED:"):
+            continue
+        if opp.status == "OPEN" and opp.deadline:
+            continue
+        blob = f"{opp.summary or ''}\n{opp.tender_summary or ''}"
+        if not _unopened_call(blob, ""):
+            continue
+        opp.opportunity_type = "signal"
+        if opp.status == "OPEN":
+            opp.status = "SIGNAL"
+        changed.append(opp.opportunity_id)
+    return changed
+
+
+def _active_cards(session):
+    """Published, still-current tenders and signals, outside the matching itself."""
+    return session.execute(text("""
+        select o.opportunity_id, o.status, o.opportunity_type, o.country, o.reference,
+               o.deadline, o.authority, o.authority_en, o.official_url,
+               coalesce(o.title_en, o.title) as title, o.first_detected
+        from opportunities o
+        where o.status in ('OPEN', 'SIGNAL')
+          and (o.deadline is null or o.deadline >= now())
+          and exists (
+            select 1 from scope_items si
+            join scopes s on s.id = si.scope_id and s.is_default = false
+            where si.item_type = 'tender' and si.item_id = o.opportunity_id)
+    """)).fetchall()
+
+
+def duplicate_groups(session) -> list:
+    """Clusters of active cards that are one purchase. Each cluster is a list of ids."""
+    from services.deduplicator import (
+        capitalised_bigrams, capitalised_tokens, conflicting_references, content_stems, same_notice,
+    )
+    rows = list(_active_cards(session))
+    parent = {row.opportunity_id: row.opportunity_id for row in rows}
+
+    def find(item):
+        while parent[item] != item:
+            parent[item] = parent[parent[item]]
+            item = parent[item]
+        return item
+
+    def unite(left, right):
+        left, right = find(left), find(right)
+        if left != right:
+            parent[right] = left
+
+    by_country = {}
+    for row in rows:
+        by_country.setdefault(row.country or "", []).append(row)
+    for group in by_country.values():
+        frequency = {}
+        phrases = {}
+        stems = {}
+        for row in group:
+            for word in capitalised_tokens(row.title):
+                frequency[word] = frequency.get(word, 0) + 1
+            for phrase in capitalised_bigrams(row.title):
+                phrases[phrase] = phrases.get(phrase, 0) + 1
+            for stem in content_stems(row.title):
+                stems[stem] = stems.get(stem, 0) + 1
+        rare = {word for word, count in frequency.items() if count <= 2}
+        rare_phrases = {phrase for phrase, count in phrases.items() if count <= 4}
+        rare_stems = {stem for stem, count in stems.items() if count <= 3}
+        for index, left in enumerate(group):
+            for right in group[index + 1:]:
+                if conflicting_references(left.reference, right.reference):
+                    continue
+                if same_notice(left.title, right.title, left.country, right.country,
+                               left.reference, right.reference,
+                               left.authority_en or left.authority or "",
+                               right.authority_en or right.authority or "",
+                               rare, rare_phrases, rare_stems):
+                    unite(left.opportunity_id, right.opportunity_id)
+    shared = session.execute(text("""
+        select d.url, array_agg(distinct d.opportunity_id) as ids
+        from documents d
+        join opportunities o on o.opportunity_id = d.opportunity_id
+        where o.status in ('OPEN', 'SIGNAL')
+          and d.url not ilike '%ted.europa.eu%'
+          and d.url not ilike '%media-kit%'
+          and d.name not ilike '%media kit%'
+          and d.name not like 'Tender documents on %'
+          and d.name not like 'Procurement documents (login required)%'
+        group by d.url
+        having count(distinct d.opportunity_id) > 1
+    """)).fetchall()
+    known = set(parent)
+    for row in shared:
+        ids = [item for item in row.ids if item in known]
+        for item in ids[1:]:
+            if not conflicting_references(
+                next((card.reference for card in rows if card.opportunity_id == ids[0]), ""),
+                next((card.reference for card in rows if card.opportunity_id == item), ""),
+            ):
+                unite(ids[0], item)
+    clusters = {}
+    for item in parent:
+        clusters.setdefault(find(item), []).append(item)
+    return [sorted(ids) for ids in clusters.values() if len(ids) > 1]
+
+
+def _keeper(session, ids: list) -> str:
+    """The record that already has the notice, the deadline, or the files."""
+    scored = []
+    for item in ids:
+        row = session.execute(text("""
+            select reference, deadline, status,
+                   (select count(*) from documents d where d.opportunity_id = :i
+                      and d.name not ilike '%media kit%' and d.url not ilike '%media-kit%') as files
+            from opportunities where opportunity_id = :i
+        """), {"i": item}).first()
+        score = 0
+        if (row.reference or "").startswith("TED:"):
+            score += 100
+        if row.deadline:
+            score += 40
+        if row.status == "OPEN":
+            score += 10
+        score += min(int(row.files or 0), 20)
+        scored.append((score, item))
+    scored.sort(reverse=True)
+    return scored[0][1]
+
+
+def _repoint(session, loser: str, keeper: str) -> None:
+    """Move what the duplicate card held onto the one we keep. No new change event."""
+    session.execute(text("""
+        insert into item_sources (item_type, item_id, url, title, source_name, published_at)
+        select 'tender', :keeper, official_url, left(coalesce(title_en, title), 500),
+               left(split_part(replace(official_url, 'https://', ''), '/', 1), 200), null
+        from opportunities
+        where opportunity_id = :loser and coalesce(official_url, '') <> ''
+        on conflict (item_type, item_id, url) do nothing
+    """), {"keeper": keeper, "loser": loser})
+    session.execute(text("""
+        insert into item_sources (item_type, item_id, url, title, source_name, published_at)
+        select item_type, :keeper, url, title, source_name, published_at
+        from item_sources where item_type = 'tender' and item_id = :loser
+        on conflict (item_type, item_id, url) do nothing
+    """), {"keeper": keeper, "loser": loser})
+    session.execute(text("delete from item_sources where item_type = 'tender' and item_id = :loser"), {"loser": loser})
+    session.execute(text("""
+        delete from documents d
+        where d.opportunity_id = :loser
+          and exists (select 1 from documents k where k.opportunity_id = :keeper and k.url = d.url)
+    """), {"loser": loser, "keeper": keeper})
+    session.execute(text("update documents set opportunity_id = :keeper where opportunity_id = :loser"),
+                    {"keeper": keeper, "loser": loser})
+    session.execute(text("""
+        update scope_items keep
+        set relevance = greatest(keep.relevance, drop.relevance)
+        from scope_items drop
+        where keep.item_type = 'tender' and drop.item_type = 'tender'
+          and keep.item_id = :keeper and drop.item_id = :loser
+          and keep.scope_id = drop.scope_id
+    """), {"keeper": keeper, "loser": loser})
+    session.execute(text("""
+        delete from scope_items drop
+        where drop.item_type = 'tender' and drop.item_id = :loser
+          and exists (
+            select 1 from scope_items keep
+            where keep.item_type = 'tender' and keep.item_id = :keeper and keep.scope_id = drop.scope_id)
+    """), {"keeper": keeper, "loser": loser})
+    session.execute(text("update scope_items set item_id = :keeper where item_type = 'tender' and item_id = :loser"),
+                    {"keeper": keeper, "loser": loser})
+    for table in ("change_events", "award_criteria", "requirements", "opportunity_snapshots",
+                  "partners", "reference_requirements", "team_requirements", "digest_entries"):
+        session.execute(text(f"update {table} set opportunity_id = :keeper where opportunity_id = :loser"),
+                        {"keeper": keeper, "loser": loser})
+    session.execute(text("""
+        delete from scope_evaluations drop
+        where drop.opportunity_id = :loser
+          and exists (
+            select 1 from scope_evaluations keep
+            where keep.opportunity_id = :keeper and keep.scope_id = drop.scope_id
+              and keep.workspace_id is not distinct from drop.workspace_id)
+    """), {"keeper": keeper, "loser": loser})
+    session.execute(text("update scope_evaluations set opportunity_id = :keeper where opportunity_id = :loser"),
+                    {"keeper": keeper, "loser": loser})
+    session.execute(text("update feed_posts set opportunity_id = :keeper where opportunity_id = :loser"),
+                    {"keeper": keeper, "loser": loser})
+    session.execute(text("""
+        delete from likes drop
+        where drop.item_type = 'tender' and drop.item_id = :loser
+          and exists (
+            select 1 from likes keep
+            where keep.item_type = 'tender' and keep.item_id = :keeper and keep.user_id = drop.user_id)
+    """), {"keeper": keeper, "loser": loser})
+    session.execute(text("update likes set item_id = :keeper where item_type = 'tender' and item_id = :loser"),
+                    {"keeper": keeper, "loser": loser})
+    session.execute(text("delete from opportunities where opportunity_id = :loser"), {"loser": loser})
+
+
+def promote_documented(session) -> list:
+    """An open call with a deadline and a real bidding file is an RFP.
+
+    A market engagement whose text says the call is not open stays a signal.
+    Returns the ids changed. The caller commits.
+    """
+    from database.models import Opportunity
+    changed = []
+    rows = session.execute(text("""
+        select o.opportunity_id
+        from opportunities o
+        where o.status = 'OPEN' and o.opportunity_type = 'signal' and o.deadline is not null
+          and exists (
+            select 1 from documents d
+            where d.opportunity_id = o.opportunity_id
+              and d.name not ilike '%media kit%'
+              and coalesce(d.url, '') not ilike '%media-kit%'
+              and d.name not like 'Tender documents on %'
+              and d.name not like 'Procurement documents (login required)%')
+    """)).fetchall()
+    for row in rows:
+        opp = session.get(Opportunity, row.opportunity_id)
+        if opp is None or _unopened_call(f"{opp.summary or ''}\n{opp.tender_summary or ''}", ""):
+            continue
+        opp.opportunity_type = "rfp"
+        changed.append(opp.opportunity_id)
+    return changed
+
+
+def fold_duplicates(session) -> list:
+    """Keep one card per purchase. Returns the ids that were folded away. The caller commits."""
+    removed = []
+    for cluster in duplicate_groups(session):
+        keeper = _keeper(session, cluster)
+        for loser in cluster:
+            if loser == keeper:
+                continue
+            _repoint(session, loser, keeper)
+            removed.append(loser)
+    return removed
+
+
 def codes_from(*parts) -> list:
     found = []
     for part in parts:
@@ -214,6 +464,8 @@ def requirement_file_links(page_html: str, page_url: str) -> list:
             continue
         label = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", anchor)).strip()
         blob = f"{label} {path}"
+        if re.search(r"media[- ]kit", blob, re.I):
+            continue
         named = bool(_BID_FILE.search(blob))
         official = bool(_GOV_HOST.search(host)) and bool(_TENDER_FILE.search(blob))
         if not named and not official:
@@ -794,7 +1046,8 @@ def _remember(session, opportunity_id: str, url: str, title: str):
 
 
 _INVITATION = re.compile(
-    r"Invitation to Bid for|Invitation to Tender|Call for Tenders|Appel d'offres|Pliego de",
+    r"Invitation to Bid for|Invitation to Tender|Call for Tenders|Appel d'offres|Pliego de|"
+    r"Règlement de la consultation|Objet du marché|date limite de réception",
     re.I,
 )
 
@@ -823,7 +1076,10 @@ def _pdf_excerpt(data: bytes, limit: int = 16000) -> str:
             if len(text) < 80:
                 continue
             score = 0
-            if dated.search(text) and re.search(r"deadline|pre-bid|submission of bids|Approved Budget", text, re.I):
+            if dated.search(text) and re.search(
+                r"deadline|pre-bid|submission of bids|Approved Budget|date limite|remise des (?:plis|offres)|pouvoir adjudicateur",
+                text, re.I,
+            ):
                 score += 4
             if re.search(r"Approved Budget for the Contract|Component\s+1", text):
                 score += 3
@@ -843,13 +1099,25 @@ def _pdf_excerpt(data: bytes, limit: int = 16000) -> str:
     return body.strip()[:limit]
 
 
+def _figures(text: str) -> set:
+    found = set()
+    for raw in re.findall(r"\d[\d\s\u00a0.,]*\d|\d", text or ""):
+        digits = re.sub(r"\D", "", raw)
+        if digits:
+            found.add(digits)
+            found.add(digits.lstrip("0") or "0")
+    return found
+
+
 def _grounded_summary(summary: str, excerpt: str) -> str:
-    """Keep a sentence only when its words appear in the document text.
+    """Keep a sentence only when the document supports it.
 
     A bidding file says "one (1) year". A model that turns that into a payment
     model writes words the file never uses, and those sentences are dropped.
+    A translation does not share the document's vocabulary, so its sentences
+    stay when every figure they state is in the file.
     """
-    source = excerpt.lower()
+    source = (excerpt or "").lower()
     paragraphs = []
     for para in re.split(r"\n\s*\n", (summary or "").strip()):
         kept = []
@@ -860,7 +1128,22 @@ def _grounded_summary(summary: str, excerpt: str) -> str:
                 kept.append(sentence)
         if kept:
             paragraphs.append(" ".join(kept))
-    return "\n\n".join(paragraphs)
+    grounded = "\n\n".join(paragraphs)
+    if grounded:
+        return grounded
+    figures = _figures(excerpt)
+    translated = []
+    for para in re.split(r"\n\s*\n", (summary or "").strip()):
+        kept = []
+        for sentence in re.split(r"(?<=[.!?])\s+", para.strip()):
+            stated = _figures(sentence)
+            if stated and any(number not in figures for number in stated):
+                continue
+            if sentence.strip():
+                kept.append(sentence.strip())
+        if kept:
+            translated.append(" ".join(kept))
+    return "\n\n".join(translated)
 
 
 def _summarize_bid(data: bytes) -> dict:
@@ -883,6 +1166,23 @@ def _summarize_bid(data: bytes) -> dict:
         summary = summary.rstrip() + " The subscription and managed services are provided for one year."
     described["summary"] = summary
     return described
+
+
+_UNOPENED = re.compile(
+    r"early market engagement|not yet a formal tender|"
+    r"not yet (?:been )?(?:issued|released|opened)|"
+    r"(?:tender|call|request for proposals|\brfp\b|procurement) (?:is |has )?not yet (?:been )?published|"
+    r"prior information notice|market engagement|"
+    r"request for proposals? (?:is |will be )?expected|expected to issue|"
+    r"ahead of (?:the |a )?(?:formal )?(?:request for proposals|tender|\brfp\b)|"
+    r"preparing to procure|the tender is not open|has not opened",
+    re.I,
+)
+
+
+def _unopened_call(summary: str, excerpt: str) -> bool:
+    """True when the text is a plan or a market sounding, not a call that is open for bids."""
+    return bool(_UNOPENED.search(f"{summary or ''}\n{excerpt or ''}"))
 
 
 def _apply_bid_summary(opp, described: dict, now: datetime):
@@ -910,14 +1210,18 @@ def _apply_bid_summary(opp, described: dict, now: datetime):
         deadline = datetime.strptime(raw_deadline, "%Y-%m-%d") if raw_deadline else None
     except ValueError:
         deadline = None
-    if deadline:
+    if deadline and not _unopened_call(summary, ""):
         opp.deadline = deadline
         opp.status = "OPEN" if deadline >= now else "CLOSED"
         opp.status_evidence = f"The bidding documents set the submission deadline at {deadline.strftime('%d %B %Y').lstrip('0')}."
-    elif opp.status == "SIGNAL" and opp.deadline and opp.deadline.replace(tzinfo=None) >= now:
-        opp.status = "OPEN"
-    if opp.opportunity_type == "signal":
-        opp.opportunity_type = "rfp"
+        if opp.opportunity_type == "signal":
+            opp.opportunity_type = "rfp"
+    elif _unopened_call(summary, ""):
+        # An early market engagement or a prior notice is not an open call.
+        opp.opportunity_type = "signal"
+        opp.deadline = None
+        if opp.status == "OPEN":
+            opp.status = "SIGNAL"
     value = described.get("value")
     currency = (described.get("currency") or "").strip().upper()[:8]
     try:
@@ -975,10 +1279,6 @@ def attach_bid_documents(session, opp, page_html: str) -> int:
             break
     if described:
         _apply_bid_summary(opp, described, now)
-    elif opp.opportunity_type == "signal":
-        opp.opportunity_type = "rfp"
-        if opp.status == "SIGNAL" and opp.deadline and opp.deadline.replace(tzinfo=None) >= now:
-            opp.status = "OPEN"
     return len(added)
 
 
