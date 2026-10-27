@@ -15,7 +15,7 @@ const EMPTY: Record<'tenders' | 'news' | 'feed' | 'signals', string> = {
 export default function ScopeStatus({
   kind, scopeName, surface, signedIn,
 }: {
-  kind: Exclude<CollectionKind, 'loading' | 'ready'>;
+  kind: Exclude<CollectionKind, 'loading' | 'ready' | 'stale'>;
   scopeName: string;
   surface: 'tenders' | 'news' | 'feed' | 'signals';
   signedIn: boolean;
@@ -26,18 +26,14 @@ export default function ScopeStatus({
     ? t('{scopeName} is preparing its first results.', { scopeName: name })
     : kind === 'failed'
       ? t('Results for {scopeName} could not be refreshed.', { scopeName: name })
-      : kind === 'stale'
-        ? t('The latest refresh failed.')
-        : t(EMPTY[surface], { scopeName: name });
+      : t(EMPTY[surface], { scopeName: name });
 
   return (
-    <div className={`callout ${kind === 'failed' || kind === 'stale' ? 'error' : ''}`}>
+    <div className={`callout ${kind === 'failed' ? 'error' : ''}`}>
       <strong>{headline}</strong>
-      {kind !== 'stale' && (
-        <button type="button" className="btn scope-browse" onClick={() => window.dispatchEvent(new Event('tt-open-scopes'))}>
-          {t('Browse another scope')}
-        </button>
-      )}
+      <button type="button" className="btn scope-browse" onClick={() => window.dispatchEvent(new Event('tt-open-scopes'))}>
+        {t('Browse another scope')}
+      </button>
       {kind === 'empty' && surface === 'tenders' && signedIn && (
         <span className="scope-collected">
           {t('Closed tenders are in')} <Link href="/history">{t('History')}</Link>.

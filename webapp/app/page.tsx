@@ -109,9 +109,6 @@ async function HomeFeed({ n }: { n?: string }) {
         <ScopeView scopeId={scopeId}>
         {error && <div className="callout error"><strong>{t('Error loading the feed.')}</strong> {error.message}</div>}
         {kind === 'loading' && <AgentLoader />}
-        {!error && kind === 'stale' && (
-          <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} surface="feed" signedIn={focus.signedIn} />
-        )}
         {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
           <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} surface="feed" signedIn={focus.signedIn} />
         )}

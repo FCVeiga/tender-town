@@ -123,9 +123,6 @@ async function NewsBody({ view }: { view: View }) {
       {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
         <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} surface={surface} signedIn={focus.signedIn} />
       )}
-      {!error && kind === 'stale' && (
-        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} surface={surface} signedIn={focus.signedIn} />
-      )}
       {!error && (kind === 'ready' || kind === 'stale') && visible.length === 0 && (
         <div className="callout"><strong>{t('Nothing in this section right now.')}</strong></div>
       )}

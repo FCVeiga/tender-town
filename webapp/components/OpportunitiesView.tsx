@@ -115,9 +115,6 @@ async function OpportunitiesBody({ view }: { view: View }) {
       {!error && (kind === 'pending' || kind === 'failed' || kind === 'empty') && (
         <ScopeStatus kind={kind} scopeName={focus.current?.name || ''} surface="tenders" signedIn={focus.signedIn} />
       )}
-      {!error && kind === 'stale' && (
-        <ScopeStatus kind="stale" scopeName={focus.current?.name || ''} surface="tenders" signedIn={focus.signedIn} />
-      )}
       {noOpen && (
         <div className="callout">
           <strong>{t('No open tenders in {scope} right now.', { scope: focus.current?.name || '' })}</strong>

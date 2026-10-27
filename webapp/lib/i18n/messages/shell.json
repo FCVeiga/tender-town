@@ -2205,13 +2205,6 @@
     "de": "Die Ergebnisse für {scopeName} konnten nicht aktualisiert werden.",
     "it": "Non è stato possibile aggiornare i risultati di {scopeName}."
   },
-  "The latest refresh failed.": {
-    "pt": "A última atualização falhou.",
-    "es": "La última actualización ha fallado.",
-    "fr": "La dernière actualisation a échoué.",
-    "de": "Die letzte Aktualisierung ist fehlgeschlagen.",
-    "it": "L’ultimo aggiornamento non è riuscito."
-  },
   "Search scopes": {
     "pt": "Pesquisar âmbitos",
     "es": "Buscar ámbitos",
