@@ -3,8 +3,8 @@ You write the public summary of one public tender from its bidding documents, in
 Two to four short paragraphs:
 - the buyer and what is being procured, including the components or lots the text names, with their amounts when stated
 - the approved budget or contract value and its currency, when the text states them
-- the submission deadline and any pre-bid meeting as the calendar dates written in the documents, and the contract duration when stated. A rule such as "at least twelve days before" is not a date; do not use it in place of a stated day
-- where and how bids are submitted, in one sentence
+- the submission deadline, including the time when the documents state one, and any pre-bid meeting as the calendar dates written in the documents, and the contract duration when stated. A rule such as "at least twelve days before" is not a date; do not use it in place of a stated day
+- where and how bids are submitted, in one sentence. When the documents say a respondent must register their interest, say that
 
 Use only facts written in the documents. Do not convert a currency. Do not mention a news article. Do not invent a payment or consumption model. When the text says the services run for one year, write one year. No markdown and no headings.
 

@@ -22,7 +22,7 @@ import json
 import re
 import time
 from datetime import datetime
-from urllib.parse import unquote_plus, urljoin, urlparse
+from urllib.parse import unquote_plus, urljoin, urlparse, urlunparse
 
 import requests
 from sqlalchemy import text
@@ -549,10 +549,24 @@ _MAX_FILE_BYTES = 30_000_000
 def _file_kind(data: bytes) -> str:
     if data[:4] == b"%PDF":
         return "pdf"
-    if data[:2] == b"PK":
-        return "zip"
     if data[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
         return "ole"
+    if data[:2] == b"PK":
+        # A Word, Excel or PowerPoint file is a zip. An extensionless download
+        # still has to keep the Office name, not ".zip".
+        try:
+            import zipfile
+            from io import BytesIO
+            names = set(zipfile.ZipFile(BytesIO(data)).namelist())
+        except Exception:
+            return "zip"
+        if "word/document.xml" in names:
+            return "docx"
+        if "xl/workbook.xml" in names:
+            return "xlsx"
+        if "ppt/presentation.xml" in names:
+            return "pptx"
+        return "zip"
     return ""
 
 
@@ -570,7 +584,7 @@ def _file_name(name: str, data: bytes) -> str:
     elif kind == "zip" and re.search(r"[-_]pptx$", name, re.I):
         ext = ".pptx"
     else:
-        ext = {"pdf": ".pdf", "zip": ".zip", "ole": ".doc"}.get(kind or "")
+        ext = {"pdf": ".pdf", "zip": ".zip", "ole": ".doc", "docx": ".docx", "xlsx": ".xlsx", "pptx": ".pptx"}.get(kind or "")
     return f"{name}{ext}" if ext else name
 
 
@@ -580,12 +594,25 @@ def _same_site(left: str, right: str) -> bool:
     return bool(a) and a == b
 
 
+_MEDIA_FILE = re.compile(
+    r"/media/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+    re.I,
+)
+_NOTICE_PATH = re.compile(
+    r"/(?:procurement-notices|procurement-notice|tender-notices)/[^/?#]{3,}",
+    re.I,
+)
+
+
 def _specific_page(page_url: str) -> bool:
     """A tender page, rather than the portal's front door."""
     parsed = urlparse(page_url or "")
     path = (parsed.path or "/").rstrip("/")
     if path.lower() in ("", "/", "/entreprise"):
         return False
+    # A notice can be a worded address, with no number in the path.
+    if path.count("/") >= 2 and _NOTICE_PATH.search(path):
+        return True
     return bool(re.search(r"\d|[0-9a-f]{8}-", f"{path}?{parsed.query or ''}", re.I))
 
 
@@ -600,6 +627,10 @@ def portal_candidates(page_url: str, body: str) -> list:
         if not raw or raw.startswith("#") or _SKIP_HREF.search(raw):
             continue
         absolute = urljoin(page_url, raw)
+        parsed_link = urlparse(absolute)
+        # The titled link and its "?download" twin are the same file.
+        if _MEDIA_FILE.search(parsed_link.path or "") and (parsed_link.query or "").lower() == "download":
+            absolute = urlunparse(parsed_link._replace(query="", fragment=""))
         if not _same_site(page_url, absolute) or absolute in seen:
             continue
         label_ok = bool(_DOC_LABEL.search(label) or _DOC_LABEL.search(absolute))
@@ -607,11 +638,12 @@ def portal_candidates(page_url: str, body: str) -> list:
         file_link = bool(_FILE_EXT.search(absolute.split("#")[0]))
         direct = bool(_DIRECT.search(absolute))
         ezak_file = bool(_EZAK_FILE.search(urlparse(absolute).path or ""))
+        media = bool(_MEDIA_FILE.search(urlparse(absolute).path or ""))
         # A portal home page links its own manuals. Only a tender page, or a direct
         # download endpoint, is allowed to contribute a file.
         if not specific and not direct and not ezak_file:
             keep = False
-        elif direct or ezak_file or file_link or (label_ok and (downloadish or bool(_SIZE.search(label)))):
+        elif direct or ezak_file or file_link or media or (label_ok and (downloadish or bool(_SIZE.search(label)))):
             keep = True
         else:
             keep = False

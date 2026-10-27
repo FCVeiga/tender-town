@@ -13,6 +13,15 @@ const PORTALS = new Set([
 const TED_PUB = /\/(\d{5,7}-\d{4})(?:[/?#]|$)/;
 const CFT = /tender-details\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 const ASSET = /\.(css|js|mjs|png|jpe?g|gif|svg|webp|ico|woff2?|map|ttf)$/i;
+const GOV_HOST = /(?:^|\.)gov(?:\.[a-z]{2})?$|(?:^|\.)gouv\.[a-z]{2}$|(?:^|\.)gob(?:\.[a-z]{2})?$|(?:^|\.)go\.[a-z]{2}$|e\.gov\.|(?:^|\.)europa\.eu$/i;
+const NOTICE_PATH = /\/(?:procurement-notices|procurement-notice|tender-notices)\/[^/?#]{3,}/i;
+
+function govProcurementNotice(host: string, pathname: string): boolean {
+  if (!GOV_HOST.test(host)) return false;
+  const path = pathname.replace(/\/$/, '');
+  if ((path.match(/\//g) || []).length < 2) return false;
+  return NOTICE_PATH.test(path);
+}
 
 export function isProcurementNotice(url: string | null | undefined, reference?: string | null): boolean {
   if ((reference || '').startsWith('TED:')) return true;
@@ -25,6 +34,7 @@ export function isProcurementNotice(url: string | null | undefined, reference?: 
   if (ASSET.test(parsed.pathname)) return false;
   if (parsed.pathname.includes('/epps/') && /\d/.test(parsed.pathname + parsed.search)) return true;
   if (host.endsWith('.europa.eu') && parsed.pathname.toLowerCase().includes('/procurement/')) return true;
+  if (govProcurementNotice(host, parsed.pathname)) return true;
   const portal = host === 'ted.europa.eu' || [...PORTALS].some((name) => host === name || host.endsWith('.' + name));
   // The notice id is often in the query (etenders resourceId) or the hash (ETHICS).
   if ((parsed.pathname === '/' || parsed.pathname === '') && !parsed.hash) return false;

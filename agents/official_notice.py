@@ -13,7 +13,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from io import BytesIO
-from urllib.parse import quote, unquote, urljoin, urlparse
+from urllib.parse import quote, unquote, urljoin, urlparse, urlunparse
 
 import requests
 from sqlalchemy import text
@@ -97,6 +97,9 @@ def is_portal_url(url: str) -> bool:
         return True
     # EU agencies publish the call on their own site, under /procurement/.
     if host.endswith(".europa.eu") and "/procurement/" in parsed.path.lower():
+        return True
+    # A government procurement notice, including one whose address has no number.
+    if _gov_procurement_notice(url):
         return True
     # The notice id is often in the query (etenders resourceId) or the hash
     # (ETHICS public material), not the path.
@@ -443,6 +446,41 @@ _GOV_HOST = re.compile(
     r"(?:^|\.)go\.[a-z]{2}$|e\.gov\.|(?:^|\.)europa\.eu$",
     re.I,
 )
+# A single notice on a government site. The listing (/procurement-notices) is not one.
+_NOTICE_PATH = re.compile(
+    r"/(?:procurement-notices|procurement-notice|tender-notices)/[^/?#]{3,}",
+    re.I,
+)
+_MEDIA_UUID = re.compile(
+    r"/media/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+    re.I,
+)
+_SKIP_HOSTS = (
+    "facebook.com", "twitter.com", "x.com", "linkedin.com", "instagram.com",
+    "youtube.com", "tiktok.com", "t.co", "google.com", "apple.com",
+    "play.google.com", "bit.ly", "goo.gl", "googleapis.com", "gstatic.com",
+)
+_NOTICE_INDEXES = ("/procurement-notices", "/procurement-notice", "/tender-notices")
+
+
+def _gov_procurement_notice(url: str) -> bool:
+    """A buyer notice page, not the list of every notice on that site."""
+    host = _host(url)
+    if not host or not _GOV_HOST.search(host):
+        return False
+    path = (urlparse(url).path or "").rstrip("/")
+    if path.count("/") < 2:
+        return False
+    return bool(_NOTICE_PATH.search(path))
+
+
+def _gov_file(url: str) -> bool:
+    """A file on a government host, including one served from /media/{id} with no extension."""
+    host = _host(url)
+    if not host or not _GOV_HOST.search(host):
+        return False
+    path = urlparse(url).path or ""
+    return bool(_FILE_URL.search(path) or _MEDIA_UUID.search(path))
 
 
 def requirement_file_links(page_html: str, page_url: str) -> list:
@@ -731,6 +769,135 @@ def _ted_for_title(title: str, country: str = None):
     return None
 
 
+def _element_body(html: str, open_pattern: str, tag: str) -> str:
+    match = re.search(open_pattern, html or "", re.I)
+    if not match:
+        return ""
+    start = match.end()
+    depth = 1
+    for found in re.finditer(rf"<{tag}\b|</{tag}>", html[start:], re.I):
+        depth += -1 if found.group(0).startswith("</") else 1
+        if depth == 0:
+            return html[start:start + found.start()]
+    return ""
+
+
+def _article_chunk(html: str) -> str:
+    """The article body. A related-stories rail sits outside it."""
+    body = _element_body(html, r"<div\b[^>]*class=[\"'][^\"']*\bthecontent\b[^\"']*[\"'][^>]*>", "div")
+    if len(re.sub(r"<[^>]+>", " ", body)) > 400:
+        return body
+    body = _element_body(html, r"<article\b[^>]*>", "article")
+    if len(re.sub(r"<[^>]+>", " ", body)) > 400:
+        return body
+    return html or ""
+
+
+def _paragraph_links(html: str, base: str) -> list:
+    links = []
+    for para in re.findall(r"<p\b[^>]*>(.*?)</p>", html or "", re.I | re.S):
+        for href in re.findall(r"""href=["']([^"'#]+)""", para, re.I):
+            absolute = urljoin(base, html_lib.unescape(href.strip())).split("#")[0]
+            if absolute.startswith("http") and absolute not in links:
+                links.append(absolute)
+    return links
+
+
+def _mentions_deadline(*parts) -> bool:
+    return bool(re.search(r"\bdeadlines?\b", " ".join(part or "" for part in parts), re.I))
+
+
+def _cited_article(url: str, page_url: str) -> bool:
+    """A report the article cites, not a share button or another story on the same site."""
+    host = _host(url)
+    page = _host(page_url)
+    if not host or host == page or host.endswith("." + page) or page.endswith("." + host):
+        return False
+    if any(host == skip or host.endswith("." + skip) for skip in _SKIP_HOSTS):
+        return False
+    if _gov_file(url) or _gov_procurement_notice(url) or is_portal_url(url):
+        return False
+    path = urlparse(url).path or ""
+    return path.count("/") >= 2 and len(path.rstrip("/")) > 12
+
+
+def _notice_for_file(file_url: str):
+    """The notice page that lists this government file, when the article linked the file only."""
+    parsed = urlparse(file_url)
+    match = _MEDIA_UUID.search(parsed.path or "")
+    if not match or not _GOV_HOST.search(_host(file_url)):
+        return None
+    token = match.group(1).lower()
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+    for index in _NOTICE_INDEXES:
+        try:
+            listing = _get(origin + index)
+        except Exception:
+            continue
+        notices = []
+        for href in re.findall(r"""href=["']([^"'#]+)""", listing, re.I):
+            absolute = urljoin(origin + index, html_lib.unescape(href.strip())).split("#")[0].split("?")[0].rstrip("/")
+            if _host(absolute) != _host(file_url) or not _gov_procurement_notice(absolute):
+                continue
+            if absolute not in notices:
+                notices.append(absolute)
+        for notice in notices[:20]:
+            try:
+                page = _get(notice)
+            except Exception:
+                continue
+            if token in page.lower():
+                return notice
+        if notices:
+            break
+    return None
+
+
+def _notice_from_links(links: list):
+    notice = next((link for link in links if _gov_procurement_notice(link)), None)
+    files = [link for link in links if _gov_file(link)]
+    portal = notice
+    if not portal and files:
+        portal = _notice_for_file(files[0]) or files[0]
+    if not portal:
+        portal = next((link for link in links if is_portal_url(link)), None)
+    if not portal:
+        return None
+    if _gov_procurement_notice(portal):
+        parsed = urlparse(portal)
+        portal = urlunparse(parsed._replace(query="", fragment="")).rstrip("/")
+    else:
+        portal = portal.split("#")[0]
+    return {
+        "portal_url": portal,
+        "procedure": None, "publication": None, "title": None, "deadline": None,
+        "value": None, "currency": None, "country": None,
+    }
+
+
+def _chase_buyer_notice(source_url: str, html: str):
+    """Read the article, then the report it cites, and take the buyer's notice.
+
+    Links come from the article paragraphs, so a sidebar story cannot supply
+    a different purchase. One hop is enough: the cited report is the original.
+    """
+    if not html or not source_url:
+        return None
+    prose = _paragraph_links(_article_chunk(html), source_url)
+    found = _notice_from_links(prose)
+    if found:
+        return found
+    for link in [url for url in prose if _cited_article(url, source_url)][:2]:
+        try:
+            page = _get(link)
+        except Exception:
+            continue
+        found = _notice_from_links(_paragraph_links(_article_chunk(page), link))
+        if found:
+            return found
+    return None
+
+
 def find_official(source_url: str, text: str = "", country: str = None, headline: str = None,
                   follow_links: bool = True, page: str = None):
     """The portal record for a tender first seen at source_url, or None.
@@ -738,6 +905,8 @@ def find_official(source_url: str, text: str = "", country: str = None, headline
     follow_links is for a page that is itself about one purchase. A news
     article's sidebar can point at a different notice, so that path stays off.
     page is the article HTML when the caller already fetched it.
+    A deadline is a reason to read the cited report and the buyer notice it
+    points at, which is a narrower follow than the sidebar.
     """
     html = page
     if html is None:
@@ -747,6 +916,10 @@ def find_official(source_url: str, text: str = "", country: str = None, headline
                 html = _get(source_url)
             except Exception:
                 html = ""
+    if _mentions_deadline(text, _plain(html)):
+        chased = _chase_buyer_notice(source_url or "", html)
+        if chased and chased.get("portal_url"):
+            return chased
     for link in (_links(html, source_url or "") if follow_links else []):
         if not is_portal_url(link):
             continue
@@ -791,6 +964,7 @@ _MONTHS = {name: n for n, name in enumerate(
     ["january", "february", "march", "april", "may", "june", "july", "august",
      "september", "october", "november", "december"], 1)}
 _LONG_DATE = re.compile(r"\b(\d{1,2})\s+([A-Za-z]+)\s+(20\d{2})\b")
+_MONTH_DAY = re.compile(r"\b([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(20\d{2})\b")
 _ISO_DATE = re.compile(r"\b(20\d{2})-(\d{2})-(\d{2})\b")
 _AWARD_LEAD = "The contract has been awarded."
 
@@ -803,6 +977,10 @@ def _dates_in(sentence: str) -> list:
             found.append((int(year), number, int(day)))
     for year, month, day in _ISO_DATE.findall(sentence):
         found.append((int(year), int(month), int(day)))
+    for month, day, year in _MONTH_DAY.findall(sentence):
+        number = _MONTHS.get(month.lower())
+        if number:
+            found.append((int(year), number, int(day)))
     return found
 
 
@@ -1047,7 +1225,8 @@ def _remember(session, opportunity_id: str, url: str, title: str):
 
 _INVITATION = re.compile(
     r"Invitation to Bid for|Invitation to Tender|Call for Tenders|Appel d'offres|Pliego de|"
-    r"Règlement de la consultation|Objet du marché|date limite de réception",
+    r"Règlement de la consultation|Objet du marché|date limite de réception|"
+    r"Request for (?:Supplier )?Qualifications",
     re.I,
 )
 
@@ -1211,6 +1390,15 @@ def _apply_bid_summary(opp, described: dict, now: datetime):
     except ValueError:
         deadline = None
     if deadline and not _unopened_call(summary, ""):
+        stated = set(_dates_in(summary))
+        model_day = (deadline.year, deadline.month, deadline.day)
+        existing = _deadline_parts(opp.deadline)
+        # A date the summary never states is the model's, not the document's.
+        # When the summary states both the date already stored and another day,
+        # the stored day stays: the other is often when the files are opened.
+        if model_day not in stated or (existing and existing != model_day and existing in stated):
+            deadline = None
+    if deadline and not _unopened_call(summary, ""):
         opp.deadline = deadline
         opp.status = "OPEN" if deadline >= now else "CLOSED"
         opp.status_evidence = f"The bidding documents set the submission deadline at {deadline.strftime('%d %B %Y').lstrip('0')}."
@@ -1282,6 +1470,106 @@ def attach_bid_documents(session, opp, page_html: str) -> int:
     return len(added)
 
 
+def _cover_summary(excerpt: str) -> dict:
+    """A short summary copied from the cover when the model summary is empty."""
+    text = re.sub(r"[ \t]+", " ", excerpt or "")
+    title = re.search(
+        r"(Request for (?:Supplier )?Qualifications(?:\s+No\.:\s*[A-Z0-9][A-Z0-9/-]{2,40})?)",
+        text,
+    )
+    deadline_line = re.search(
+        r"Submission Deadline:?\s*([A-Za-z]+,?\s+[A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+20\d{2}"
+        r"(?:\s+\d{1,2}:\d{2}(?::\d{2})?\s*[AP]M)?)",
+        text,
+    )
+    if not title or not deadline_line:
+        return {}
+    buyer = re.search(r"((?:Ministry|Department|Municipality|Government) of [A-Z][A-Za-z &'-]{2,80})", text)
+    who = re.split(r"\s{2,}| Page ", buyer.group(1).strip())[0].strip(" ,") if buyer else ""
+    number = re.search(r"No\.:\s*([A-Z0-9][A-Z0-9/-]{2,40})", title.group(1))
+    when = deadline_line.group(1).strip().rstrip(" .,")
+    lead = f"{who} has issued a {title.group(1).strip()}." if who else f"The buyer has issued a {title.group(1).strip()}."
+    sentences = [lead, f"The submission deadline is {when}."]
+    if "required to register their interest" in text.lower():
+        sentences.append("Respondents that intend to respond are required to register their interest with the contact named in the documents.")
+    dates = _dates_in(when)
+    iso = f"{dates[-1][0]:04d}-{dates[-1][1]:02d}-{dates[-1][2]:02d}" if dates else None
+    return {
+        "summary": " ".join(sentences),
+        "title": title.group(1).strip()[:180],
+        "buyer": who or None,
+        "deadline": iso,
+        "reference": number.group(1) if number else None,
+        "value": None,
+        "currency": None,
+    }
+
+
+def _sync_feed(session, opp) -> None:
+    """A card that was posted as a signal is the tender once the notice is attached."""
+    if (opp.opportunity_type or "") == "signal":
+        return
+    headline = re.sub(r"\s+", " ", (opp.title_en or opp.title or "")).strip()
+    if not headline:
+        return
+    session.execute(text("""
+        update feed_posts
+        set category = 'rfp', headline = :h, body = :b
+        where opportunity_id = :o and category = 'signal'
+    """), {"o": opp.opportunity_id, "h": headline[:500], "b": (opp.summary or "")[:8000]})
+
+
+def _keep_buyer_files(session, opp) -> int:
+    """Store the public files on a buyer notice that is not a TED procedure.
+
+    Nothing is posted as a change: the files were already on the notice.
+    Returns how many files the notice gave up. The caller commits.
+    """
+    from agents.tender_documents import harvest_portal, _store_portal_file
+    url = (opp.official_url or "").strip()
+    if not url.startswith("http"):
+        return 0
+    harvested = harvest_portal(url)
+    if not harvested["files"]:
+        return 0
+    now = datetime.utcnow()
+    added = 0
+    for name, link in harvested["files"]:
+        if _store_portal_file(session, opp.opportunity_id, name, link, now):
+            added += 1
+    described = {}
+    for _name, link in harvested["files"]:
+        try:
+            response = requests.get(link, headers=UA, timeout=40)
+        except Exception:
+            continue
+        data = response.content or b""
+        if response.status_code != 200 or not data.startswith(b"%PDF") or len(data) > 30_000_000:
+            continue
+        try:
+            described = _summarize_bid(data) or {}
+        except Exception:
+            described = {}
+        if not described.get("summary"):
+            described = _cover_summary(_pdf_excerpt(data))
+        if described.get("summary"):
+            excerpt = _pdf_excerpt(data)
+            if ("required to register their interest" in excerpt.lower()
+                    and "register" not in (described.get("summary") or "").lower()):
+                described["summary"] = (described["summary"].rstrip()
+                    + " Respondents that intend to respond are required to register their interest with the RFSQ Contact.")
+            break
+    if described.get("summary"):
+        _apply_bid_summary(opp, described, now)
+    if opp.opportunity_type == "signal" and not _unopened_call(opp.summary or "", ""):
+        opp.opportunity_type = "rfp"
+        deadline = opp.deadline.replace(tzinfo=None) if getattr(opp.deadline, "tzinfo", None) else opp.deadline
+        if opp.status == "SIGNAL" and deadline and deadline >= now:
+            opp.status = "OPEN"
+    _sync_feed(session, opp)
+    return added or len(harvested["files"])
+
+
 def resolve_official(session, errors: list, only_id: str = None) -> int:
     """Attach the official portal to open tenders that were found somewhere else."""
     from database.models import Opportunity
@@ -1309,6 +1597,14 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
                 try:
                     collect_documents(session, opp.opportunity_id, found["procedure"])
                     session.commit()
+                except Exception as exc:
+                    session.rollback()
+                    errors.append(f"documents {opp.opportunity_id}: {exc}"[:300])
+            elif not has_requirement_documents(session, opp.opportunity_id):
+                try:
+                    if _keep_buyer_files(session, opp):
+                        session.commit()
+                        linked += 1
                 except Exception as exc:
                     session.rollback()
                     errors.append(f"documents {opp.opportunity_id}: {exc}"[:300])
@@ -1343,6 +1639,13 @@ def resolve_official(session, errors: list, only_id: str = None) -> int:
         if found.get("procedure"):
             try:
                 collect_documents(session, opp.opportunity_id, found["procedure"])
+            except Exception as exc:
+                session.rollback()
+                errors.append(f"documents {opp.opportunity_id}: {exc}"[:300])
+        else:
+            try:
+                _keep_buyer_files(session, opp)
+                session.commit()
             except Exception as exc:
                 session.rollback()
                 errors.append(f"documents {opp.opportunity_id}: {exc}"[:300])
@@ -1427,6 +1730,13 @@ def resolve_from_news(session, errors: list, only_id: str = None, limit: int = 4
         if found.get("procedure"):
             try:
                 collect_documents(session, existing.opportunity_id, found["procedure"])
+            except Exception as exc:
+                session.rollback()
+                errors.append(f"documents {existing.opportunity_id}: {exc}"[:300])
+        else:
+            try:
+                if _keep_buyer_files(session, existing):
+                    session.commit()
             except Exception as exc:
                 session.rollback()
                 errors.append(f"documents {existing.opportunity_id}: {exc}"[:300])

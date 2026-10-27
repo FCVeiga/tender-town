@@ -19,6 +19,7 @@ const ORDER = Array.from(new Set(GROUPS.map(([, g]) => g)));
 const groupOf = (t: string | null) => GROUPS.find(([k]) => k === t)?.[1] ?? 'Other documents';
 
 const DIRECT = /downloadContractDocument|dtvp\.de\/Satellite\/public\/company\/project\/[^/]+\/\w+\/documents\//;
+const MEDIA = /\/media\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 const HOSTED = /\/files\/[a-f0-9]{16,64}-[a-f0-9]{8,16}$/i;
 const NAMED_FILE = /\.(pdf|docx?|xlsx?|zip|odt|ods|pptx?|xml|csv)(?:$|[?#&\s])/i;
 
@@ -28,7 +29,7 @@ function linkKind(url: string | null, name?: string | null) {
   const path = url.split('#')[0];
   // The portal sometimes returns the file from a URL that has no extension.
   const fileAt = NAMED_FILE.test(name || '') && /(?:index\.php|open\.php|donwloadProcedurePiece|getdocument|download)/i.test(path);
-  if (HOSTED.test(url) || DIRECT.test(url) || NAMED_FILE.test(path) || fileAt) {
+  if (HOSTED.test(url) || DIRECT.test(url) || NAMED_FILE.test(path) || fileAt || MEDIA.test(path)) {
     return { label: 'Download', title: 'Direct download from the buyer portal' };
   }
   return { label: 'Open on portal', title: 'Opens the buyer portal page where this document is downloaded' };
