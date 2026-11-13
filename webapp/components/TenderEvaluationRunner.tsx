@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { startTenderEvaluation } from '@/app/actions';
+import { FitScopeSelect } from '@/components/FitScopeSwitch';
 import { useT } from '@/lib/i18n/client';
 
 const POLL_MS = 5000;
@@ -55,11 +56,14 @@ export default function TenderEvaluationRunner({ opportunityId, scopeId, evaluat
     );
   }
   return (
-    <div className="eval-run">
-      <button className="btn primary" onClick={run}>
-        {t(label)}
-      </button>
-      {message && <span className="form-msg err">{t('Couldn\'t run: {message}.', { message })}</span>}
-    </div>
+    <>
+      <div className="eval-run">
+        <FitScopeSelect />
+        <button className="btn primary" onClick={run}>
+          {t(label)}
+        </button>
+      </div>
+      {message && <p className="form-msg err">{t('Couldn\'t run: {message}.', { message })}</p>}
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import AgentAvatar from '@/components/AgentAvatar';
+import { FitScopeSelect } from '@/components/FitScopeSwitch';
 import TenderEvaluationRunner from '@/components/TenderEvaluationRunner';
 import ProposalRunner from '@/components/ProposalRunner';
 import RunFitAnalysis from '@/components/RunFitAnalysis';
@@ -37,7 +38,7 @@ type ScopeEvalProps = {
 
 function blockedCopy(t: ReturnType<typeof getTSync>, opportunityId: string, signedIn: boolean, locked: 'plan' | 'member' | null, loginLabel: string) {
   if (!signedIn) {
-    return <div className="eval-run"><Link className="btn primary" href={`/login?next=/tenders/${opportunityId}`}>{t(loginLabel)}</Link></div>;
+    return <div className="eval-run"><FitScopeSelect /><Link className="btn primary" href={`/login?next=/tenders/${opportunityId}`}>{t(loginLabel)}</Link></div>;
   }
   if (locked === 'member') return <p className="muted">{t('Run by your workspace\u2019s admins.')}</p>;
   if (locked === 'plan') return <p className="muted"><Link href="/settings/account?plan=1">{t('Upgrade')}</Link> {t('to evaluate tenders against your own scope\u2019s context.')}</p>;

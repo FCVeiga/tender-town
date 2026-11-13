@@ -165,7 +165,7 @@ export default function ExampleWalkthrough({ requirements, deadline, archived, r
           <EvaluationCriteria rows={criteria} />
           </>
           )}
-          <div className="analysis-block" id="evaluation">
+          <div id="evaluation">
           <div className="agent-head">
             <AgentAvatar agent="tender_evaluation" working={phase === 'evaluating'} />
             <div className="agent-id">

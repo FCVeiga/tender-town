@@ -293,7 +293,7 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
           </>
         )}
         fit={!agentTasks ? (
-          <section className="detail-block analysis-block" id="evaluation">
+          <section className="detail-block" id="evaluation">
             <div className="agent-head">
               <AgentAvatar agent="tender_evaluation" />
               <div className="agent-id"><h2>{t('Tender Evaluation')}</h2></div>
@@ -358,7 +358,7 @@ export default async function OpportunityDetail({ id, backHref, backLabel, path,
                 )}
               </>
             )}
-              <div className="analysis-block" id="evaluation">
+              <div id="evaluation">
                 {pickerScopes.length > 0 ? pickerScopes.map((scope) => (
                   <div key={scope.id} data-fit-scope={pickerScopes.length > 1 ? scope.id : undefined}>
                     <TenderScopeEvaluation opportunityId={o.opportunity_id} scope={{ id: scope.id, name: scope.name }}

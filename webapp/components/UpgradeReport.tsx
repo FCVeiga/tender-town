@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { FitScopeSelect } from '@/components/FitScopeSwitch';
 import { useT } from '@/lib/i18n/client';
 
 /** The way in: log in when signed out, the plan when it is missing. `buttonOnly` skips the lines above the button. */
@@ -14,6 +15,7 @@ export function UpgradeReport({ note, title, signedIn = true, actionLabel, butto
   if (buttonOnly) {
     return (
       <div className="eval-run">
+        <FitScopeSelect />
         {signedIn ? (
           <Link href="/settings/account?plan=1" className="btn primary">{t(actionLabel || 'Upgrade plan')}</Link>
         ) : (

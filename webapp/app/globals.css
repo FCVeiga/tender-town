@@ -360,7 +360,7 @@ a.text-link { text-decoration: underline; text-underline-offset: 2px; }
 .analysis-block { border-left: 3px solid; border-image: linear-gradient(180deg, var(--brand-a), var(--brand-b)) 1; }
 .analysis-block .profile-empty, .eval-scope .profile-empty { text-align: left; padding: 0; }
 .analysis-block .profile-empty-cta, .eval-scope .profile-empty-cta { margin-top: 0; }
-#requirements > #evaluation { margin-top: 22px; padding-top: 4px; border-left: 0; border-image: none; }
+#requirements #evaluation { margin-top: 22px; padding: 4px 0 0; border: 0; border-image: none; }
 #proposal-brief.analysis-block { border-left: 0; border-image: none; }
 .brief-view { margin-top: 6px; min-width: 0; }
 .brief-pack h3, .brief-steps h3, .brief-doc > h3 { font-size: 16px; margin: 0 0 10px; }
@@ -1064,11 +1064,9 @@ tr.data-row:hover td { background: #FAFBFD; }
 .original-notice summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
 .original-notice p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
 .eval-scope + .eval-scope, .proposal-block + .proposal-block { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px; }
-.fit-scope-root { display: flex; flex-direction: column; }
-.fit-scope-root > .fit-scope-pick { order: 1; }
-.fit-scope-root > .analysis-block { order: 2; }
-.fit-scope-pick { display: block; margin: 0 0 16px; max-width: 360px; }
-.fit-scope-root > h2 ~ .fit-scope-pick { margin-top: 16px; }
+.fit-scope-pick { display: block; margin: 0; flex: 1 1 auto; max-width: 360px; min-width: 0; }
+#evaluation .eval-run { flex-wrap: nowrap; justify-content: flex-start; width: 100%; }
+#evaluation .eval-run .btn { margin-left: auto; flex-shrink: 0; }
 .fit-scope-pick select {
   width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 10px;
   font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: var(--surface); cursor: pointer;
@@ -1501,6 +1499,7 @@ th.num .sort-head { justify-content: flex-end; }
   }
   .tender-jump :is(a, button) { min-height: 44px; padding: 6px 4px; font-size: 12px; line-height: 1.2; border-radius: 12px; }
   .tender-page .eval-run { justify-content: center; }
+  .tender-page #evaluation .eval-run { justify-content: flex-start; flex-wrap: nowrap; }
   .tender-page .brief-lock { text-align: center; margin-left: auto; margin-right: auto; }
 
   /* Tender page. */

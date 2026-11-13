@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { FitScopeSelect } from '@/components/FitScopeSwitch';
 import { Modal } from '@/components/settings/SettingsUI';
 import { useT } from '@/lib/i18n/client';
 
@@ -14,6 +15,7 @@ export default function RunFitAnalysis({ href, label = 'Run Fit analysis', title
   return (
     <>
       <div className="eval-run">
+        <FitScopeSelect />
         <button type="button" className="btn primary" onClick={() => setOpen(true)}>{t(label)}</button>
       </div>
       {open && (
