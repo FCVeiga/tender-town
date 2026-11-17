@@ -1,7 +1,7 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import {
-  FOCUS_COOKIE, GUEST_PREFS_COOKIE, GUEST_SCOPE_COOKIE, GUEST_SCOPE_HEADER, GUEST_TZ_COOKIE,
+  FOCUS_COOKIE, GUEST_GENERAL, GUEST_PREFS_COOKIE, GUEST_SCOPE_COOKIE, GUEST_SCOPE_HEADER, GUEST_TZ_COOKIE,
   INTENT_COOKIE, SCOPE_QUERY_HEADER,
   countryFrom, encodePrefs, explicitGuestScope, isBot, noteInterest, parsePrefs, pickGuestScope,
   scopeTerms, scopesToRemember, signalWords, type GuestScopeChoice,
@@ -12,8 +12,11 @@ import { stampVisit } from '@/lib/visitAnalytics';
 /**
  * Keeps sign-in sessions fresh: when the access token is near expiry, the
  * refresh happens here (the only place, besides actions, that may set cookies).
- * Signed-out visitors get the preset scope that best matches their preferences
- * and currently has results. Requests that only refresh a session skip that.
+ * A token that still has time left is read locally, so a page does not wait on
+ * the auth server. Signed-out visitors get the preset scope that best matches
+ * their preferences. The catalog is one small query, remembered on this copy
+ * of the site. Visit counting starts after the response, so a slow write or a
+ * cold catalog cannot hold the page open until the platform stops it.
  */
 
 const SKIP_GUEST = /^\/(api|oauth\/token|\.well-known\/oauth|feed\.xml|sitemap\.xml|robots\.txt|llms\.txt|mcp\.md|discover\.md|skills\.md|skills\/)/;
@@ -131,11 +134,26 @@ function cleanReferrer(raw: string | null, currentHost: string): string | null {
   return value.slice(0, 180);
 }
 
-/** Count a real page load. The visitor id is a random cookie, not an address. Internal traffic is not counted. */
-async function trackVisit(request: NextRequest, response: NextResponse, who: { signedIn: boolean; userId: string | null; scopeId: string | null; email: string | null }) {
-  if (request.method !== 'GET') return response;
+type VisitWho = { signedIn: boolean; userId: string | null; scopeId: string | null; email: string | null };
+
+function isPrefetch(request: NextRequest) {
   const purpose = request.headers.get('purpose') || request.headers.get('sec-purpose');
-  if (request.headers.get('next-router-prefetch') || request.headers.get('x-middleware-prefetch') || purpose === 'prefetch') return response;
+  return Boolean(request.headers.get('next-router-prefetch') || request.headers.get('x-middleware-prefetch') || purpose === 'prefetch');
+}
+
+/** A real document or client navigation. Prefetch, posts and API calls are not page views. */
+function isPageView(request: NextRequest) {
+  if (request.method !== 'GET' || isPrefetch(request)) return false;
+  const path = request.nextUrl.pathname;
+  return !path.startsWith('/api') && !path.startsWith('/dashboard') && !path.startsWith('/_next');
+}
+
+/**
+ * Set the visit cookies now, and return the database writes to run after the
+ * response. The page must not wait on those writes.
+ */
+function noteVisit(request: NextRequest, response: NextResponse, who: VisitWho): Promise<void> | null {
+  if (request.method !== 'GET' || isPrefetch(request)) return null;
   const url = process.env.SUPABASE_URL?.replace(/\/$/, '');
   const key = process.env.SUPABASE_SERVICE_KEY;
   const ip = clientIp((name) => request.headers.get(name));
@@ -144,43 +162,63 @@ async function trackVisit(request: NextRequest, response: NextResponse, who: { s
     response.cookies.set(STAFF_COOKIE, '1', {
       path: '/', maxAge: COOKIE_MAX_AGE, sameSite: 'lax', httpOnly: true, secure: process.env.NODE_ENV === 'production',
     });
-    if (url && key && ip) await rememberIp(url, key, ip);
+  }
+  if (!isPageView(request)) {
+    return url && key && ip && admin ? rememberIp(url, key, ip) : null;
   }
   const staff = request.cookies.get(STAFF_COOKIE)?.value === '1';
-  const ignored = Boolean(url && key && ip && (await ignoredIps(url, key)).has(ip));
-  const markedInternal = staff || admin || ignored;
-  const kind = viewKind(request.nextUrl.pathname);
   const tzRaw = request.cookies.get(GUEST_TZ_COOKIE)?.value;
   let timeZone: string | null = null;
   try { timeZone = tzRaw ? decodeURIComponent(tzRaw) : null; } catch { timeZone = null; }
   const country = countryFrom(request.headers.get('x-vercel-ip-country'), request.headers.get('accept-language'), timeZone);
-  let scopeIds: string[] = [];
-  let plan: string | null = null;
-  if (url && key && who.signedIn && who.userId && !markedInternal) {
-    [scopeIds, plan] = await Promise.all([signedInScopeIds(url, key, who.userId), personalPlan(url, key, who.userId)]);
-  } else if (who.scopeId && UUID.test(who.scopeId)) scopeIds = [who.scopeId];
-  else if (url && key && who.scopeId === 'general') {
-    const id = await generalScopeId(url, key);
-    if (id) scopeIds = [id];
-  }
+  const knownScope = who.scopeId && UUID.test(who.scopeId) ? who.scopeId : null;
   const stamped = stampVisit(request, response, {
-    signedIn: who.signedIn, userId: who.signedIn ? who.userId : null, scopeId: scopeIds[0] || null,
-    plan, country, internal: markedInternal,
+    signedIn: who.signedIn, userId: who.signedIn ? who.userId : null, scopeId: knownScope,
+    plan: null, country, internal: staff || admin || isInternalClient(request.headers.get('user-agent')),
   });
-  if (url && key && stamped.events.length) {
-    try {
+  if (!url || !key) return null;
+  return persistVisit(request, who, stamped, { url, key, ip, admin, staff, country, knownScope });
+}
+
+/** Write the visit once the response is already on its way. A failure here is only a missed count. */
+async function persistVisit(
+  request: NextRequest,
+  who: VisitWho,
+  stamped: ReturnType<typeof stampVisit>,
+  ctx: { url: string; key: string; ip: string | null; admin: boolean; staff: boolean; country: string | null; knownScope: string | null },
+) {
+  const { url, key, ip, admin, staff, country, knownScope } = ctx;
+  try {
+    if (admin && ip) await rememberIp(url, key, ip);
+    const ignored = Boolean(ip && (await ignoredIps(url, key)).has(ip));
+    const markedInternal = staff || admin || ignored;
+    let scopeIds: string[] = [];
+    let plan: string | null = null;
+    if (who.signedIn && who.userId && !markedInternal) {
+      [scopeIds, plan] = await Promise.all([signedInScopeIds(url, key, who.userId), personalPlan(url, key, who.userId)]);
+    } else if (knownScope) scopeIds = [knownScope];
+    else if (who.scopeId === 'general') {
+      const id = await generalScopeId(url, key);
+      if (id) scopeIds = [id];
+    }
+    const scopeId = scopeIds[0] || null;
+    if (stamped.events.length) {
+      const events = stamped.events.map((event) => ({
+        ...event,
+        scope_id: scopeId,
+        plan,
+        ...(ignored ? { traffic: 'internal', error_code: 'staff_or_ignored' } : {}),
+      }));
       await fetch(`${url}/rest/v1/analytics_events?on_conflict=dedupe`, {
         method: 'POST',
         headers: { ...serviceHeaders(key), Prefer: 'resolution=ignore-duplicates,return=minimal' },
-        body: JSON.stringify(stamped.events),
+        body: JSON.stringify(events),
       });
-    } catch { /* a missed event should not take the page down */ }
-  }
-  if (markedInternal || stamped.traffic === 'bot' || isInternalClient(request.headers.get('user-agent'))) return response;
-  if (!kind || !url || !key) return response;
-  const visitor = stamped.visitor || request.cookies.get(VISITOR_COOKIE)?.value || '';
-  if (!UUID.test(visitor)) return response;
-  try {
+    }
+    const kind = viewKind(request.nextUrl.pathname);
+    if (markedInternal || stamped.traffic === 'bot' || isInternalClient(request.headers.get('user-agent')) || !kind) return;
+    const visitor = stamped.visitor || request.cookies.get(VISITOR_COOKIE)?.value || '';
+    if (!UUID.test(visitor)) return;
     const headers = serviceHeaders(key, true);
     const rememberCountry = who.userId && country && !countryKnown.has(who.userId);
     await Promise.all([
@@ -200,50 +238,110 @@ async function trackVisit(request: NextRequest, response: NextResponse, who: { s
         : Promise.resolve(),
     ]);
   } catch { /* a missed count should not take the page down */ }
-  return response;
 }
 
-let catalogCache: { at: number; scopes: GuestScopeChoice[]; byItem: Map<string, string[]> } | null = null;
+const CATALOG_FRESH = 10 * 60 * 1000;
+const CATALOG_KEEP = 6 * 60 * 60 * 1000;
+let catalogCache: { at: number; scopes: GuestScopeChoice[] } | null = null;
+let catalogFlight: Promise<void> | null = null;
 
-async function catalogScopes(): Promise<{ scopes: GuestScopeChoice[]; byItem: Map<string, string[]> }> {
-  if (catalogCache && Date.now() - catalogCache.at < 60 * 60 * 1000) return catalogCache;
-  const empty = { scopes: catalogCache?.scopes || [], byItem: catalogCache?.byItem || new Map<string, string[]>() };
-  const supabase = createServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!, {
-    cookies: { getAll: () => [], setAll: () => {} },
-  });
-  const { data: scopes, error } = await supabase.from('scopes').select('id, name, instructions, search_config').eq('catalog', true).eq('active', true);
-  if (error || !scopes?.length) return empty;
-  const ids = scopes.map((s) => s.id);
-  const { data: items } = await supabase.from('scope_items').select('scope_id, item_id, item_type').in('scope_id', ids).limit(20000);
-  const tenderIds = Array.from(new Set((items || []).filter((item) => item.item_type === 'tender').map((item) => item.item_id as string)));
-  const countryOf = new Map<string, string | null>();
-  for (let i = 0; i < tenderIds.length; i += 100) {
-    const slice = tenderIds.slice(i, i + 100);
-    const { data: opps } = await supabase.from('opportunities').select('opportunity_id, country').in('opportunity_id', slice);
-    for (const opp of opps || []) countryOf.set(opp.opportunity_id, opp.country);
-  }
-  const byItem = new Map<string, string[]>();
-  const choices = scopes.map((scope) => {
+function choicesFrom(data: unknown): GuestScopeChoice[] | null {
+  const rows = Array.isArray(data) ? data : [];
+  if (!rows.length) return null;
+  const scopes: GuestScopeChoice[] = [];
+  for (const row of rows) {
+    if (!row || typeof row !== 'object') continue;
+    const rec = row as Record<string, unknown>;
+    if (typeof rec.id !== 'string' || !UUID.test(rec.id) || typeof rec.name !== 'string') continue;
     const countries: Record<string, number> = {};
-    let results = 0;
-    for (const item of items || []) {
-      if (item.scope_id !== scope.id) continue;
-      results += 1;
-      const owners = byItem.get(item.item_id) || [];
-      if (!owners.includes(scope.id)) owners.push(scope.id);
-      byItem.set(item.item_id, owners);
-      if (item.item_type !== 'tender') continue;
-      const country = countryOf.get(item.item_id);
-      if (!country) continue;
-      countries[country] = (countries[country] || 0) + 1;
+    if (rec.countries && typeof rec.countries === 'object') {
+      for (const [code, n] of Object.entries(rec.countries as Record<string, unknown>)) {
+        if (/^[A-Za-z]{2}$/.test(code) && typeof n === 'number' && n > 0) countries[code.toUpperCase()] = n;
+      }
     }
-    return {
-      id: scope.id as string, name: scope.name as string, results, countries,
-      terms: scopeTerms(scope.name, scope.instructions, scope.search_config && typeof scope.search_config === 'object' ? scope.search_config as Record<string, unknown> : null),
-    };
+    const config = rec.search_config;
+    scopes.push({
+      id: rec.id,
+      name: rec.name,
+      results: typeof rec.results === 'number' ? rec.results : 0,
+      countries,
+      terms: scopeTerms(rec.name, typeof rec.instructions === 'string' ? rec.instructions : null, config && typeof config === 'object' ? config as Record<string, unknown> : null),
+    });
+  }
+  return scopes.length ? scopes : null;
+}
+
+/** Scopes only, with no per-item rows, if the compact query is not deployed yet. */
+async function fetchCatalogFallback(url: string, key: string): Promise<GuestScopeChoice[] | null> {
+  const res = await fetch(`${url}/rest/v1/scopes?select=id,name,instructions,search_config&catalog=eq.true&active=eq.true`, {
+    headers: serviceHeaders(key), signal: AbortSignal.timeout(2500),
   });
-  catalogCache = { at: Date.now(), scopes: choices, byItem };
-  return catalogCache;
+  if (!res.ok) return null;
+  const rows = await res.json();
+  if (!Array.isArray(rows)) return null;
+  return choicesFrom(rows.map((row) => ({ ...row, results: 1, countries: {} })));
+}
+
+async function fetchCatalog(): Promise<GuestScopeChoice[] | null> {
+  const url = process.env.SUPABASE_URL?.replace(/\/$/, '');
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return null;
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/guest_catalog`, {
+      method: 'POST', headers: serviceHeaders(key), body: '{}', signal: AbortSignal.timeout(2500),
+    });
+    if (!res.ok) return fetchCatalogFallback(url, key);
+    const data = await res.json();
+    return choicesFrom(typeof data === 'string' ? JSON.parse(data) : data) || fetchCatalogFallback(url, key);
+  } catch {
+    return null;
+  }
+}
+
+function startCatalog(): Promise<void> {
+  if (!catalogFlight) {
+    catalogFlight = fetchCatalog()
+      .then((scopes) => { if (scopes?.length) catalogCache = { at: Date.now(), scopes }; })
+      .catch(() => {})
+      .finally(() => { catalogFlight = null; });
+  }
+  return catalogFlight;
+}
+
+/** The catalog this copy of the site already has, or a fresh one if it arrives quickly. */
+async function catalogScopes(event: NextFetchEvent): Promise<GuestScopeChoice[]> {
+  const age = catalogCache ? Date.now() - catalogCache.at : Infinity;
+  if (catalogCache && age < CATALOG_FRESH) return catalogCache.scopes;
+  const flight = startCatalog();
+  if (catalogCache && age < CATALOG_KEEP) {
+    event.waitUntil(flight);
+    return catalogCache.scopes;
+  }
+  const ready = await Promise.race([
+    flight.then(() => true),
+    new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 1000)),
+  ]);
+  if (!ready) event.waitUntil(flight);
+  return catalogCache?.scopes || [];
+}
+
+/** Which catalog scopes contain the tender or story being opened. One indexed read. */
+async function scopesForItem(item: string): Promise<string[]> {
+  if (!/^[A-Za-z0-9._~-]{1,120}$/.test(item)) return [];
+  const url = process.env.SUPABASE_URL?.replace(/\/$/, '');
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return [];
+  try {
+    const res = await fetch(`${url}/rest/v1/scope_items?select=scope_id&item_id=eq.${encodeURIComponent(item)}&limit=20`, {
+      headers: serviceHeaders(key), signal: AbortSignal.timeout(400),
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return [];
+    return rows.map((row: { scope_id?: string }) => row.scope_id || '').filter((id: string) => UUID.test(id));
+  } catch {
+    return [];
+  }
 }
 
 const focusCookie = { path: '/', maxAge: COOKIE_MAX_AGE, sameSite: 'lax' as const, httpOnly: true };
@@ -260,7 +358,7 @@ function withGuestScope(request: NextRequest, scopeId: string, prefs: string | n
   return response;
 }
 
-async function personalizeGuest(request: NextRequest): Promise<{ response: NextResponse; scopeId: string | null }> {
+async function personalizeGuest(request: NextRequest, event: NextFetchEvent): Promise<{ response: NextResponse; scopeId: string | null }> {
   if (isBot(request.headers.get('user-agent')) || SKIP_GUEST.test(request.nextUrl.pathname)) return { response: NextResponse.next(), scopeId: null };
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return { response: NextResponse.next(), scopeId: null };
   const queryScope = request.nextUrl.searchParams.get('scope');
@@ -270,7 +368,27 @@ async function personalizeGuest(request: NextRequest): Promise<{ response: NextR
     let timeZone: string | null = null;
     try { timeZone = tzRaw ? decodeURIComponent(tzRaw) : null; } catch { timeZone = null; }
     const acceptLanguage = request.headers.get('accept-language');
-    const { scopes, byItem } = await catalogScopes();
+    const item = request.nextUrl.pathname.match(/^\/(?:tenders|news)\/([^/]+)$/)?.[1] || '';
+    const cacheFresh = !!catalogCache && Date.now() - catalogCache.at < CATALOG_FRESH;
+    const knownScope = (queryScope && UUID.test(queryScope) ? queryScope : null)
+      || (!queryScope && storedScope && UUID.test(storedScope) ? storedScope : null)
+      || (!queryScope && storedScope === GUEST_GENERAL ? GUEST_GENERAL : null);
+    // A slug in the link still needs the catalog. A known scope can be shown at once.
+    if (knownScope && !cacheFresh && !(queryScope && !UUID.test(queryScope))) {
+      event.waitUntil(startCatalog());
+      return { response: withGuestScope(request, knownScope, null, null), scopeId: knownScope };
+    }
+    // A chosen scope already wins, so the item lookup is only for a first visit with no scope yet.
+    const [scopes, owners] = await Promise.all([
+      catalogScopes(event),
+      !queryScope && !storedScope && item ? scopesForItem(item) : Promise.resolve([]),
+    ]);
+    // A slow catalog must not replace a scope they already chose with General.
+    if (!scopes.length) {
+      const kept = (queryScope && UUID.test(queryScope) ? queryScope : null) || (storedScope && UUID.test(storedScope) ? storedScope : null) || GUEST_GENERAL;
+      return { response: withGuestScope(request, kept, null, null), scopeId: kept };
+    }
+    const allowed = new Set(scopes.map((scope) => scope.id));
     const country = countryFrom(request.headers.get('x-vercel-ip-country'), acceptLanguage, timeZone);
     const fromQuery = explicitGuestScope(scopes, queryScope);
     const fromStore = explicitGuestScope(scopes, storedScope);
@@ -281,8 +399,7 @@ async function personalizeGuest(request: NextRequest): Promise<{ response: NextR
       prefs: parsePrefs(request.cookies.get(GUEST_PREFS_COOKIE)?.value),
       words: signalWords(request.headers.get('referer'), request.nextUrl),
     };
-    const item = request.nextUrl.pathname.match(/^\/(?:tenders|news)\/([^/]+)$/)?.[1];
-    const opened = item ? byItem.get(item) || [] : [];
+    const opened = owners.filter((id) => allowed.has(id));
     const remembered = scopesToRemember(scopes, signals);
     const before = encodePrefs(signals.prefs);
     const prefs = noteInterest(noteInterest(signals.prefs, remembered, requested ? 8 : 2), opened, 2);
@@ -313,8 +430,90 @@ function legacyHostRedirect(request: NextRequest) {
 }
 
 const OPENAI_APPS_CHALLENGE = 'O-P8dv79AOebXD_nd7QmA0xx890z02HBynnwpb0VhRE';
+const AUTH_COOKIE = /^(sb-[a-z0-9]+-auth-token)(?:\.(\d+))?$/;
+const TOKEN_FRESH_MS = 60 * 1000;
 
-export async function middleware(request: NextRequest) {
+function fromBase64Url(value: string) {
+  const pad = value.length % 4 === 0 ? '' : '='.repeat(4 - (value.length % 4));
+  const binary = atob(value.replace(/-/g, '+').replace(/_/g, '/') + pad);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+/** The signed-in user already in the auth cookie, when the access token has not expired. */
+function readSession(request: NextRequest): { id: string; email: string | null; fresh: boolean } | null {
+  const cookies = request.cookies.getAll();
+  const key = cookies.map((cookie) => cookie.name.match(AUTH_COOKIE)?.[1]).find((name): name is string => !!name);
+  if (!key) return null;
+  const values = new Map(cookies.map((cookie) => [cookie.name, cookie.value]));
+  let raw = values.get(key) || '';
+  if (!raw) {
+    const parts: string[] = [];
+    for (let i = 0; ; i++) {
+      const part = values.get(`${key}.${i}`);
+      if (!part) break;
+      parts.push(part);
+    }
+    raw = parts.join('');
+  }
+  if (!raw) return null;
+  try {
+    if (raw.startsWith('base64-')) raw = fromBase64Url(raw.slice('base64-'.length));
+    const data = JSON.parse(raw) as { expires_at?: number; access_token?: string; user?: { id?: string; email?: string } };
+    const id = data.user?.id || '';
+    if (!UUID.test(id)) return null;
+    let expiresAt = typeof data.expires_at === 'number' ? data.expires_at : 0;
+    if (!expiresAt && data.access_token) {
+      const payload = data.access_token.split('.')[1];
+      const exp = payload ? (JSON.parse(fromBase64Url(payload)) as { exp?: number }).exp : 0;
+      expiresAt = typeof exp === 'number' ? exp : 0;
+    }
+    return {
+      id,
+      email: typeof data.user?.email === 'string' ? data.user.email : null,
+      fresh: expiresAt * 1000 > Date.now() + TOKEN_FRESH_MS,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Refresh the session only when the access token is about to expire. The new
+ * cookies have to be on this response, so that call is awaited. A fresh token
+ * is not sent to the auth server again.
+ */
+async function refreshSession(request: NextRequest, requestHeaders: Headers): Promise<{ response: NextResponse; userId: string | null; email: string | null }> {
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
+  const session = readSession(request);
+  const staff = request.cookies.get(STAFF_COOKIE)?.value === '1';
+  const looksAdmin = (session?.email || '').toLowerCase() === SUPER_ADMIN_EMAIL;
+  if (session?.fresh && !(looksAdmin && !staff)) {
+    return { response, userId: session.id, email: looksAdmin ? session.email : null };
+  }
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    return { response, userId: null, email: null };
+  }
+  const supabase = createServerClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {
+    cookies: {
+      getAll: () => request.cookies.getAll(),
+      setAll: (list) => {
+        list.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({ request: { headers: requestHeaders } });
+        list.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+      },
+    },
+  });
+  const { data } = await supabase.auth.getUser();
+  return { response, userId: data.user?.id ?? null, email: data.user?.email ?? null };
+}
+
+function finish(event: NextFetchEvent, response: NextResponse, pending: Promise<void> | null) {
+  if (pending) event.waitUntil(pending);
+  return response;
+}
+
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const moved = legacyHostRedirect(request);
   if (moved) return moved;
   // OpenAI reads this exact body when connecting the plugin. No page around it.
@@ -336,24 +535,17 @@ export async function middleware(request: NextRequest) {
     return response;
   };
   if (!hasSession) {
-    const guest = await personalizeGuest(request);
-    return trackVisit(request, stampIntent(guest.response), { signedIn: false, userId: null, scopeId: guest.scopeId, email: null });
+    const guest = await personalizeGuest(request, event);
+    const response = stampIntent(guest.response);
+    return finish(event, response, noteVisit(request, response, { signedIn: false, userId: null, scopeId: guest.scopeId, email: null }));
   }
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(SCOPE_QUERY_HEADER, (request.nextUrl.searchParams.get('scope') || '').slice(0, 80));
-  let response = NextResponse.next({ request: { headers: requestHeaders } });
-  const supabase = createServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll: (list) => {
-        list.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request: { headers: requestHeaders } });
-        list.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      },
-    },
-  });
-  const { data } = await supabase.auth.getUser();
-  return trackVisit(request, stampIntent(response), { signedIn: !!data.user, userId: data.user?.id ?? null, scopeId: null, email: data.user?.email ?? null });
+  const session = await refreshSession(request, requestHeaders);
+  const response = stampIntent(session.response);
+  return finish(event, response, noteVisit(request, response, {
+    signedIn: !!session.userId, userId: session.userId, scopeId: null, email: session.email,
+  }));
 }
 
 export const config = {
